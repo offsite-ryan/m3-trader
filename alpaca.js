@@ -681,8 +681,8 @@ async function test4(symbol = 'OKLO', log = true) {
     // -------------------------------------
     // TOTAL SUMMARY
     // -------------------------------------
-    const total = open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c);
-    const total_pct = open_positions.map((v) => +(v.unrealized_plpc) * 100).reduce((p, c) => p + c);
+    const total = open_positions.length > 0 ? open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c) : 0;
+    // const total_pct = open_positions.map((v) => +(v.unrealized_plpc) * 100).reduce((p, c) => p + c);
     const elem = document.getElementById('total-positions-2');
     elem.style.backgroundColor = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : colors.red);
     elem.style.color = colors.black;
