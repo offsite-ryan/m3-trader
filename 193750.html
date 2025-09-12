@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>M3-TRADER</title>
+    <link id="favicon" rel="icon" href="./favicon.ico" type="image/png" sizes="16x16">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" sizes="128x128" href="./favicon-2.png">
+    <link rel="manifest" href="./manifest.json">
+    <script src="https://www.w3schools.com/lib/w3.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="./HackTimer.js"></script>
+    <script src="./colors.js"></script>
+    <script src="./calendar.js"></script>
+    <script src="./bollinger-bands.js"></script>
+    <script src="./buy-sell-positions.js"></script>
+    <script src="./helper-functions.js"></script>
+    <script src="./calculate-trendline.js"></script>
+    <script src="./chart-bar-options.js"></script>
+    <script src="./chart-area-spline-options.js"></script>
+    <script src="./alpaca.js"></script>
+</head>
+<style>
+</style>
+
+<body class="">
+
+    <div class="_w3-container" style="padding: 8px;background-color:#00b90a;">
+        <h2><img src="./favicon-black.png" style="width:90px;margin-right:20px;" /><span>M<sup>3</sup> Trader</span>
+            <span class="w3-tiny w3-text-light-grey">
+                <span id="datetime" class="w3-large"></span>
+            </span>
+            <span class="_w3-xxxlarge w3-right" style="font-size:40px;margin-left: 5px;cursor:pointer;"
+                onclick="window.location=window.location">&#x27F3;
+            </span>
+            <div class="w3-medium w3-right w3-padding" style="margin-top:10px;">
+                <input id="dateSelector" class="date w3-hide _-small w3-hide-medium" type="date"
+                    onchange="clickDate(this.value)"></input>
+                <!-- <br /> -->
+                <!-- <span id="datetime" class="w3-xlarge"></span>
+                <span class="w3-xlarge" style="margin-left: 5px;cursor:pointer;"
+                    onclick="window.location=window.location">&#x27F3;
+                </span> -->
+            </div>
+            <div id="current_conditions" class="w3-medium"></div>
+        </h2>
+    </div>
+
+    <div id="tabs" class="w3-bar w3-black">
+    </div>
+
+    <div id="content-ytd" class="_w3-margin" style="display:none;">
+    </div>
+
+    <div id="content-weeks" class="w3-margin" style="display:none;">
+    </div>
+
+    <div id="content-day" class="w3-margin w3-center" style="display:none;">
+    </div>
+
+    <div id="content-account" class="" style="display:none;">
+    </div>
+
+    <!-- Bollinger -->
+    <div id="content-bollinger" class="_w3-margin" style="display:none;">
+        <br />
+        <div class="w3-row" style="_border:1px solid; min-height:500px;;">
+            <div class="w3-col s12 l2 w3-padding w3-hide-small w3-hide-medium"
+                style="border:1px solid rgb(92, 92, 92);;_min-height:300px;;">
+                <div id="chart-bollinger-1"></div>
+            </div>
+            <div class="w3-col s12 l8 chart-symbol-day-3 w3-padding"
+                style="border:1px solid rgb(92, 92, 92);;_min-height:300px;;">
+                <div id="chart-positions"></div>
+            </div>
+            <div class="w3-col s12 l2 w3-padding" style="border:1px solid rgb(92, 92, 92);">
+                <div id="total-positions-2" class="w3-center w3-xxlarge"
+                    style="min-height: 240px;align-content: center;font-weight:900;font-size:6vh !important;">
+                </div>
+            </div>
+            <div class="w3-col s12 l9 w3-padding _w3-hide-small _w3-hide-medium"
+                style="border:1px solid rgb(92, 92, 92); _min-height:500px;;">
+                <div id="chart-bollinger-0"></div>
+            </div>
+            <div class="w3-col s12 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);_min-height:500px;">
+                <div id="chart-bollinger-2"></div>
+                <!-- <input class="w3-col s6" type="number" value="1000"/> -->
+                <input type="range" min="0" max="5" value="1" step="0.5" style="accent-color:#00b90a;"
+                    oninput="document.getElementById('slider-value').innerHTML = `$${this.value}K`">
+                <span id="slider-value">$1K</span>
+                <button id="buy_symbol" class="w3-button w3-right w3-round-large w3-large w3-padding"
+                    style="background-color:#121212;border:1px solid;"
+                    onclick="sell(bollinger_selected_symbol)">Sell</button>
+                <button id="sell_symbol" class="w3-button w3-right w3-round-large w3-large w3-padding"
+                    style="background-color:#121212;border:1px solid;"
+                    onclick="buy(bollinger_selected_symbol, 500)">Buy</button>
+            </div>
+        </div>
+        <br />
+        <div id="symbol-buttons-bollinger-favs" class="_w3-col s12 w3-padding w3-center"
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
+        </div>
+        <div id="chart-symbols-treemap"></div>
+        <div id="symbol-buttons-bollinger" class="_w3-col s12 w3-padding w3-center"
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
+        </div>
+        <div id="symbol-buttons-bollinger-crypto" class="_w3-col s12 w3-padding w3-center"
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
+        </div>
+
+        <!-- Stacked Chart -->
+        <br />
+        <div class="w3-padding w3-border w3-col s4">
+            <div id="chart-symbols-stacked-1"></div>
+        </div>
+        <div class="w3-padding w3-border  w3-col s4">
+            <div id="chart-symbols-stacked-2"></div>
+        </div>
+        <div class="w3-padding w3-border  w3-col s4">
+            <div id="chart-symbols-stacked-3"></div>
+        </div>
+    </div>
+    &nbsp;
+    <br />
+
+    <!-- MODAL BUY / SELL DIALOG -->
+    <div id="modal-account" class="w3-modal" style="z-index:99999;_display:block;background-color:#000;">
+        <div class="w3-modal-content">
+            <form class="w3-container w3-center w3-padding"
+                style="background-color: #232323;color:white;border:1px solid;padding-bottom:20px;">
+                <span onclick="document.getElementById('modal-account').style.display='none'"
+                    class="w3-button w3-xlarge w3-right">&times;</span>
+                <img src="./icon.png" style="height:80px;left:5%;margin-top:20px;" />
+                <h3>M<sup>3</sup> TRADER - Buy / Sell</h3>
+                <button id="" class="w3-button w3-right w3-round-large w3-large w3-padding"
+                    style="background-color:#121212;border:1px solid;" onclick="">Buy</button>
+                <button id="" class="w3-button w3-right w3-round-large w3-large w3-padding"
+                    style="background-color:#121212;border:1px solid;" onclick="">Sell</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ACCOUNT DIALOG -->
+    <div class="w3-col s12">
+        <div id="modal-configuration" class="w3-modal w3-xxlarge"
+            style="z-index:99999;_display:block;background-color:#000;">
+            <div class="w3-modal-content" style="margin-left: 5%;">
+                <form class="w3-container w3-padding w3-xlarge"
+                    style="background-color: #000;color:white;_border:1px solid;padding-bottom:20px;">
+
+
+                    <!-- <br />
+                    <br /> -->
+                    <div class="_w3-container w3-center">
+                        <img src="./favicon.ico" style="width:300px;" />
+                    </div>
+
+                    <span onclick="document.getElementById('modal-configuration').style.display='none'"
+                        class="w3-button w3-xxlarge w3-right">&times;</span>
+                    <!-- <img src="./m3-logo-2-neon-green.png" style="width:90%;left:5%;" /> -->
+                    <div>M<sup>3</sup> TRADER - Configuration</div>
+                    <hr />
+                    <label>Key</label>
+                    <input id="input-key" class="w3-input" type="text" style="color:white;background-color:#555454;">
+                    <br />
+                    <label>Secret</label>
+                    <input id="input-secret" class="w3-input" type="text" style="color:white;background-color:#555454;">
+                    <br />
+
+                    <label>Token</label>
+                    <input id="input-token" class="w3-input" type="text" style="color:white;background-color:#555454;">
+                    <p>
+                        <input id="input-trade" class="w3-radio" type="radio" name="trade" value="true">
+                        <label>Trade</label>
+                        <input id="input-view" class="w3-radio" style="margin-left:20px;" type="radio" name="trade"
+                            value="false" checked>
+                        <label>View</label>
+                    </p>
+
+                    <button id="" class="w3-button w3-right w3-round-large w3-xxlarge w3-padding w3-margin"
+                        style="background-color:#121212;border:1px solid;" onclick="setConfiguration()">Apply</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    function isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            window.matchMedia("(max-width: 767px)").matches ||
+            'ontouchstart' in window;
+    }
+    const mobile_view = isMobile();
+    console.log('isMobile:', mobile_view);
+
+    function isTablet() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            window.matchMedia("(max-width: 970px)").matches ||
+            'ontouchstart' in window;
+    }
+    const tablet_view = isTablet();
+    console.log('isTablet:', tablet_view);
+
+    if (!isMobile()) {
+        // document.getElementById('settings-panel').style.maxWidth = '500px';
+        // document.getElementById('settings-panel').style.right = '0px';
+    }
+</script>
+
+<script>
+    function setConfiguration() {
+        const key = document.getElementById('input-key').value;
+        const secret = document.getElementById('input-secret').value;
+        // const key_stocks = document.getElementById('input-key-stocks').value;
+        // const secret_stocks = document.getElementById('input-secret-stocks').value;
+        const token = document.getElementById('input-token').value;
+        const trade = document.getElementById('input-trade').checked;
+        const view = document.getElementById('input-view').checked;
+        localStorage.setItem('m3-trader-v5-key', key);
+        localStorage.setItem('m3-trader-v5-secret', secret);
+        localStorage.setItem('m3-trader-v5-trade', trade);
+        localStorage.setItem('m3-trader-v5-token', token);
+        localStorage.setItem('m3-trader-v5-activeTab', 'bollinger');
+        // alert(key, secret);
+
+        window.location = window.location;
+    }
+    function open_settings() {
+        document.getElementById('input-key').value = KEY;
+        document.getElementById('input-secret').value = SECRET;
+        document.getElementById('input-token').value = TOKEN;
+        document.getElementById('input-trade').checked = trade;
+        document.getElementById('input-view').checked = !trade;
+        document.getElementById('modal-configuration').style.display = 'block';
+    }
+</script>
+
+<script>
+</script>
+
+<script>
+    let key = localStorage.getItem('m3-trader-v5-key');
+    let secret = localStorage.getItem('m3-trader-v5-secret');
+    // let key_stocks = localStorage.getItem('m3-trader-v5-key-stocks');
+    // let secret_stocks = localStorage.getItem('m3-trader-v5-secret-stocks');
+    let token = localStorage.getItem('m3-trader-v5-token');
+    let trade = localStorage.getItem('m3-trader-v5-trade') === 'true' ? true : false;
+    console.log(key, secret);
+    if (key && key !== null && secret && secret !== null) {
+        // console.log('API:', key, secret);
+    } else {
+        console.warn('API Key NOT found');
+        document.getElementById('modal-configuration').style.display = 'block';
+    }
+</script>
+
+<script>
+    "use strict";
+
+    const KEY = key;
+    const SECRET = secret;
+    // const KEY_STOCKS = key_stocks;
+    // const SECRET_STOCKS = secret_stocks;
+    const TRADE = trade;
+    const TOKEN = token;
+    const START_OF_YEAR = '2024-12-29';
+    const HISTORIC_KEY_POSTFIX = '4'
+    const MAX_LOSS = -1.75;
+    const SLASH = '%2F';
+
+    let auto_refresh = true;
+    let chart_positions = null;
+    let chart_bollinger = null;
+    let chart_bollinger_1 = null;
+    let chart_bollinger_2 = null;
+    let chart_symbols_stacked_1 = null;
+    let chart_symbols_stacked_2 = null;
+    let chart_symbols_stacked_3 = null;
+
+
+    const isCrypto = localStorage.getItem('m3-trader-v5-crypto') === 'true' ? true : false;
+    let selected_symbol = localStorage.getItem(`m3-trader-v5-selected-symbol`) || 'GE';
+
+    let selected_date = getTodayLocal();
+    let elem = document.getElementById('dateSelector');
+    elem.value = selected_date;
+    elem.max = selected_date;
+
+    // =================================================\
+    // ACTIVE TAB
+    // =================================================
+    let activeTab = localStorage.getItem('m3-trader-v5-activeTab') || 'weeks';
+    function openTab(name) {
+        var i;
+        var x = document.getElementsByClassName("w3-bar-item");
+        for (i = 0; i < x.length; i++) {
+            x[i].style.borderBottom = '';
+        }
+        document.getElementById('btn-tab-' + name).style.borderBottom = '7px solid #00b90a';
+        tabs.forEach((k, i) => {
+            k = k.toLowerCase();
+            document.getElementById(`content-${k}`).style.display = name === k ? 'block' : 'none';
+        });
+        activeTab = name;
+        localStorage.setItem('m3-trader-v5-activeTab', name);
+    }
+
+    // =================================================
+    // CLICK DATE
+    // =================================================
+    function clickDate(date) {
+        selected_date = date;
+        document.getElementById('dateSelector').max = getTodayLocal(); // Set maxc date to today
+        // clickSymbol(selected_symbol);
+        update(true);
+    }
+
+    // =================================================
+    // TOGGLE AUTO RESET
+    // =================================================
+    function toggleAutoReset(elem) {
+        auto_refresh = !auto_refresh;
+        if (auto_refresh) {
+            elem.classList.remove('fa-toggle-off');
+            elem.classList.add('fa-toggle-on');
+            elem.style.color = '#00b90a';
+        } else {
+            elem.classList.remove('fa-toggle-on');
+            elem.classList.add('fa-toggle-off');
+            elem.style.color = '#f00';
+        }
+    }
+
+    // =================================================
+    // TOGGLE CRYPTO / STOCKS
+    // =================================================
+    function toggleCryptoStocks(elem, reload = true) {
+        elem = document.getElementById('toggle-crypto');
+        const on = elem.classList.value.indexOf('fa-toggle-on') >= 0;
+        if (!on) {
+            elem.classList.remove('fa-toggle-off');
+            elem.classList.add('fa-toggle-on');
+            elem.style.color = '#00b90a';
+            // symbol_buttons = symbol_buttons_all.filter((v) => !v.endsWith('/USD'));
+            localStorage.setItem('m3-trader-v5-crypto', true);
+        } else {
+            elem.classList.remove('fa-toggle-on');
+            elem.classList.add('fa-toggle-off');
+            elem.style.color = '#f00';
+            // symbol_buttons = symbol_buttons_all.filter((v) => v.endsWith('/USD'));
+            localStorage.setItem('m3-trader-v5-crypto', false);
+            // clickSymbol(selected)
+        }
+        if (reload) {
+            window.location = window.location;
+        }
+    }
+
+    // =================================================
+    // PROCESS CONFIGURATION
+    // =================================================
+    const tabs = ['Bollinger'];
+    function processConfiguration() {
+        // /** create tab buttons and load the first page */
+        let html_tabs = ``;
+        tabs.forEach((k, i) => {
+            if (k.indexOf('_') !== 0) {
+                const tab = k.toLowerCase();
+                const text = k;
+                let style = 'border-right:0.5px solid #505050;min-width:100px;'
+                style += i === 0 ? 'border-bottom:7px solid #007585;' : 'border-bottom:7px solid black';
+                let html = `<button id="btn-tab-${tab}" class="w3-bar-item w3-button w3-hide-small w3-hide-medium" style="${style}"
+                    onclick="openTab('${tab}')">${text}</button>`;
+                html_tabs += html;
+            }
+        });
+        html_tabs += isMobile() ? '' : `<span class="w3-right" style="font-size:32px;margin:0px 24px 0px 0px;color: #00b90a;">
+            <i class="fa fa-toggle-on" style="cursor:pointer;" onclick="toggleAutoReset(this)"></i>
+            <span class="w3-medium" style="padding-right: 5px;top: -7px;display: inline;position: relative;">Auto Refresh </span>
+            
+            <i id="toggle-crypto" class="fa fa-toggle-on" style="cursor:pointer;" onclick="toggleCryptoStocks(this)"></i>
+            <span class="w3-medium" style="padding-right: 5px;top: -7px;display: inline;position: relative;">Crypto </span>
+
+            <i id="open-settings" class="fa fa-gear" style="cursor:pointer;" onclick="open_settings()"></i>
+            <span class="w3-medium" style="padding-right: 5px;top: -7px;display: inline;position: relative;">Settings </span>
+
+            </span>
+            `;
+        document.getElementById('tabs').innerHTML += html_tabs;
+        // if (!isCrypto) {
+        //     toggleCryptoStocks(null, false);
+        // }
+    }
+
+    // =================================================
+    //                    STARTUP
+    // =================================================
+    processConfiguration();
+    openTab(activeTab);
+    test4('GE');
+
+    setInterval(async () => {
+        const d = new Date();
+        document.getElementById('datetime').innerHTML = isMobile() && !isTablet()
+            ? ` (${d.getSeconds().toString().padStart(2, '0')})`
+            : d.toLocaleTimeString().split(' ')[0];
+        if (d.getMinutes() === 59 && d.getSeconds() === 59) {
+            console.clear();
+        }
+    }, 1 * 1000);
+
+    // =================================================
+    //              LOCAL STORAGE SIZE
+    // =================================================
+    function getLocalStorageSize() {
+        let totalSize = 0;
+        for (let key in localStorage) {
+            if (localStorage.hasOwnProperty(key)) {
+                let value = localStorage.getItem(key);
+                totalSize += value.length * 2;
+            }
+        }
+        return totalSize; // Size in bytes
+    }
+
+    const sizeInBytes = getLocalStorageSize();
+    const sizeInKB = sizeInBytes / 1024;
+    const sizeInMB = sizeInKB / 1024;
+
+    console.group('Local Storage');
+    console.info(`Size in bytes: ${sizeInBytes.toLocaleString()}`);
+    console.info(`Size in KB: ${round3(sizeInKB)}`);
+    console.info(`Size in MB: ${round4(sizeInMB)}`);
+    console.groupEnd();
+
+    console.group('Memory Usage');
+    if (performance.memory) {
+        console.log('Used JS heap:', (performance.memory.usedJSHeapSize).toLocaleString());
+        console.log('Total JS heap:', (performance.memory.totalJSHeapSize).toLocaleString());
+        console.log('JS heap limit:', (performance.memory.jsHeapSizeLimit).toLocaleString());
+    } else {
+        console.log('performance.memory API is not available in this browser.');
+    }
+    console.groupEnd();
+
+    const days_ytd = Math.floor((new Date(getDateString(getTodayLocal()).e).getTime() - new Date(START_OF_YEAR).getTime()) / (24 * 60 * 60 * 1000));
+    console.info(`Days YTD: ${days_ytd}`);
+
+    function toggleDarkMode() {
+        let x = document.body;
+        x.classList.toggle("w3-black");
+    }
+</script>
+
+</html>

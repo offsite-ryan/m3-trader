@@ -1,0 +1,42 @@
+{
+    "name": "M3",
+    "short_name": "M3-Trader",
+    "start_url": "./193750.html",
+    "display": "standalone",
+    "background_color": "#2196F3",
+    "description": "",
+    "icons": [
+        {
+            "src": "./icon.png",
+            "type": "image/png",
+            "sizes": "128x128"
+        }
+    ],
+    "#icons": [
+        {
+            "src": "./weather-app_128.png",
+            "type": "image/png",
+            "sizes": "128x128"
+        },
+        {
+            "src": "./weather-app_152.png",
+            "type": "image/png",
+            "sizes": "152x152"
+        },
+        {
+            "src": "./weather-app_144.png",
+            "type": "image/png",
+            "sizes": "144x144"
+        },
+        {
+            "src": "./weather-app_192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "./weather-app_512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}
