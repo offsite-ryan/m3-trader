@@ -80,7 +80,7 @@ class AlpacaData {
     addTrendlines(data) {
         data.forEach((v, i) => {
             if (i > 5) {
-                const tl = calculateTrendline(data.slice(i-5,i).map((v)=>v.c));
+                const tl = calculateTrendline(data.slice(i - 5, i).map((v) => v.c));
                 v.tl5 = tl.calculateY(6);
             } else {
                 v.tl5 = v.c;
@@ -205,8 +205,8 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
             D: { buy: (v, i) => v.c >= v.sma, sell: (v, i) => v.c <= v.lb },
             E: { buy: (v, i) => v.c >= v.sma, sell: (v, i) => v.c < v.sma },
             F: { buy: (v, i) => v.c >= v.lb, sell: (v, i) => v.c < v.lb }, // ***
-            F1: { buy: (v, i) =>v.dow !== 5 &&  v.o >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
-            F2: { buy: (v, i) =>v.dow !== 5 &&  v.c >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
+            F1: { buy: (v, i) => v.dow !== 5 && v.o >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
+            F2: { buy: (v, i) => v.dow !== 5 && v.c >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
             G: { buy: (v, i) => v.c >= v.lb && v.p5 >= v.c, sell: (v, i) => v.c < v.lb },
             // H: { buy: (v, i) => v.c >= v.p5, sell: (v, i) => v.c < v.p5 },
             H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // bu/sell each day if above lower bound
@@ -262,6 +262,7 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
                             //     sell(symbol);
                             // }
                             trades.push({
+                                s: symbol,
                                 num: i - own_at,
                                 1: own_at,
                                 2: i,
@@ -322,7 +323,7 @@ async function test4(symbol = 'OKLO', log = true) {
     const research = [
         // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
         // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 
-        'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS', 'CVX', 
+        'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS', 'CVX',
         'IBIT', 'INTL', 'JPM', 'MDB', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL', 'PM',
         'RKLB', 'SNOW', 'T', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT', 'Z'
     ].sort();
@@ -331,7 +332,7 @@ async function test4(symbol = 'OKLO', log = true) {
     const add_buttons = (symbols, id) => {
         let html = '';
         symbols.forEach((s) => {
-            const has_position = open_positions.findIndex((v)=>v.symbol === s.replace('/',''));
+            const has_position = open_positions.findIndex((v) => v.symbol === s.replace('/', ''));
             // console.log(s, has_position);
 
             const status = all.find((v) => v.symbol === s);
@@ -352,10 +353,10 @@ async function test4(symbol = 'OKLO', log = true) {
 
             html += `<div 
             class="w3-col s4 m2 l1 _w3-margin w3-padding"
-            style="border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position  >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
+            style="border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
             onclick="test4('${s}')"
             >${s.split('/')[0]}
-            ${has_position  >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
+            ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
             ${status ? `<br/><div class="" style="color:white;background-color:${status ? status_color : ''};">` + round1(status.gain_pct) + '%</div>' : ''}
             </div>`;
         });
@@ -366,19 +367,21 @@ async function test4(symbol = 'OKLO', log = true) {
     // const start = new Date(new Date('2024-12-01T00:00:00-05:00'));
     // const start = new Date(new Date(`2024-07-29T${symbol.endsWith('USD') ? '00:00:00-05:00' : '09:30:00-05:00'}`));
     // const end = new Date(getYMD(new Date()) + `${symbol.endsWith('USD') ? 'T23:59:59-04:00' : 'T16:00:00-04:00'}`);
-    
+
     const open_positions = await positions();
     // .filter((v2)=>new Date(v2.t) >= new Date('2025-08-26'))
     const all_orders = (await orders())
-        .map((v2)=>{ return {
-            symbol: v2.symbol, 
-            side: v2.side, 
-            t: new Date(v2.filled_at).toLocaleString(), 
-            spend: v2.notional, 
-            // id: v2.asset_id, 
-            p: v2.filled_avg_price, 
-            q: v2.filled_qty
-        } });
+        .map((v2) => {
+            return {
+                symbol: v2.symbol,
+                side: v2.side,
+                t: new Date(v2.filled_at).toLocaleString(),
+                spend: v2.notional,
+                // id: v2.asset_id, 
+                p: v2.filled_avg_price,
+                q: v2.filled_qty
+            }
+        });
     // console.log(open_positions, all_orders);
 
 
@@ -412,6 +415,8 @@ async function test4(symbol = 'OKLO', log = true) {
         }
 
         const days = [];
+        // const days_per_symbol = {};
+        // all.forEach((v) => days_per_symbol[v.symbol] = { c: 0, data: [] });
         const all_trades = all.map((v) => v.trades).reduce((p, c) => [...p, ...c]);
         let trade_days = all_trades.map((v) => v.e2).filter((v, i, a) => a.indexOf(v) === i).sort();
         // trade_days = trade_days.sort((a, b) => a.e2 < b.e2);
@@ -422,6 +427,10 @@ async function test4(symbol = 'OKLO', log = true) {
             // const gain = filtered.map((v2) => v2.gain).reduce((p, c) => p + c);
             cumulative += gain;
             days.push({ x: v, y: round1(cumulative / 100) });
+
+            // filtered.forEach((v2) => {
+            //     days_per_symbol[v2.s].data.push({ x: v, y: round1(cumulative / 100) })
+            // });
         });
         // console.log(days);
         let o = deepClone(chart_area_spline_options);
@@ -457,6 +466,10 @@ async function test4(symbol = 'OKLO', log = true) {
         total_groups += round1(last);
         // total_groups += round1(10 * 1000 * (cumulative / 10000 / 1000));
         // console.log(index, round3(tl.slope));
+
+        // ------------------------
+        // /** GROUP CHARTS STACKED BY SYMBOL */
+        // ------------------------
 
         index++;
         all = undefined;
@@ -522,6 +535,7 @@ async function test4(symbol = 'OKLO', log = true) {
             opacity: 1,
             label: {
                 text: mobile_view ? '' : `${round(INVESTMENT_SEED * (a.gain / 100))}`,
+                _text: `${round(INVESTMENT_SEED * (a.gain / 100))}`,
                 orientation: 'horizontal',
                 style: {
                     background: a.gain >= 0 ? colors.green : colors.red,
@@ -560,7 +574,8 @@ async function test4(symbol = 'OKLO', log = true) {
     o.series[2].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
     o.series.forEach((s) => {
         s.data = s.data.slice(-10);
-    })
+    });
+    o.annotations.xaxis.forEach((v) => v.label.text = v.label._text);
     if (chart_bollinger_1) {
         chart_bollinger_1.destroy();
         // chart_bollinger_1.updateOptions({
