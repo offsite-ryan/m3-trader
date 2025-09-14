@@ -308,7 +308,7 @@ async function test4(symbol = 'OKLO', log = true) {
     bollinger_selected_symbol = symbol;
 
 
-    // const favs = ['FOX', ].sort();
+    // const favs = ['GE', 'GEV',].sort();
     const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
     const crypto = [
         // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
@@ -324,7 +324,7 @@ async function test4(symbol = 'OKLO', log = true) {
         // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
         // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 
         'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS', 'CVX',
-        'IBIT', 'INTL', 'JPM', 'MDB', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL', 'PM',
+        'IBIT', 'INTL', 'JPM', 'MDB', 'MP', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL', 'PM',
         'RKLB', 'SNOW', 'T', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT', 'Z'
     ].sort();
 
@@ -408,25 +408,26 @@ async function test4(symbol = 'OKLO', log = true) {
 
         add_buttons(a, index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-crypto' : 'symbol-buttons-bollinger'))
 
-        if (index === 2) {
-            all.forEach((s) => {
-                treemap_data.push({ x: s.symbol, y: round1(s.gain_pct) })
-            })
-        }
+        // if (index === 2) {
+        //     all.forEach((s) => {
+        //         treemap_data.push({ x: s.symbol, y: round3(s.gain_pct / 100) })
+        //     })
+        // }
 
         const days = [];
         // const days_per_symbol = {};
-        // all.forEach((v) => days_per_symbol[v.symbol] = { c: 0, data: [] });
         const all_trades = all.map((v) => v.trades).reduce((p, c) => [...p, ...c]);
         let trade_days = all_trades.map((v) => v.e2).filter((v, i, a) => a.indexOf(v) === i).sort();
         // trade_days = trade_days.sort((a, b) => a.e2 < b.e2);
         let cumulative = 0;
         trade_days.forEach((v, i) => {
-            const filtered = all_trades.filter((v2) => v2.e2 === v);
-            const gain = filtered.map((v2) => v2.gain_cumulative).reduce((p, c) => p + c);
-            // const gain = filtered.map((v2) => v2.gain).reduce((p, c) => p + c);
+            // let gain = 0;
+            let filtered = all_trades.filter((v2) => v2.e2 === v);
+            // filtered = filtered.map((v2) => v2.gain_cumulative);
+            filtered = filtered.map((v2) => v2.gain);
+            const gain = filtered.length > 0 ? filtered.reduce((p, c) => p + c) : 0;
             cumulative += gain;
-            days.push({ x: v, y: round1(cumulative / 100) });
+            days.push({ x: v, y: round3(cumulative) });
 
             // filtered.forEach((v2) => {
             //     days_per_symbol[v2.s].data.push({ x: v, y: round1(cumulative / 100) })
@@ -434,9 +435,10 @@ async function test4(symbol = 'OKLO', log = true) {
         });
         // console.log(days);
         let o = deepClone(chart_area_spline_options);
+        const area_total = round1(((10 * 1000) / a.length) * (cumulative / 100) / 1000);
         o.title = {
             // text: `${index === 0 ? 'FAVS' : (index === 1 ? 'CRYPTO' : 'RESEARCH')} | $${round1(5*1000*all.length*(cumulative/10000/1000)).toLocaleString()}K`,
-            text: `${index === 0 ? 'FAVS' : (index === 1 ? 'CRYPTO' : 'RESEARCH')} | $${round1(10 * 1000 * (cumulative / 10000 / 1000)).toLocaleString()}K`,
+            text: `${index === 0 ? 'FAVS' : (index === 1 ? 'CRYPTO' : 'RESEARCH')} | $${area_total.toLocaleString()}K`,
             style: { fontSize: '22px', color: '#fff' }
         };
         o.xaxis.type = 'datetime';
@@ -446,10 +448,10 @@ async function test4(symbol = 'OKLO', log = true) {
         o.series.push({ name: 'Close', type: 'area', color: '#03fcfc20', data: days });
         o.series.push({ name: 'Trendline', type: 'line', color: '#89f100ff', data: days.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
         // o.series.push({ name: 'Close', type: 'area', color: '#03fcfc20', data: all[0].trades.map((v)=>{ return {x: v.e2, y: v.gain_cumulative}}) });
-        // o.yaxis.min = -5;
+        o.yaxis.min = -5;
         // o.yaxis.max = 125;
         const last = o.series[0].data[o.series[0].data.length - 1].y;
-        o.annotations.yaxis.push({ y: last, borderColor: '#fff', label: { text: last + '%', style: { fontSize: '20px' } } });
+        o.annotations.yaxis.push({ y: last, borderColor: '#fff', label: { text: round1(area_total / 10 * 100) + '%', style: { fontSize: '20px' } } });
         let c = index === 0 ? chart_symbols_stacked_1 : (index === 1 ? chart_symbols_stacked_2 : chart_symbols_stacked_3)
         if (c) {
             c.destroy();
