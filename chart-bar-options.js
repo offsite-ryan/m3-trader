@@ -20,16 +20,18 @@ const chart_bar_options = {
     plotOptions: {
         bar: {
             colors: {
-                ranges: [{
-                    from: -100 * 1000,
-                    to: -2.5 * 1000,
-                    color: '#F15B4690'
-                },
-                {
-                    from: -2.5 * 1000,
-                    to: 0,
-                    color: '#FEB01990'
-                }]
+                ranges: [
+                    {
+                        from: -100 * 1000,
+                        to: -10,
+                        color: '#ff1e00cb'
+                    },
+                    {
+                        from: -10,
+                        to: 0,
+                        color: '#FEB01990'
+                    }
+                ]
             },
             // columnWidth: '80%',
             dataLabels: {

@@ -188,7 +188,7 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
     return new Promise(async (resolve) => {
         await sleep(delay);
 
-        let bars = await alpaca_data.bars(symbol, '1D', start, end);
+        let bars = await alpaca_data.bars(symbol, timeframe, start, end);
         let was_below = true;
         let was_above = true;
         let own_at = -1;
@@ -220,7 +220,7 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
         };
         // algo = 'D';
         // algo = 'E';
-        algo = symbol.endsWith('USD') ? 'D' : 'F1';
+        algo = symbol.endsWith('USD') ? 'D' : 'D';
         // algo = 'A';
         // algo = 'B';
 
@@ -302,13 +302,13 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
 // =================================================
 async function test4(symbol = 'OKLO', log = true) {
 
-    const INVESTMENT_SEED = 5000;
+    const INVESTMENT_SEED = 1000;
     const ALGORITHM = 'C1';
     const init = (bollinger_selected_symbol === null);
     bollinger_selected_symbol = symbol;
 
 
-    // const favs = ['GE', 'GEV',].sort();
+    // const favs = ['GE',].sort();
     const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
     const crypto = [
         // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
@@ -415,43 +415,52 @@ async function test4(symbol = 'OKLO', log = true) {
         // }
 
         const days = [];
+        const day_gains = [];
+        const day_gains_cumulative = [];
         // const days_per_symbol = {};
         const all_trades = all.map((v) => v.trades).reduce((p, c) => [...p, ...c]);
         let trade_days = all_trades.map((v) => v.e2).filter((v, i, a) => a.indexOf(v) === i).sort();
         // trade_days = trade_days.sort((a, b) => a.e2 < b.e2);
         let cumulative = 0;
         trade_days.forEach((v, i) => {
-            // let gain = 0;
             let filtered = all_trades.filter((v2) => v2.e2 === v);
-            // filtered = filtered.map((v2) => v2.gain_cumulative);
-            filtered = filtered.map((v2) => v2.gain);
-            const gain = filtered.length > 0 ? filtered.reduce((p, c) => p + c) : 0;
+            // filtered = filtered.map((v2) => v2.gain);
+            // const gain = filtered.length > 0 ? filtered.reduce((p, c) => p + c) : 0;
+            const trades_total = filtered.length > 0 ? filtered.map((v2) => v2.gain).reduce((p, c) => p + c) : 0;
+            const gain = (trades_total / 100) * (filtered.map((v) => v.s).filter((v, i, a) => i === a.indexOf(v)).length * 1000);
             cumulative += gain;
             days.push({ x: v, y: round3(cumulative) });
 
-            // filtered.forEach((v2) => {
-            //     days_per_symbol[v2.s].data.push({ x: v, y: round1(cumulative / 100) })
-            // });
+            day_gains.push({ x: v, y: round1(gain) })
+            day_gains_cumulative.push({ x: v, y: round1(cumulative) })
         });
         // console.log(days);
+        // [day_gains, day_gains_cumulative].forEach((a, i) => {
+
+        const data = day_gains_cumulative;
         let o = deepClone(chart_area_spline_options);
-        const area_total = round1(((10 * 1000) / a.length) * (cumulative / 100) / 1000);
         o.title = {
-            // text: `${index === 0 ? 'FAVS' : (index === 1 ? 'CRYPTO' : 'RESEARCH')} | $${round1(5*1000*all.length*(cumulative/10000/1000)).toLocaleString()}K`,
-            text: `${index === 0 ? 'FAVS' : (index === 1 ? 'CRYPTO' : 'RESEARCH')} | $${area_total.toLocaleString()}K`,
+            text: `${index === 0 ? 'FAVS' : (index === 1 ? 'CRYPTO' : 'RESEARCH')} | $${round(cumulative).toLocaleString()}`,
             style: { fontSize: '22px', color: '#fff' }
         };
         o.xaxis.type = 'datetime';
         o.chart.height = 200;
         o.series = [];
-        const tl = calculateTrendline(days.map((v) => v.y));
-        o.series.push({ name: 'Close', type: 'area', color: '#03fcfc20', data: days });
-        o.series.push({ name: 'Trendline', type: 'line', color: '#89f100ff', data: days.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
+        // const tl = calculateTrendline(days.map((v) => v.y));
+        // o.series.push({ name: 'Close', type: 'area', color: '#03fcfc20', data: days });
+        // o.series.push({ name: 'Trendline', type: 'line', color: '#89f100ff', data: days.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
+        const tl = calculateTrendline(data.map((v) => v.y));
+        o.series.push({ name: 'Close', type: 'area', color: '#03fcfc20', data });
+        o.series.push({ name: 'Trendline', type: 'line', color: '#89f100ff', data: data.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
         // o.series.push({ name: 'Close', type: 'area', color: '#03fcfc20', data: all[0].trades.map((v)=>{ return {x: v.e2, y: v.gain_cumulative}}) });
         o.yaxis.min = -5;
         // o.yaxis.max = 125;
         const last = o.series[0].data[o.series[0].data.length - 1].y;
-        o.annotations.yaxis.push({ y: last, borderColor: '#fff', label: { text: round1(area_total / 10 * 100) + '%', style: { fontSize: '20px' } } });
+        const pct = cumulative / (a.length*1000) * 100;
+        o.annotations.yaxis.push({ y: last, borderColor: '#fff', label: { text: round1(pct) + '%', style: { fontSize: '20px' } } });
+        o.yaxis.labels.formatter = function (x) {
+            return `$${x.toLocaleString()}`;
+        }
         let c = index === 0 ? chart_symbols_stacked_1 : (index === 1 ? chart_symbols_stacked_2 : chart_symbols_stacked_3)
         if (c) {
             c.destroy();
@@ -468,6 +477,14 @@ async function test4(symbol = 'OKLO', log = true) {
         total_groups += round1(last);
         // total_groups += round1(10 * 1000 * (cumulative / 10000 / 1000));
         // console.log(index, round3(tl.slope));
+
+        // })
+
+        // ---------------------------------------------------------------
+        // TODO: calculate how many points in the future - it is NOT days
+        // console.log('trendline', round(tl.calculateY(540)).toLocaleString(), ' | ', round(tl.calculateY(285)).toLocaleString());
+        // ---------------------------------------------------------------
+
 
         // ------------------------
         // /** GROUP CHARTS STACKED BY SYMBOL */
@@ -704,13 +721,7 @@ async function test4(symbol = 'OKLO', log = true) {
     elem.style.backgroundColor = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : colors.red);
     elem.style.color = colors.black;
     elem.style.padding = '10px';
-    // let fontSize = null;
-    // if (isTablet()) {
-    //     fontSize = '100px !important';
-    // }
-    // elem.style.fontSize = fontSize;
     elem.style.fontSize = isTablet() ? '140px !important' : (isMobile() ? '55px !important' : '');
+    // <br/><span class="w3-small">${new Date().toLocaleString()}</span>
     elem.innerHTML = `$${round(total).toLocaleString()}<hr/>${round2(total / (42 * 1000) * 100)}%`;
-    // elem.innerHTML = `$${round(total).toLocaleString()}<hr/>${round2(total / (INVESTMENT_SEED * open_positions.length) * 100)}%`;
-    // elem.innerHTML = `$${round(total).toLocaleString()}<hr/>${round2(total_pct)}%`;
 }
