@@ -210,9 +210,9 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
             G: { buy: (v, i) => v.c >= v.lb && v.p5 >= v.c, sell: (v, i) => v.c < v.lb },
             // H: { buy: (v, i) => v.c >= v.p5, sell: (v, i) => v.c < v.p5 },
             H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // bu/sell each day if above lower bound
-            // ----------
-            // CRYPTO
-            // ----------
+            // * ----------
+            // * CRYPTO
+            // * ----------
             C1: { buy: (v, i) => v.o >= v.sma, sell: (v) => v.c <= v.lb },
             C2: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c <= v.ub },
             C3: { buy: (v, i) => v.c >= v.o, sell: (v) => v.c <= v.o },
@@ -322,10 +322,10 @@ async function test4(symbol = 'OKLO', log = true) {
     ].sort();
     const research = [
         // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
-        // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 
+        // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
         'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS', 'CVX',
-        'IBIT', 'INTL', 'JPM', 'MDB', 'MP', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL', 'PM',
-        'RKLB', 'SNOW', 'T', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT', 'Z'
+        'IBIT', 'INTL', 'LEU', 'MDB', 'MP', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL', 'PM',
+        'QUBT', 'RKLB', 'SNOW', 'T', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT', 'Z'
     ].sort();
 
 
@@ -350,12 +350,14 @@ async function test4(symbol = 'OKLO', log = true) {
             const should_buy = current.c >= current.sma;
             const should_sell = current.c <= current.lb;
             // console.log(s, should_sell);
+            const icon = ['LEU', 'MP', 'TPB', 'QUBT'].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
 
             html += `<div 
             class="w3-col s4 m2 l1 _w3-margin w3-padding"
             style="border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
-            onclick="test4('${s}')"
-            >${s.split('/')[0]}
+            onclick="test4('${s}')">
+            ${icon}
+            ${s.split('/')[0]}
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
             ${status ? `<br/><div class="" style="color:white;background-color:${status ? status_color : ''};">` + round1(status.gain_pct) + '%</div>' : ''}
             </div>`;
@@ -385,9 +387,9 @@ async function test4(symbol = 'OKLO', log = true) {
     // console.log(open_positions, all_orders);
 
 
-    // ------------------------
-    // /** GROUP CHARTS */
-    // ------------------------
+    // * ------------------------
+    // * GROUP CHARTS */
+    // * ------------------------
     let total_groups = 0;
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-15T00:00:00-04:00`));
@@ -472,12 +474,12 @@ async function test4(symbol = 'OKLO', log = true) {
 
         // ---------------------------------------------------------------
         // TODO: calculate how many points in the future - it is NOT days
-        console.log(`%cPREDICTION ${group_name} | ${round1(tl.calculateY(days.length * 2)).toLocaleString()}% | SEED ${a.length}K`, 'color:orange;');
+        console.log(`%c${group_name} | ${round2(cumulative).toLocaleString()} | ${round1(tl.calculateY(days.length * 2)).toLocaleString()}% | ${round1(tl.calculateY(days.length * 3)).toLocaleString()}% | SEED ${a.length}K`, 'color:orange;');
         // ---------------------------------------------------------------
 
-        // ------------------------
-        // /** GROUP CHARTS STACKED BY SYMBOL */
-        // ------------------------
+        // * ------------------------
+        // * GROUP CHARTS STACKED BY SYMBOL
+        // * ------------------------
 
         index++;
         all = undefined;
@@ -496,9 +498,9 @@ async function test4(symbol = 'OKLO', log = true) {
     const chart_annotations = data.trades;
     // const treemap_data = [];
 
-    // ------------------------
-    // /** CHART YTD DAYS */
-    // ------------------------
+    // * ------------------------
+    // * CHART YTD DAYS
+    // * ------------------------
     let o = deepClone(chart_area_spline_options);
     o.chart.height = 500;
     o.chart.sparkline = false;
@@ -702,10 +704,11 @@ async function test4(symbol = 'OKLO', log = true) {
     chart_positions.render();
     o = undefined;
 
-    // -------------------------------------
-    // TOTAL SUMMARY
-    // -------------------------------------
+    // * -------------------------------------
+    // * TOTAL SUMMARY
+    // * -------------------------------------
     const total = open_positions.length > 0 ? open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c) : 0;
+    const total_invested = open_positions.length > 0 ? open_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c) : 0;
     // const total_pct = open_positions.map((v) => +(v.unrealized_plpc) * 100).reduce((p, c) => p + c);
     const elem = document.getElementById('total-positions-2');
     elem.style.backgroundColor = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : colors.red);
@@ -713,5 +716,5 @@ async function test4(symbol = 'OKLO', log = true) {
     elem.style.padding = '10px';
     elem.style.fontSize = isTablet() ? '140px !important' : (isMobile() ? '55px !important' : '');
     // <br/><span class="w3-small">${new Date().toLocaleString()}</span>
-    elem.innerHTML = `$${round(total).toLocaleString()}<hr/>${round2(total / (42 * 1000) * 100)}%`;
+    elem.innerHTML = `$${round(total).toLocaleString()}<hr/>${round2(total / total_invested * 100)}%`;
 }

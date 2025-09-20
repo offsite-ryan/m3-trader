@@ -39,7 +39,8 @@ var chart_area_spline_options = {
     },
     stroke: {
         width: [3.5, 2.0, 2.5, 1, 2, 1],
-        curve: 'smooth'
+        // curve: 'smooth',
+        curve: ['stepline', 'smooth', 'smooth']
     },
     xaxis: {
         // type: 'datetime',
