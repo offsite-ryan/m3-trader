@@ -503,6 +503,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // * ------------------------
     let o = deepClone(chart_area_spline_options);
     o.chart.height = 500;
+    o.chart.toolbar = { show: false };
     o.chart.sparkline = false;
     o.legend.show = false;
     o.xaxis.type = 'datetime';
