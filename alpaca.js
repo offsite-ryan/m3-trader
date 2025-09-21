@@ -193,6 +193,7 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
         let was_above = true;
         let own_at = -1;
         let g = 0;
+        let g_dollars = 0;
         let trades = [];
         const algos = {
             // ----------
@@ -285,14 +286,18 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
                 }
             });
             let cumulative = 0;
+            let cumulative_dollars = 1000;
             trades.forEach((v) => {
                 cumulative += v.gain;
                 v.gain_cumulative = cumulative;
+                cumulative_dollars += cumulative_dollars * (v.gain / 100);
+                v.gain_dollars = cumulative_dollars;
             });
             g = trades.map((v) => v.gain).reduce((p, c) => p + c);
+            g_dollars = cumulative_dollars;
         };
         const last = bars[bars.length - 1];
-        resolve({ symbol, gain_pct: g, own: own_at, buy: last.o >= last.sma, sell: last.c <= last.lb, bars, trades });
+        resolve({ symbol, gain_pct: g, gain_dollars: g_dollars, own: own_at, buy: last.o >= last.sma, sell: last.c <= last.lb, bars, trades });
         bars = undefined;
         trades = undefined;
     });
@@ -395,7 +400,7 @@ async function test4(symbol = 'OKLO', log = true) {
     const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
     let index = 0;
 
-    console.log('----------------------------------------------------');
+    // console.log('----------------------------------------------------');
     const all_symbols_names = [...favs, ...crypto, ...research];
     const promises = all_symbols_names.map((s) => {
         return analyze_days(ALGORITHM, s, '1D', start.toISOString(), end.toISOString(), 100)
@@ -436,6 +441,7 @@ async function test4(symbol = 'OKLO', log = true) {
 
     o.annotations.xaxis = [];
 
+    /** month indicators */
     let e = new Date(start).getTime();
     while (e <= bars[bars.length - 1].e) {
         if (new Date(e).getDate() === 1) {
@@ -447,7 +453,10 @@ async function test4(symbol = 'OKLO', log = true) {
         e += (24 * 60 * 60 * 1000);
     }
 
+    /** trade gains */
+    let seed = INVESTMENT_SEED;
     chart_annotations.forEach((a) => {
+        const g = round(seed * (a.gain / 100));
         o.annotations.xaxis.push({
             x: a.e1,
             x2: a.e2,
@@ -456,7 +465,7 @@ async function test4(symbol = 'OKLO', log = true) {
             strokeDashArray: 0,
             opacity: 1,
             label: {
-                text: mobile_view ? '' : `${round(INVESTMENT_SEED * (a.gain / 100))}`,
+                text: mobile_view ? '' : `${g}`,
                 _text: `${round(INVESTMENT_SEED * (a.gain / 100))}`,
                 orientation: 'horizontal',
                 style: {
@@ -466,12 +475,13 @@ async function test4(symbol = 'OKLO', log = true) {
                 }
             }
         });
+        seed += g;
     })
 
     const pct = round1(chart_annotations.map((v) => v.gain).reduce((p, c) => p + c));
     const g = round(INVESTMENT_SEED * (pct / 100));
     const delta = round1((bars[bars.length - 1].c - bars[14].c) / bars[0].c * 100);
-    o.title.text = `${symbol} | $${g.toLocaleString()} | ${pct}% | ${delta}% | ${chart_annotations.length} | $${o.series[0].data[o.series[0].data.length - 1].y}`;
+    o.title.text = `${symbol} | SEED $${seed.toLocaleString()} | 1K $${g.toLocaleString()} | ${pct}% | ${delta}% | ${chart_annotations.length} | $${o.series[0].data[o.series[0].data.length - 1].y}`;
     o.title.style = { fontSize: '28px', color: colors.white };
     if (chart_bollinger) {
         chart_bollinger.destroy();
@@ -642,6 +652,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // * -------------------------------------
     // * GROUP SUMMARIES
     // * -------------------------------------
+    console.log('----------------------------------------------------');
     for await (const a of (init ? [favs, crypto, research, all_symbols.map((v) => v.symbol)] : [favs, crypto])) {
 
         const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'CRYPTO' : (index === 2 ? 'RESEARCH' : 'ALL'));
@@ -654,10 +665,10 @@ async function test4(symbol = 'OKLO', log = true) {
             add_buttons(a, index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-crypto' : 'symbol-buttons-bollinger'));
         }
 
-        const days = [];
-        const day_gains = [];
-        const day_gains_cumulative = [];
-        const all_trades = all.map((v) => v.trades).reduce((p, c) => [...p, ...c]);
+        let days = [];
+        let day_gains = [];
+        let day_gains_cumulative = [];
+        let all_trades = all.map((v) => v.trades).reduce((p, c) => [...p, ...c]);
         let trade_days = all_trades.map((v) => v.e2).filter((v, i, a) => a.indexOf(v) === i).sort();
         let cumulative = 0;
         trade_days.forEach((v, i) => {
@@ -691,7 +702,7 @@ async function test4(symbol = 'OKLO', log = true) {
         o.yaxis.labels.formatter = function (x) {
             return `$${x.toLocaleString()}`;
         }
-        let c = index === 0 ? chart_symbols_stacked_1 : (index === 1 ? chart_symbols_stacked_2 : chart_symbols_stacked_3)
+        let c = index === 0 ? chart_symbols_stacked_1 : (index === 1 ? chart_symbols_stacked_2 : (index === 1 ? chart_symbols_stacked_3 : chart_symbols_stacked_4))
         if (c) {
             c.destroy();
             // c.updateOptions({
@@ -703,23 +714,31 @@ async function test4(symbol = 'OKLO', log = true) {
             c = new ApexCharts(document.querySelector(`#chart-symbols-stacked-${index + 1}`), o);
             c.render();
         }
-        total_groups += round1(last);
+        total_groups += index < 3 ? round1(last) : 0;
         // total_groups += round1(10 * 1000 * (cumulative / 10000 / 1000));
         // console.log(index, round3(tl.slope));
 
         // })
+        const cumulative_g = round2(all.map((v)=>v.gain_dollars).reduce((p,c)=>p+c))
+        console.log(`%c${group_name} | ${cumulative_g.toLocaleString()} | ${round(cumulative_g / (1000 * a.length) * 100)} %`, 'color:aquamarine');
 
         // ---------------------------------------------------------------
         // TODO: calculate how many points in the future - it is NOT days
-        console.log(`%c${group_name} | ${round2(cumulative).toLocaleString()} | ${round1(tl.calculateY(days.length * 2)).toLocaleString()}% | ${round1(tl.calculateY(days.length * 3)).toLocaleString()}% | SEED ${a.length}K`, 'color:orange;');
+        console.log(`%c${group_name} | ${round2(cumulative).toLocaleString()} | ${round1(tl.calculateY(days.length * 2)).toLocaleString()} | ${round1(tl.calculateY(days.length * 3)).toLocaleString()} | SEED ${a.length}K`, 'color:orange;');
         // ---------------------------------------------------------------
 
         index++;
         o = undefined;
         all = undefined;
+        all_trades = undefined;
+        trade_days = undefined;
+        days = undefined;
+        day_gains = undefined;
+        day_gains_cumulative = undefined;
     };
     // console.log(`%cTOTAL GROUPS | $${round1(total_groups)}K | ${round2(total_groups / 30 * 100)}%`, 'color:orange;');
-    console.log(`%cTOTAL GROUPS | ${round1(total_groups).toLocaleString()}%`, 'color:orange;');
+    // console.log('----------------------------------------------------');
+    console.log(`%cTOTAL GROUPS | $${round(total_groups).toLocaleString()}`, 'color:coral;');
     //#endregion
 
     /** dipose objects */
