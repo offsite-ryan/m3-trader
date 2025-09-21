@@ -329,6 +329,7 @@ async function test4(symbol = 'OKLO', log = true) {
     ].sort();
 
 
+    //#region ADD BUTTONS
     const add_buttons = (symbols, id) => {
         let html = '';
         symbols.forEach((s) => {
@@ -364,15 +365,16 @@ async function test4(symbol = 'OKLO', log = true) {
         });
         document.getElementById(id).innerHTML = html + '<br/>';
     }
+    //#endregion
 
-    let all = null;
-    // const start = new Date(new Date('2024-12-01T00:00:00-05:00'));
-    // const start = new Date(new Date(`2024-07-29T${symbol.endsWith('USD') ? '00:00:00-05:00' : '09:30:00-05:00'}`));
-    // const end = new Date(getYMD(new Date()) + `${symbol.endsWith('USD') ? 'T23:59:59-04:00' : 'T16:00:00-04:00'}`);
+    //#region LOAD DATA
+    // * ------------------------
+    // * LOAD DATA */
+    // * ------------------------
 
-    const open_positions = await positions();
+    let open_positions = await positions();
     // .filter((v2)=>new Date(v2.t) >= new Date('2025-08-26'))
-    const all_orders = (await orders())
+    let all_orders = (await orders())
         .map((v2) => {
             return {
                 symbol: v2.symbol,
@@ -386,10 +388,6 @@ async function test4(symbol = 'OKLO', log = true) {
         });
     // console.log(open_positions, all_orders);
 
-
-    // * ------------------------
-    // * GROUP CHARTS */
-    // * ------------------------
     let total_groups = 0;
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-15T00:00:00-04:00`));
@@ -402,102 +400,14 @@ async function test4(symbol = 'OKLO', log = true) {
     const promises = all_symbols_names.map((s) => {
         return analyze_days(ALGORITHM, s, '1D', start.toISOString(), end.toISOString(), 100)
     });
-    const all_symbols = await Promise.all(promises);
+    let all_symbols = await Promise.all(promises);
 
-    for await (const a of (init ? [favs, crypto, research, all_symbols.map((v) => v.symbol)] : [favs, crypto])) {
-
-        const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'CRYPTO' : (index === 2 ? 'RESEARCH' : 'ALL'));
-        let all = all_symbols.filter((v) => a.indexOf(v.symbol) >= 0)
-
-        const day_results = all;
-        const gain_pct = all.map((v) => v.gain_pct).reduce((p, c) => p + c) / all.length;
-
-        if (index < 3) {
-            add_buttons(a, index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-crypto' : 'symbol-buttons-bollinger'));
-        }
-
-        const days = [];
-        const day_gains = [];
-        const day_gains_cumulative = [];
-        const all_trades = all.map((v) => v.trades).reduce((p, c) => [...p, ...c]);
-        let trade_days = all_trades.map((v) => v.e2).filter((v, i, a) => a.indexOf(v) === i).sort();
-        let cumulative = 0;
-        trade_days.forEach((v, i) => {
-            let filtered = all_trades.filter((v2) => v2.e2 === v);
-            const trades_total = filtered.length > 0 ? filtered.map((v2) => v2.gain).reduce((p, c) => p + c) : 0;
-            const gain = (trades_total / 100) * (filtered.map((v) => v.s).filter((v, i, a) => i === a.indexOf(v)).length * 1000);
-            cumulative += gain;
-            days.push({ x: v, y: round3(cumulative) });
-
-            day_gains.push({ x: v, y: round1(gain) })
-            day_gains_cumulative.push({ x: v, y: round1(cumulative) })
-        });
-
-        const data = day_gains_cumulative;
-        let o = deepClone(chart_area_spline_options);
-        o.title = {
-            text: `${group_name} | $${round(cumulative).toLocaleString()}`,
-            style: { fontSize: '22px', color: '#fff' }
-        };
-        o.xaxis.type = 'datetime';
-        o.chart.height = 200;
-        o.series = [];
-        const tl = calculateTrendline(data.map((v) => v.y));
-        o.series.push({ name: 'Close', type: 'area', color: '#03fcfc20', data });
-        o.series.push({ name: 'Trendline', type: 'line', color: '#89f100ff', data: data.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
-        o.yaxis.min = -5;
-        // o.yaxis.max = 125;
-        const last = o.series[0].data[o.series[0].data.length - 1].y;
-        const pct = cumulative / (a.length * 1000) * 100;
-        o.annotations.yaxis.push({ y: last, borderColor: '#fff', label: { text: round1(pct) + '%', style: { fontSize: '20px' } } });
-        o.yaxis.labels.formatter = function (x) {
-            return `$${x.toLocaleString()}`;
-        }
-        let c = index === 0 ? chart_symbols_stacked_1 : (index === 1 ? chart_symbols_stacked_2 : chart_symbols_stacked_3)
-        if (c) {
-            c.destroy();
-            // c.updateOptions({
-            //     title: o.title,
-            //     series: o.series,
-            //     annotations: o.annotations,
-            // })
-        } else {
-            c = new ApexCharts(document.querySelector(`#chart-symbols-stacked-${index + 1}`), o);
-            c.render();
-            o = undefined;
-        }
-        total_groups += round1(last);
-        // total_groups += round1(10 * 1000 * (cumulative / 10000 / 1000));
-        // console.log(index, round3(tl.slope));
-
-        // })
-
-        // ---------------------------------------------------------------
-        // TODO: calculate how many points in the future - it is NOT days
-        console.log(`%c${group_name} | ${round2(cumulative).toLocaleString()} | ${round1(tl.calculateY(days.length * 2)).toLocaleString()}% | ${round1(tl.calculateY(days.length * 3)).toLocaleString()}% | SEED ${a.length}K`, 'color:orange;');
-        // ---------------------------------------------------------------
-
-        // * ------------------------
-        // * GROUP CHARTS STACKED BY SYMBOL
-        // * ------------------------
-
-        index++;
-        all = undefined;
-    };
-    // console.log(`%cTOTAL GROUPS | $${round1(total_groups)}K | ${round2(total_groups / 30 * 100)}%`, 'color:orange;');
-    console.log(`%cTOTAL GROUPS | ${round1(total_groups).toLocaleString()}%`, 'color:orange;');
-
-    // add_buttons(favs, 'symbol-buttons-bollinger-favs');
-    // add_buttons(crypto.sort(), 'symbol-buttons-bollinger-crypto');
-    // add_buttons(research, 'symbol-buttons-bollinger');
-
-    // const start = new Date(new Date('2024-12-01T00:00:00-05:00'));
-    // const end = new Date(getYMD(new Date()) + 'T23:59:59-04:00');
-    const data = await analyze_days('E', symbol, '1D', start.toISOString(), end.toISOString());
-    const bars = data.bars;
+    let data = await analyze_days('E', symbol, '1D', start.toISOString(), end.toISOString());
+    let bars = data.bars;
     const chart_annotations = data.trades;
-    // const treemap_data = [];
+    //#endregion
 
+    //#region CHART YTD DAYS
     // * ------------------------
     // * CHART YTD DAYS
     // * ------------------------
@@ -573,7 +483,9 @@ async function test4(symbol = 'OKLO', log = true) {
     }
     chart_bollinger = new ApexCharts(document.querySelector(`#chart-bollinger-0`), o);
     chart_bollinger.render();
+    //#endregion
 
+    //#region CHART LAST N DAYS
     // ------------------------
     // /** CHART LAST N DAYS */
     // ------------------------
@@ -610,7 +522,9 @@ async function test4(symbol = 'OKLO', log = true) {
         // cumulative_data.push({ x: v.e2, y: round((INVESTMENT_SEED + cumulative) * (cumulative / 100)) });
         // cumulative_data_2.push({ x: v.e2, y: round((INVESTMENT_SEED + cumulative) * (v.gain / 100)) });
     })
+    //#endregion
 
+    //#region CHART CUMULATIVE
     // -------------------------------------
     // CHART CUMULATIVE
     // -------------------------------------
@@ -661,7 +575,9 @@ async function test4(symbol = 'OKLO', log = true) {
     chart_bollinger_2.render();
     o = undefined;
     // console.table(cumulative_data);
+    //#endregion
 
+    //#region CHART ACIVE POSITIONS
     // -------------------------------------
     // CHART ACIVE POSITIONS
     // -------------------------------------
@@ -676,7 +592,7 @@ async function test4(symbol = 'OKLO', log = true) {
         return {
             x: [
                 v.symbol.replace('USD', ''),
-                isMobile() ? '' : `${round1(v.unrealized_plpc * 100)}%`
+                // isMobile() ? '' : `${round1(v.unrealized_plpc * 100)}%`
             ],
             // x: v.symbol.replace('USD', ''),
             y: round(v.unrealized_pl)
@@ -704,7 +620,9 @@ async function test4(symbol = 'OKLO', log = true) {
     chart_positions = new ApexCharts(document.querySelector("#chart-positions"), o);
     chart_positions.render();
     o = undefined;
+    //#endregion
 
+    //#region TOTAL SUMMARY
     // * -------------------------------------
     // * TOTAL SUMMARY
     // * -------------------------------------
@@ -718,4 +636,96 @@ async function test4(symbol = 'OKLO', log = true) {
     elem.style.fontSize = isTablet() ? '140px !important' : (isMobile() ? '55px !important' : '');
     // <br/><span class="w3-small">${new Date().toLocaleString()}</span>
     elem.innerHTML = `$${round(total).toLocaleString()}<hr/>${round2(total / total_invested * 100)}%`;
+    //#endregion
+
+    //#region GROUP SUMMARIES
+    // * -------------------------------------
+    // * GROUP SUMMARIES
+    // * -------------------------------------
+    for await (const a of (init ? [favs, crypto, research, all_symbols.map((v) => v.symbol)] : [favs, crypto])) {
+
+        const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'CRYPTO' : (index === 2 ? 'RESEARCH' : 'ALL'));
+        let all = all_symbols.filter((v) => a.indexOf(v.symbol) >= 0)
+
+        const day_results = all;
+        const gain_pct = all.map((v) => v.gain_pct).reduce((p, c) => p + c) / all.length;
+
+        if (index < 3) {
+            add_buttons(a, index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-crypto' : 'symbol-buttons-bollinger'));
+        }
+
+        const days = [];
+        const day_gains = [];
+        const day_gains_cumulative = [];
+        const all_trades = all.map((v) => v.trades).reduce((p, c) => [...p, ...c]);
+        let trade_days = all_trades.map((v) => v.e2).filter((v, i, a) => a.indexOf(v) === i).sort();
+        let cumulative = 0;
+        trade_days.forEach((v, i) => {
+            let filtered = all_trades.filter((v2) => v2.e2 === v);
+            const trades_total = filtered.length > 0 ? filtered.map((v2) => v2.gain).reduce((p, c) => p + c) : 0;
+            const gain = (trades_total / 100) * (filtered.map((v) => v.s).filter((v, i, a) => i === a.indexOf(v)).length * 1000);
+            cumulative += gain;
+            days.push({ x: v, y: round3(cumulative) });
+
+            day_gains.push({ x: v, y: round1(gain) })
+            day_gains_cumulative.push({ x: v, y: round1(cumulative) })
+        });
+
+        const data = day_gains_cumulative;
+        let o = deepClone(chart_area_spline_options);
+        o.title = {
+            text: `${group_name} | $${round(cumulative).toLocaleString()}`,
+            style: { fontSize: '22px', color: '#fff' }
+        };
+        o.xaxis.type = 'datetime';
+        o.chart.height = 200;
+        o.series = [];
+        const tl = calculateTrendline(data.map((v) => v.y));
+        o.series.push({ name: 'Close', type: 'area', color: '#03fcfc20', data });
+        o.series.push({ name: 'Trendline', type: 'line', color: '#89f100ff', data: data.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
+        o.yaxis.min = -5;
+        // o.yaxis.max = 125;
+        const last = o.series[0].data[o.series[0].data.length - 1].y;
+        const pct = cumulative / (a.length * 1000) * 100;
+        o.annotations.yaxis.push({ y: last, borderColor: '#fff', label: { text: round1(pct) + '%', style: { fontSize: '20px' } } });
+        o.yaxis.labels.formatter = function (x) {
+            return `$${x.toLocaleString()}`;
+        }
+        let c = index === 0 ? chart_symbols_stacked_1 : (index === 1 ? chart_symbols_stacked_2 : chart_symbols_stacked_3)
+        if (c) {
+            c.destroy();
+            // c.updateOptions({
+            //     title: o.title,
+            //     series: o.series,
+            //     annotations: o.annotations,
+            // })
+        } else {
+            c = new ApexCharts(document.querySelector(`#chart-symbols-stacked-${index + 1}`), o);
+            c.render();
+        }
+        total_groups += round1(last);
+        // total_groups += round1(10 * 1000 * (cumulative / 10000 / 1000));
+        // console.log(index, round3(tl.slope));
+
+        // })
+
+        // ---------------------------------------------------------------
+        // TODO: calculate how many points in the future - it is NOT days
+        console.log(`%c${group_name} | ${round2(cumulative).toLocaleString()} | ${round1(tl.calculateY(days.length * 2)).toLocaleString()}% | ${round1(tl.calculateY(days.length * 3)).toLocaleString()}% | SEED ${a.length}K`, 'color:orange;');
+        // ---------------------------------------------------------------
+
+        index++;
+        o = undefined;
+        all = undefined;
+    };
+    // console.log(`%cTOTAL GROUPS | $${round1(total_groups)}K | ${round2(total_groups / 30 * 100)}%`, 'color:orange;');
+    console.log(`%cTOTAL GROUPS | ${round1(total_groups).toLocaleString()}%`, 'color:orange;');
+    //#endregion
+
+    /** dipose objects */
+    open_positions = undefined;
+    all_orders = undefined;
+    all_symbols = undefined;
+    data = undefined;
+    bars = undefined;
 }

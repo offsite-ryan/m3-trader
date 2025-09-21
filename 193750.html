@@ -97,7 +97,7 @@
                     onclick="sell(bollinger_selected_symbol)">Sell</button>
                 <button id="sell_symbol" class="w3-button w3-right w3-round-large w3-large w3-padding"
                     style="background-color:#121212;border:1px solid;"
-                    onclick="buy(bollinger_selected_symbol, 500)">Buy</button>
+                    onclick="buy(bollinger_selected_symbol, +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">Buy</button>
             </div>
         </div>
         <br />
@@ -298,8 +298,8 @@
     let chart_symbols_stacked_2 = null;
     let chart_symbols_stacked_3 = null;
     let chart_symbols_stacked_4 = null;
-    let chart_symbols_stacked_5 = null;
-    let chart_symbols_stacked_6 = null;
+    // let chart_symbols_stacked_5 = null;
+    // let chart_symbols_stacked_6 = null;
 
 
     const isCrypto = localStorage.getItem('m3-trader-v5-crypto') === 'true' ? true : false;
