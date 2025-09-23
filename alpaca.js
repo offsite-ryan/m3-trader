@@ -221,7 +221,7 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
         };
         // algo = 'D';
         // algo = 'E';
-        algo = symbol.endsWith('USD') ? 'D' : 'D';
+        algo = symbol.endsWith('USD') ? 'D' : 'F';
         // algo = 'A';
         // algo = 'B';
 
@@ -291,6 +291,7 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
                 cumulative += v.gain;
                 v.gain_cumulative = cumulative;
                 cumulative_dollars += cumulative_dollars * (v.gain / 100);
+                // cumulative_dollars += 1000 * (v.gain / 100);
                 v.gain_dollars = cumulative_dollars;
             });
             g = trades.map((v) => v.gain).reduce((p, c) => p + c);
@@ -302,6 +303,7 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
         trades = undefined;
     });
 }
+
 // =================================================
 // TEST 4
 // =================================================
@@ -317,26 +319,29 @@ async function test4(symbol = 'OKLO', log = true) {
     const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
     const crypto = [
         // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
-        'AVAX/USD', 'BCH/USD', 'BTC/USD', 'CRV/USD', 'DOGE/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD', 'SUSHI/USD',
-        'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
+        'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'SUSHI/USD',
+        // 'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
     ].sort();
     const research_crypto = [
-        // 'PEPE/USD', 'XTC/USD', 'XRP/USD',
-        'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'GRT/USD', 'LTC/USD', 'SOL/USD', 'SHIB/USD', 'SUSHI/USD',
-        'BAT/USD', 'CRV/USD', 'DOT/USD', 'LINK/USD', 'SOL/USD', 'UNI/USD', 'YFI/USD', 'TRUMP/USD'
+        // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
+        'AVAX/USD', 'BCH/USD', 'BTC/USD', 'CRV/USD', 'DOGE/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD', 'SUSHI/USD',
+        'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
     ].sort();
     const research = [
         // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
         // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
         'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS', 'CVX',
         'IBIT', 'INTL', 'LEU', 'MDB', 'MP', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL', 'PM',
-        'QUBT', 'RKLB', 'SNOW', 'T', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT', 'Z'
+        'QUBT', 'RKLB', 'SMCI', 'SNOW', 'T', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT', 'Z'
     ].sort();
 
 
     //#region ADD BUTTONS
-    const add_buttons = (symbols, id) => {
-        let html = '';
+    const add_buttons = (symbols, id, title = 'Title') => {
+        let html = `<div 
+            id="title-${title}"
+            class="w3-col s4 m2 l1 _w3-margin w3-padding"
+            style="border:1px solid white;"><b>${title}</b></div>`;
         symbols.forEach((s) => {
             const has_position = open_positions.findIndex((v) => v.symbol === s.replace('/', ''));
             // console.log(s, has_position);
@@ -360,7 +365,7 @@ async function test4(symbol = 'OKLO', log = true) {
 
             html += `<div 
             class="w3-col s4 m2 l1 _w3-margin w3-padding"
-            style="border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
+            style="cursor:pointer;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
             onclick="test4('${s}')">
             ${icon}
             ${s.split('/')[0]}
@@ -394,6 +399,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // console.log(open_positions, all_orders);
 
     let total_groups = 0;
+    let total_groups_reinvest = 0;
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-15T00:00:00-04:00`));
     const start = new Date(new Date(`2024-07-29T00:00:00-0${tz}:00`));
@@ -407,7 +413,8 @@ async function test4(symbol = 'OKLO', log = true) {
     });
     let all_symbols = await Promise.all(promises);
 
-    let data = await analyze_days('E', symbol, '1D', start.toISOString(), end.toISOString());
+    // let data = await analyze_days('E', symbol, '1D', start.toISOString(), end.toISOString());
+    let data = all_symbols.filter((v) => v.symbol === symbol)[0];
     let bars = data.bars;
     const chart_annotations = data.trades;
     //#endregion
@@ -653,16 +660,21 @@ async function test4(symbol = 'OKLO', log = true) {
     // * GROUP SUMMARIES
     // * -------------------------------------
     console.log('----------------------------------------------------');
-    for await (const a of (init ? [favs, crypto, research, all_symbols.map((v) => v.symbol)] : [favs, crypto])) {
+    for await (const a of (init ? [favs, research, crypto, all_symbols.map((v) => v.symbol)] : [favs, research/*, crypto*/])) {
 
-        const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'CRYPTO' : (index === 2 ? 'RESEARCH' : 'ALL'));
+        const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
+        console.log(group_name);
         let all = all_symbols.filter((v) => a.indexOf(v.symbol) >= 0)
 
         const day_results = all;
         const gain_pct = all.map((v) => v.gain_pct).reduce((p, c) => p + c) / all.length;
 
         if (index < 3) {
-            add_buttons(a, index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-crypto' : 'symbol-buttons-bollinger'));
+            add_buttons(
+                a,
+                index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-crypto' : 'symbol-buttons-bollinger'),
+                group_name
+            );
         }
 
         let days = [];
@@ -683,11 +695,17 @@ async function test4(symbol = 'OKLO', log = true) {
         });
 
         const data = day_gains_cumulative;
+        const elem = document.getElementById(`title-symbols-stacked-${index + 1}`);
+        elem.style.fontSize = '20px';
+        elem.style.color = '#fff';
+        elem.innerHTML = `${group_name} | $${round(cumulative).toLocaleString()}`;
+        elem.innerHTML += ` | ${round(cumulative / (a.length * 1000) * 100)}%`;
+
         let o = deepClone(chart_area_spline_options);
-        o.title = {
-            text: `${group_name} | $${round(cumulative).toLocaleString()}`,
-            style: { fontSize: '22px', color: '#fff' }
-        };
+        // o.title = {
+        //     text: `${group_name} | $${round(cumulative).toLocaleString()}`,
+        //     style: { fontSize: '22px', color: '#fff' }
+        // };
         o.xaxis.type = 'datetime';
         o.chart.height = 200;
         o.series = [];
@@ -697,30 +715,35 @@ async function test4(symbol = 'OKLO', log = true) {
         o.yaxis.min = -5;
         // o.yaxis.max = 125;
         const last = o.series[0].data[o.series[0].data.length - 1].y;
-        const pct = cumulative / (a.length * 1000) * 100;
-        o.annotations.yaxis.push({ y: last, borderColor: '#fff', label: { text: round1(pct) + '%', style: { fontSize: '20px' } } });
+        // const pct = cumulative / (a.length * 1000) * 100;
+        // o.annotations.yaxis.push({ y: last, borderColor: '#fff', label: { text: round1(pct) + '%', style: { fontSize: '20px' } } });
         o.yaxis.labels.formatter = function (x) {
             return `$${x.toLocaleString()}`;
         }
-        let c = index === 0 ? chart_symbols_stacked_1 : (index === 1 ? chart_symbols_stacked_2 : (index === 1 ? chart_symbols_stacked_3 : chart_symbols_stacked_4))
+        let c = index === 0 ? chart_symbols_stacked_1 : (index === 1 ? chart_symbols_stacked_2 : (index === 2 ? chart_symbols_stacked_3 : chart_symbols_stacked_4))
         if (c) {
-            c.destroy();
-            // c.updateOptions({
-            //     title: o.title,
-            //     series: o.series,
-            //     annotations: o.annotations,
-            // })
+            // c.destroy();
+            c.updateOptions({
+                //     title: o.title,
+                series: o.series,
+                //     annotations: o.annotations,
+            })
         } else {
             c = new ApexCharts(document.querySelector(`#chart-symbols-stacked-${index + 1}`), o);
             c.render();
+            index === 0 ? chart_symbols_stacked_1 = c : (index === 1 ? chart_symbols_stacked_2 = c : (index === 2 ? chart_symbols_stacked_3 = c : chart_symbols_stacked_4 = c))
         }
         total_groups += index < 3 ? round1(last) : 0;
         // total_groups += round1(10 * 1000 * (cumulative / 10000 / 1000));
         // console.log(index, round3(tl.slope));
 
         // })
-        const cumulative_g = round2(all.map((v)=>v.gain_dollars).reduce((p,c)=>p+c))
+        const cumulative_g = round2(all.map((v) => v.gain_dollars).reduce((p, c) => p + c))
+        total_groups_reinvest += index < 3 ? round1(cumulative_g) : 0;
         console.log(`%c${group_name} | ${cumulative_g.toLocaleString()} | ${round(cumulative_g / (1000 * a.length) * 100)} %`, 'color:aquamarine');
+        if (index < 3) {
+            document.getElementById(`title-${group_name}`).innerHTML += `<br/><div style="border-top:1px solid;">$<b>${round(cumulative_g / 1000).toLocaleString()}</b> K</div>`
+        }
 
         // ---------------------------------------------------------------
         // TODO: calculate how many points in the future - it is NOT days
@@ -738,8 +761,12 @@ async function test4(symbol = 'OKLO', log = true) {
     };
     // console.log(`%cTOTAL GROUPS | $${round1(total_groups)}K | ${round2(total_groups / 30 * 100)}%`, 'color:orange;');
     // console.log('----------------------------------------------------');
+    console.log(`%cTOTAL GROUPS REINVEST | $${round(total_groups_reinvest).toLocaleString()}`, 'color:aquamarine;');
     console.log(`%cTOTAL GROUPS | $${round(total_groups).toLocaleString()}`, 'color:coral;');
     //#endregion
+
+    /** log the data for analysis */
+    // console.log(all_symbols);
 
     /** dipose objects */
     open_positions = undefined;
