@@ -316,11 +316,14 @@ async function test4(symbol = 'OKLO', log = true) {
 
 
     // const favs = ['GE',].sort();
+    // 
+    // const favs = ['FTI', 'BKR', 'VAL', 'KGS'].sort();
     const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
     const crypto = [
-        // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
+        // 'BAT/USD', 'PEPE/USD', 
+        // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD', 
         'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'SUSHI/USD',
-        // 'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
+        'GRT/USD', 'SOL/USD', 'UNI/USD', 'XRP/USD',
     ].sort();
     const research_crypto = [
         // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
@@ -328,11 +331,13 @@ async function test4(symbol = 'OKLO', log = true) {
         'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
     ].sort();
     const research = [
+        // 'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
         // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
         // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
-        'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS', 'CVX',
-        'IBIT', 'INTL', 'LEU', 'MDB', 'MP', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL', 'PM',
-        'QUBT', 'RKLB', 'SMCI', 'SNOW', 'T', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT', 'Z'
+        // 'Z', 'T', 'MP', 'CVX', 'PM', 
+        'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS', 
+        'IBIT', 'INTL', 'LEU', 'MDB', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL', 
+        'QUBT', 'RKLB', 'SMCI', 'SNOW', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT', 
     ].sort();
 
 
@@ -340,7 +345,7 @@ async function test4(symbol = 'OKLO', log = true) {
     const add_buttons = (symbols, id, title = 'Title') => {
         let html = `<div 
             id="title-${title}"
-            class="w3-col s4 m2 l1 _w3-margin w3-padding"
+            class="w3-col s12 m4 l2 _w3-margin w3-padding"
             style="border:1px solid white;"><b>${title}</b></div>`;
         symbols.forEach((s) => {
             const has_position = open_positions.findIndex((v) => v.symbol === s.replace('/', ''));
@@ -361,7 +366,10 @@ async function test4(symbol = 'OKLO', log = true) {
             const should_buy = current.c >= current.sma;
             const should_sell = current.c <= current.lb;
             // console.log(s, should_sell);
-            const icon = ['LEU', 'MP', 'TPB', 'QUBT'].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
+            const icon = [
+                'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
+                'LEU', 'MP', 'TPB', 'QUBT'
+            ].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
 
             html += `<div 
             class="w3-col s4 m2 l1 _w3-margin w3-padding"
@@ -663,7 +671,7 @@ async function test4(symbol = 'OKLO', log = true) {
     for await (const a of (init ? [favs, research, crypto, all_symbols.map((v) => v.symbol)] : [favs, research/*, crypto*/])) {
 
         const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
-        console.log(group_name);
+        // console.log(group_name);
         let all = all_symbols.filter((v) => a.indexOf(v.symbol) >= 0)
 
         const day_results = all;
@@ -672,7 +680,7 @@ async function test4(symbol = 'OKLO', log = true) {
         if (index < 3) {
             add_buttons(
                 a,
-                index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-crypto' : 'symbol-buttons-bollinger'),
+                index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger' : 'symbol-buttons-bollinger-crypto'),
                 group_name
             );
         }
@@ -741,8 +749,11 @@ async function test4(symbol = 'OKLO', log = true) {
         const cumulative_g = round2(all.map((v) => v.gain_dollars).reduce((p, c) => p + c))
         total_groups_reinvest += index < 3 ? round1(cumulative_g) : 0;
         console.log(`%c${group_name} | ${cumulative_g.toLocaleString()} | ${round(cumulative_g / (1000 * a.length) * 100)} %`, 'color:aquamarine');
+        
+        /** GROUP TITLE CARD */
         if (index < 3) {
-            document.getElementById(`title-${group_name}`).innerHTML += `<br/><div style="border-top:1px solid;">$<b>${round(cumulative_g / 1000).toLocaleString()}</b> K</div>`
+            document.getElementById(`title-${group_name}`)
+                .innerHTML += `<br/><div style="border-top:1px solid;">$<b>${round(cumulative_g / 1000).toLocaleString()} K</b> | ${round(cumulative_g / (1000 * a.length) * 100)}% | ${a.length}K</div>`
         }
 
         // ---------------------------------------------------------------
