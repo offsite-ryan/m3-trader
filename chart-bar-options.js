@@ -39,6 +39,24 @@ const chart_bar_options = {
                 color: '#fff',
             },
         },
+        treemap: {
+            enableShades: true,
+            shadeIntensity: 0.75,
+            colorScale: {
+                ranges: [
+                    {
+                        from: -500,
+                        to: 0,
+                        color: colors.red
+                    },
+                    {
+                        from: 0.001,
+                        to: 500,
+                        color: '#00b90a'
+                    }
+                ]
+            }
+        }
     },
     colors: ['#00b90a'],
     stroke: {

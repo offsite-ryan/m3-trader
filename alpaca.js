@@ -206,6 +206,7 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
             D: { buy: (v, i) => v.c >= v.sma, sell: (v, i) => v.c <= v.lb },
             E: { buy: (v, i) => v.c >= v.sma, sell: (v, i) => v.c < v.sma },
             F: { buy: (v, i) => v.c >= v.lb, sell: (v, i) => v.c < v.lb }, // ***
+            F0: { buy: (v, i) => v.c >= v.lb, sell: (v, i) => v.c < v.lb }, // ***
             F1: { buy: (v, i) => v.dow !== 5 && v.o >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
             F2: { buy: (v, i) => v.dow !== 5 && v.c >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
             G: { buy: (v, i) => v.c >= v.lb && v.p5 >= v.c, sell: (v, i) => v.c < v.lb },
@@ -335,9 +336,10 @@ async function test4(symbol = 'OKLO', log = true) {
         // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
         // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
         // 'Z', 'T', 'MP', 'CVX', 'PM', 
-        'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS', 
-        'IBIT', 'INTL', 'LEU', 'MDB', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL', 
-        'QUBT', 'RKLB', 'SMCI', 'SNOW', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT', 
+        'HOOD', 
+        'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS',
+        'IBIT', 'INTL', 'LEU', 'MDB', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL',
+        'QUBT', 'RKLB', 'SMCI', 'SNOW', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT',
     ].sort();
 
 
@@ -610,7 +612,6 @@ async function test4(symbol = 'OKLO', log = true) {
     // orders().then((v)=>console.log(v.map((v)=>{return {s: v.symbol, side: v.side, c: (v.filled_avg_price * v.filled_qty), d: new Date(v.filled_at).toLocaleString(), e: new Date(v.filled_at).getTime() };}).filter((v)=>v.e > new Date('2025-08-25T23:59:59'))));
 
     o = deepClone(chart_bar_options);
-    // o.chart.type = 'treemap';
     o.chart.animations = { enabled: false };
     // unrealized_plpc
     o.series[0].data = open_positions.map((v) => {
@@ -627,12 +628,20 @@ async function test4(symbol = 'OKLO', log = true) {
         return `$${x.toLocaleString()}`;
     }
     o.annotations.points = [];
+    if (true || mobile_view) {
+        o.chart.type = 'treemap';
+        o.annotations.yaxis = [];
+        o.dataLabels.enabled = true;
+    }
     o.chart.height = isMobile() ? 350 : 225;
     o.dataLabels = {
-        offsetY: -24,
+        // offsetY: mobile_view ? 0 :  -24,
         style: {
-            fontSize: '16px',
-        }
+            fontSize: '14px',
+        },
+        formatter: function (text, op) {
+            return [text, op.value]
+        },
     };
     if (chart_positions) {
         chart_positions.destroy();
@@ -749,7 +758,7 @@ async function test4(symbol = 'OKLO', log = true) {
         const cumulative_g = round2(all.map((v) => v.gain_dollars).reduce((p, c) => p + c))
         total_groups_reinvest += index < 3 ? round1(cumulative_g) : 0;
         console.log(`%c${group_name} | ${cumulative_g.toLocaleString()} | ${round(cumulative_g / (1000 * a.length) * 100)} %`, 'color:aquamarine');
-        
+
         /** GROUP TITLE CARD */
         if (index < 3) {
             document.getElementById(`title-${group_name}`)
