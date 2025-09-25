@@ -1,0 +1,74 @@
+<!-- M3-TRADER Application Overview -->
+
+<h2>M3-TRADER Application Overview</h2>
+
+<h3>1. Purpose</h3>
+<ul>
+    <li><strong>M3-TRADER</strong> allows users to analyze, visualize, and (optionally) trade stocks and
+        cryptocurrencies using technical indicators like Bollinger Bands.</li>
+    <li>It connects to the <a href="https://alpaca.markets/" target="_blank">Alpaca Markets API</a> for real-time and
+        historical financial data.</li>
+</ul>
+
+<h3>2. How It Works</h3>
+
+<h4>User Authentication</h4>
+<ul>
+    <li>On first load (<code>index.html</code>), users are prompted to enter their <strong>API Key</strong> and
+        <strong>Secret</strong> (from Alpaca or another provider).</li>
+    <li>These credentials are stored in the browser’s <code>localStorage</code> for future sessions.</li>
+</ul>
+
+<h4>Main Dashboard (<code>193750.html</code>)</h4>
+<ul>
+    <li>After authentication, users access a dashboard with:
+        <ul>
+            <li><strong>Charts</strong>: Visualizations of price data, technical indicators, and trading signals.</li>
+            <li><strong>Positions</strong>: Current open positions and their performance.</li>
+            <li><strong>Buy/Sell Controls</strong>: Buttons to execute trades (if enabled).</li>
+            <li><strong>Symbol Groups</strong>: Quick access to favorite stocks, research stocks, and cryptocurrencies.
+            </li>
+            <li><strong>Configuration Modal</strong>: Allows updating API credentials and toggling between "Trade" and
+                "View" modes.</li>
+        </ul>
+    </li>
+</ul>
+
+<h4>Data &amp; Analysis (<code>alpaca.js</code>)</h4>
+<ul>
+    <li>The app fetches price bars (candles) for stocks and crypto, calculates Bollinger Bands, trendlines, and
+        simulates or executes trades based on various algorithms.</li>
+    <li>It supports both <strong>view-only</strong> and <strong>live trading</strong> modes.</li>
+</ul>
+
+<h4>Visualization</h4>
+<ul>
+    <li>Uses <a href="https://apexcharts.com/" target="_blank">ApexCharts</a> for interactive charts.</li>
+    <li>Shows cumulative gains, trade signals, and group performance summaries.</li>
+</ul>
+
+<h3>3. Key Features</h3>
+<ul>
+    <li><strong>Decentralized</strong>: Runs entirely in the browser; no backend server required for the UI.</li>
+    <li><strong>API Integration</strong>: Connects to Alpaca for market data and trading.</li>
+    <li><strong>Technical Analysis</strong>: Implements Bollinger Bands, trendlines, and multiple trading algorithms.
+    </li>
+    <li><strong>Trade Simulation</strong>: Can simulate strategies or execute real trades (if enabled).</li>
+    <li><strong>Responsive UI</strong>: Works on desktop and mobile devices.</li>
+    <li><strong>Local Storage</strong>: Remembers user settings and credentials securely in the browser.</li>
+</ul>
+
+<h3>4. Typical User Flow</h3>
+<ol>
+    <li><strong>Enter API Key/Secret</strong> → <strong>Apply</strong>.</li>
+    <li><strong>Dashboard Loads</strong>: See charts, positions, and trading controls.</li>
+    <li><strong>Analyze or Trade</strong>: Use the UI to analyze symbols, view performance, and (optionally) buy/sell.
+    </li>
+    <li><strong>Adjust Settings</strong>: Open the configuration modal to update credentials or switch between
+        view/trade modes.</li>
+</ol>
+
+<p><strong>In summary:</strong><br>
+    M3-TRADER is a browser-based trading dashboard for stocks and crypto, featuring technical analysis, simulated or
+    real trading, and a customizable, user-friendly interface.
+</p>
