@@ -310,14 +310,12 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
 // =================================================
 async function test4(symbol = 'OKLO', log = true) {
 
+    //#region VARIABLES
     const INVESTMENT_SEED = 1000;
     const ALGORITHM = 'C1';
     const init = (bollinger_selected_symbol === null);
     bollinger_selected_symbol = symbol;
 
-
-    // const favs = ['GE',].sort();
-    // 
     // const favs = ['FTI', 'BKR', 'VAL', 'KGS'].sort();
     const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
     const crypto = [
@@ -341,7 +339,7 @@ async function test4(symbol = 'OKLO', log = true) {
         'IBIT', 'INTL', 'LEU', 'MDB', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL',
         'QUBT', 'RKLB', 'SMCI', 'SNOW', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT',
     ].sort();
-
+    //#endregion
 
     //#region ADD BUTTONS
     const add_buttons = (symbols, id, title = 'Title') => {
@@ -709,8 +707,10 @@ async function test4(symbol = 'OKLO', log = true) {
         let month = null;
         trade_days.forEach((v, i) => {
             let filtered = all_trades.filter((v2) => v2.e2 === v);
+            const num_symbols = filtered.map((v) => v.s).filter((v, i, a) => i === a.indexOf(v)).length;
             const trades_total = filtered.length > 0 ? filtered.map((v2) => v2.gain).reduce((p, c) => p + c) : 0;
-            const gain = (trades_total / 100) * (filtered.map((v) => v.s).filter((v, i, a) => i === a.indexOf(v)).length * 1000);
+            const gain = (trades_total / 100) * (num_symbols * 1000);
+            // const gain = (trades_total / 100) * (cumulative / num_symbols); // TODO: WONT WORK
             cumulative += gain;
             days.push({ x: v, y: round3(cumulative) });
 
@@ -738,10 +738,9 @@ async function test4(symbol = 'OKLO', log = true) {
         });
 
 
+        /** get rid of the high and the low values */
         const temp = Object.keys(summary_months).map((k) => summary_months[k]).sort((a, b) => b - a);
         const t = temp.slice(1, -1);
-        // console.log(temp.sort((a, b) => b - a));
-        // console.log(t);
 
         o = deepClone(chart_bar_options);
         o.chart.animations = { enabled: false };
@@ -767,10 +766,12 @@ async function test4(symbol = 'OKLO', log = true) {
             },
         };
         const avg = round((t.reduce((p, c) => p + c)) / (t.length));
+        // const avg2 = round((temp.reduce((p, c) => p + c)) / (temp.length));
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.fontSize = '18px';
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.color = '#fff';
         document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML = `${group_name} | $${round(summary_total).toLocaleString()} | AVG: $${avg.toLocaleString()}`;
         o.annotations.yaxis.push({ y: avg, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
+        // o.annotations.yaxis.push({ y: avg2, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
         let c = index === 0 ? chart_symbols_stacked_5 : (index === 1 ? chart_symbols_stacked_6 : (index === 2 ? chart_symbols_stacked_7 : chart_symbols_stacked_8))
         if (c) {
             // c.destroy();
