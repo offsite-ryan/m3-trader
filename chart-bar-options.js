@@ -88,6 +88,9 @@ const chart_bar_options = {
             return `$${round(val).toLocaleString()}`;
         }
     },
+    tooltip: {
+        style:{ fontSize: '16px' },
+    },
     yaxis: {
         // title: {
         //     text: 'Growth',
