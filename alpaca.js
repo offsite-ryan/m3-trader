@@ -373,6 +373,8 @@ async function test4(symbol = 'OKLO', log = true) {
                 'LEU', 'MP', 'TPB', 'QUBT'
             ].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
 
+            // up carot: &#9650;  &#9651;
+            // down caret: &#9660;  &#9661;
             html += `<div 
             class="w3-col s4 m2 l1 _w3-margin w3-padding"
             style="cursor:pointer;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
