@@ -315,30 +315,44 @@ async function test4(symbol = 'OKLO', log = true) {
     const ALGORITHM = 'C1';
     const init = (bollinger_selected_symbol === null);
     bollinger_selected_symbol = symbol;
+    //#endregion
 
-    // const favs = ['FTI', 'BKR', 'VAL', 'KGS'].sort();
-    const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
-    const crypto = [
-        // 'BAT/USD', 'PEPE/USD', 
-        // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD', 
-        'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'SUSHI/USD',
-        'GRT/USD', 'SOL/USD', 'UNI/USD', 'XRP/USD',
-    ].sort();
-    const research_crypto = [
-        // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
-        'AVAX/USD', 'BCH/USD', 'BTC/USD', 'CRV/USD', 'DOGE/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD', 'SUSHI/USD',
-        'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
-    ].sort();
-    const research = [
-        // 'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
-        // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
-        // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
-        // 'Z', 'T', 'MP', 'CVX', 'PM', 
-        'HOOD',
-        'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS',
-        'IBIT', 'INTL', 'LEU', 'MDB', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL',
-        'QUBT', 'RKLB', 'SMCI', 'SNOW', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT',
-    ].sort();
+    //#region SYMBOLS
+    const favs = {
+        seed_dollars: 4 * 1000,
+        symbols: ['FTI', 'BKR', 'VAL', 'KGS'].sort()
+    }
+    // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
+    const crypto = {
+        seed_dollars: 10 * 1000,
+        symbols: [
+            // 'BAT/USD', 'PEPE/USD', 
+            // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD', 
+            'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'SUSHI/USD',
+            'GRT/USD', 'SOL/USD', 'UNI/USD', 'XRP/USD',
+        ].sort()
+    };
+    // const research_crypto = {
+    //     seed_dollars: 10 * 1000,
+    //     symbols: [
+    //         // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
+    //         'AVAX/USD', 'BCH/USD', 'BTC/USD', 'CRV/USD', 'DOGE/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD', 'SUSHI/USD',
+    //         'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
+    //     ].sort()
+    // }
+    const research = {
+        seed_dollars: 75 * 1000,
+        symbols: [
+            'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
+            // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
+            // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
+            // 'Z', 'T', 'MP', 'CVX', 'PM', 
+            'HOOD',
+            'AMD', 'AVGO', 'BETZ', 'BX', 'COIN', 'CVS',
+            'IBIT', 'INTL', 'LEU', 'MDB', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL',
+            'QUBT', 'RKLB', 'SMCI', 'SNOW', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT',
+        ].sort()
+    }
     //#endregion
 
     //#region ADD BUTTONS
@@ -417,7 +431,7 @@ async function test4(symbol = 'OKLO', log = true) {
     let index = 0;
 
     // console.log('----------------------------------------------------');
-    const all_symbols_names = [...favs, ...crypto, ...research];
+    const all_symbols_names = [...favs.symbols, ...crypto.symbols, ...research.symbols];
     const promises = all_symbols_names.map((s) => {
         return analyze_days(ALGORITHM, s, '1D', start.toISOString(), end.toISOString(), 100)
     });
@@ -677,18 +691,18 @@ async function test4(symbol = 'OKLO', log = true) {
     // * GROUP SUMMARIES
     // * -------------------------------------
     console.log('----------------------------------------------------');
-    for await (const a of (init ? [favs, research, crypto, all_symbols.map((v) => v.symbol)] : [favs, research/*, crypto*/])) {
+    for await (const a of (init ? [favs, research, crypto, { seed_dollars: favs.seed_dollars + research.seed_dollars + crypto.seed_dollars, symbols: all_symbols_names }] : [favs, research/*, crypto.symbols*/])) {
 
         const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
         // console.log(group_name);
-        let all = all_symbols.filter((v) => a.indexOf(v.symbol) >= 0)
+        let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0)
 
-        const day_results = all;
-        const gain_pct = all.map((v) => v.gain_pct).reduce((p, c) => p + c) / all.length;
+        // const day_results = all;
+        // const gain_pct = all.map((v) => v.gain_pct).reduce((p, c) => p + c) / all.length;
 
         if (index < 3) {
             add_buttons(
-                a,
+                a.symbols,
                 index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger' : 'symbol-buttons-bollinger-crypto'),
                 group_name
             );
@@ -709,8 +723,8 @@ async function test4(symbol = 'OKLO', log = true) {
             let filtered = all_trades.filter((v2) => v2.e2 === v);
             const num_symbols = filtered.map((v) => v.s).filter((v, i, a) => i === a.indexOf(v)).length;
             const trades_total = filtered.length > 0 ? filtered.map((v2) => v2.gain).reduce((p, c) => p + c) : 0;
-            const gain = (trades_total / 100) * (num_symbols * 1000);
-            // const gain = (trades_total / 100) * (cumulative / num_symbols); // TODO: WONT WORK
+            // const gain = (trades_total / 100) * (num_symbols * 1000);
+            const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length); // TODO: WONT WORK
             cumulative += gain;
             days.push({ x: v, y: round3(cumulative) });
 
@@ -758,18 +772,25 @@ async function test4(symbol = 'OKLO', log = true) {
         }
         o.annotations.points = [];
         o.dataLabels = {
+            enabled: true,
+            offsetY: -24,
             style: {
-                fontSize: '14px',
+                fontSize: '16px',
             },
             formatter: function (text, op) {
-                return [text, op.value]
+                let v = +(text);
+                return Math.abs(v) > 1000 ? round(v / 1000) + 'K' : v;
+                // v = v >= 1000 ? v /1000 : v;
+                // return round1(v / 1000) + 'K';
             },
         };
         const avg = round((t.reduce((p, c) => p + c)) / (t.length));
         // const avg2 = round((temp.reduce((p, c) => p + c)) / (temp.length));
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.fontSize = '18px';
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.color = '#fff';
-        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML = `${group_name} | $${round(summary_total).toLocaleString()} | AVG: $${avg.toLocaleString()}`;
+        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML = `${group_name} | $${round(summary_total / 1000).toLocaleString()}K`;
+        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | AVG: $${avg.toLocaleString()}`;
+        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
         o.annotations.yaxis.push({ y: avg, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
         // o.annotations.yaxis.push({ y: avg2, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
         let c = index === 0 ? chart_symbols_stacked_5 : (index === 1 ? chart_symbols_stacked_6 : (index === 2 ? chart_symbols_stacked_7 : chart_symbols_stacked_8))
@@ -792,7 +813,7 @@ async function test4(symbol = 'OKLO', log = true) {
         elem.style.fontSize = '18px';
         elem.style.color = '#fff';
         elem.innerHTML = `${group_name} | $${round(cumulative).toLocaleString()}`;
-        elem.innerHTML += ` | ${round(cumulative / (a.length * 1000) * 100)}%`;
+        elem.innerHTML += ` | ${round(cumulative / (a.symbols.length * 1000) * 100)}%`;
 
         o = deepClone(chart_area_spline_options);
         // o.title = {
@@ -838,7 +859,7 @@ async function test4(symbol = 'OKLO', log = true) {
         /** GROUP TITLE CARD */
         if (index < 3) {
             document.getElementById(`title-${group_name}`)
-                .innerHTML += `<br/><div style="border-top:1px solid;">$<b>${round(cumulative_g / 1000).toLocaleString()} K</b> | ${round(cumulative_g / (1000 * a.length) * 100)}% | ${a.length}K</div>`
+                .innerHTML += `<br/><div style="border-top:1px solid;">$<b>${round(cumulative_g / 1000).toLocaleString()} K</b> | ${round(cumulative_g / (1000 * a.length) * 100)}% | ${a.symbols.length}K</div>`
         }
 
         let months_total = 0;
@@ -851,7 +872,7 @@ async function test4(symbol = 'OKLO', log = true) {
 
         // ---------------------------------------------------------------
         // TODO: calculate how many points in the future - it is NOT days
-        console.log(`%c${group_name} | ${round2(cumulative).toLocaleString()} | ${round1(tl.calculateY(days.length * 2)).toLocaleString()} | ${round1(tl.calculateY(days.length * 3)).toLocaleString()} | SEED ${a.length}K`, 'color:orange;');
+        console.log(`%c${group_name} | ${round2(cumulative).toLocaleString()} | ${round1(tl.calculateY(days.length * 2)).toLocaleString()} | ${round1(tl.calculateY(days.length * 3)).toLocaleString()} | SEED ${a.symbols.length}K`, 'color:orange;');
         // ---------------------------------------------------------------
 
         index++;
