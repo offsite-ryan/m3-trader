@@ -291,9 +291,9 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
             trades.forEach((v) => {
                 cumulative += v.gain;
                 v.gain_cumulative = cumulative;
-                cumulative_dollars += cumulative_dollars * (v.gain / 100);
-                // cumulative_dollars += 1000 * (v.gain / 100);
                 v.gain_dollars = cumulative_dollars;
+                // cumulative_dollars += 1000 * (v.gain / 100);
+                cumulative_dollars += cumulative_dollars * (v.gain / 100);
             });
             // g = trades.map((v) => v.gain).reduce((p, c) => p + c);
             g = reduceArray(trades.map((v) => v.gain));
@@ -323,7 +323,7 @@ async function test4(symbol = 'OKLO', log = true) {
         favs: {
             name: 'FAVS',
             seed_dollars: 1 * 1000,
-            symbols: ['ETSY', 'SNDK', ].sort()
+            symbols: ['ETSY', 'SNDK',].sort()
             // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
         },
         // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
@@ -431,6 +431,7 @@ async function test4(symbol = 'OKLO', log = true) {
 
     let total_groups = 0;
     let total_groups_reinvest = 0;
+    let chart_data_reivest = [];
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-15T00:00:00-04:00`));
     const start = new Date(new Date(`2024-07-01T00:00:00-0${tz}:00`));
@@ -864,6 +865,11 @@ async function test4(symbol = 'OKLO', log = true) {
         total_groups += index < 3 ? round1(last) : 0;
 
         // })
+        let cumulative_temp = 0;
+        all.map((v) => { cumulative_temp += v.gain_dollars; chart_data_reivest.push(cumulative_temp);  return cumulative_temp; });
+        console.log('----------------------------------------------------');
+        console.log(`%c${group_name} | CUMULATIVE |  $${round2(cumulative_temp).toLocaleString()} | $${a.seed_dollars / 1000}K`, 'color:yellow;');
+        // console.log(chart_data_reivest);
         const cumulative_g = all.length > 0 ? round2(all.map((v) => v.gain_dollars).reduce((p, c) => p + c)) : 0;
         total_groups_reinvest += index < 3 ? round1(cumulative_g) : 0;
         // console.log(`%c${group_name} | ${cumulative_g.toLocaleString()} | ${round(cumulative_g / (1000 * a.length) * 100)} %`, 'color:aquamarine');
@@ -950,7 +956,7 @@ async function test4(symbol = 'OKLO', log = true) {
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.fontSize = '18px';
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.color = '#fff';
         document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML = `${name} | $${round(o.series[0].data.map((v) => v.y).reduce((p, c) => p + c) / 1000).toLocaleString()}K`;
-        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | AVG: $${avg.toLocaleString()}`;
+        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | TAVG: $${avg.toLocaleString()}`;
         document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | AVG: $${avg_all.toLocaleString()}`;
         // document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
         o.annotations.yaxis.push({ y: avg, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
