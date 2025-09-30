@@ -57,6 +57,27 @@ function table(...args) {
     }
 }
 
+function reduceArray(arr, defaultValue = 0) {
+    if (arr.length === 0) return defaultValue;
+    return arr.reduce((p, c) => p + c, 0);
+}
+/**
+ * get number of months between 2 dates
+ * Ensure date1 is the earlier date and date2 is the later date for consistent calculation
+ * @returns number of months between date1 and date2
+ */
+function getMonthDifference(date1, date2) {
+    // Ensure date1 is the earlier date and date2 is the later date for consistent calculation
+    const startDate = date1 < date2 ? date1 : date2;
+    const endDate = date1 < date2 ? date2 : date1;
+
+    let months = (endDate.getFullYear() - startDate.getFullYear()) * 12;
+    months -= startDate.getMonth();
+    months += endDate.getMonth();
+
+    return months;
+}
+
 // /** download data file */
 async function download(filename, obj) {
     const contents = JSON.stringify(obj, null, 2);
