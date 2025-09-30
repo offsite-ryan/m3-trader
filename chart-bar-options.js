@@ -89,9 +89,10 @@ const chart_bar_options = {
         }
     },
     tooltip: {
-        style:{ fontSize: '16px' },
+        style: { fontSize: '16px' },
     },
     yaxis: {
+
         // title: {
         //     text: 'Growth',
         // },
