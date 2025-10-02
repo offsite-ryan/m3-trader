@@ -184,7 +184,7 @@ let day_results = [];
 // =================================================
 // ANALYZE DAYS
 // =================================================
-async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_OF_YEAR, end = new Date().toISOString(), delay = 0) {
+async function analyze_days(algo = 'E', symbol, timeframe = '1D', seed, start = START_OF_YEAR, end = new Date().toISOString(), delay = 0) {
     return new Promise(async (resolve) => {
         await sleep(delay);
 
@@ -287,12 +287,14 @@ async function analyze_days(algo = 'E', symbol, timeframe = '1D', start = START_
                 }
             });
             let cumulative = 0;
-            let cumulative_dollars = 1000;
+            let cumulative_dollars = seed;
             trades.forEach((v) => {
                 cumulative += v.gain;
                 v.gain_cumulative = cumulative;
                 v.gain_dollars = cumulative_dollars;
+                // /** FIXED INVESTMENT */
                 // cumulative_dollars += 1000 * (v.gain / 100);
+                // /** RE-INVEST GAINS (+/-) */
                 cumulative_dollars += cumulative_dollars * (v.gain / 100);
             });
             // g = trades.map((v) => v.gain).reduce((p, c) => p + c);
@@ -322,7 +324,7 @@ async function test4(symbol = 'OKLO', log = true) {
     const symbol_groups = {
         favs: {
             name: 'FAVS',
-            seed_dollars: 1 * 1000,
+            seed_dollars: 2 * 1000,
             symbols: ['ETSY', 'SNDK',].sort()
             // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
         },
@@ -347,7 +349,7 @@ async function test4(symbol = 'OKLO', log = true) {
         // }
         research: {
             name: 'R & D',
-            seed_dollars: 50 * 1000,
+            seed_dollars: 25 * 1000,
             symbols: [
                 'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
                 // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
@@ -433,7 +435,7 @@ async function test4(symbol = 'OKLO', log = true) {
     let total_groups_reinvest = 0;
     let chart_data_reivest = [];
     const tz = new Date().getTimezoneOffset() / 60;
-    // const start = new Date(new Date(`2024-12-15T00:00:00-04:00`));
+    // const start = new Date(new Date(`2024-12-01T00:00:00-04:00`));
     const start = new Date(new Date(`2024-07-01T00:00:00-0${tz}:00`));
     const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
     let index = 0;
@@ -442,7 +444,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // const all_symbols_names = [...favs.symbols, ...crypto.symbols, ...research.symbols];
     const all_symbols_names = [...symbol_groups.favs.symbols, ...symbol_groups.crypto.symbols, ...symbol_groups.research.symbols];
     const promises = all_symbols_names.map((s) => {
-        return analyze_days(ALGORITHM, s, '1D', start.toISOString(), end.toISOString(), 100)
+        return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
     });
     let all_symbols = await Promise.all(promises);
 
@@ -457,6 +459,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // * CHART YTD DAYS
     // * ------------------------
     let o = deepClone(chart_area_spline_options);
+    // let o = deepClone(chart_bar_options);
     o.chart.height = 500;
     o.chart.toolbar = { show: false };
     o.chart.sparkline = false;
@@ -737,7 +740,8 @@ async function test4(symbol = 'OKLO', log = true) {
             const num_symbols = filtered.map((v) => v.s).filter((v, i, a) => i === a.indexOf(v)).length;
             const trades_total = filtered.length > 0 ? filtered.map((v2) => v2.gain).reduce((p, c) => p + c) : 0;
             // const gain = (trades_total / 100) * (num_symbols * 1000);
-            const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length); // TODO: REVIEW NUMBERS !!!
+            // const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length); // TODO: REVIEW NUMBERS !!!
+            const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length) * filtered.length;
             cumulative += gain;
             days.push({ x: v, y: round3(cumulative) });
 
@@ -794,7 +798,7 @@ async function test4(symbol = 'OKLO', log = true) {
             },
             formatter: function (text, op) {
                 let v = +(text);
-                return Math.abs(v) > 1000 ? round(v / 1000) + 'K' : v;
+                return Math.abs(v) > 1000 ? round(v / 1000) + 'K' : round1(v);
                 // v = v >= 1000 ? v /1000 : v;
                 // return round1(v / 1000) + 'K';
             },
@@ -866,9 +870,9 @@ async function test4(symbol = 'OKLO', log = true) {
 
         // })
         let cumulative_temp = 0;
-        all.map((v) => { cumulative_temp += v.gain_dollars; chart_data_reivest.push(cumulative_temp);  return cumulative_temp; });
+        all.map((v) => { cumulative_temp += v.gain_dollars; chart_data_reivest.push(cumulative_temp); return cumulative_temp; });
         console.log('----------------------------------------------------');
-        console.log(`%c${group_name} | CUMULATIVE |  $${round2(cumulative_temp).toLocaleString()} | $${a.seed_dollars / 1000}K`, 'color:yellow;');
+        console.log(`%c${group_name} | CUMULATIVE |  $${round2(cumulative_temp).toLocaleString()} | $${a.seed_dollars / 1000}K | ${round(cumulative_temp / a.seed_dollars * 100)}%`, 'color:yellow;');
         // console.log(chart_data_reivest);
         const cumulative_g = all.length > 0 ? round2(all.map((v) => v.gain_dollars).reduce((p, c) => p + c)) : 0;
         total_groups_reinvest += index < 3 ? round1(cumulative_g) : 0;
@@ -914,6 +918,9 @@ async function test4(symbol = 'OKLO', log = true) {
         const temp = Object.keys(values).map((k) => values[k]).sort((a, b) => b - a);
         const t = temp.slice(1, -1);
 
+        // console.log('----------------------------------------------------');
+        // console.log('CHART MONTHLY');
+        // console.log('----------------------------------------------------');
         o = deepClone(chart_bar_options);
         o.chart.animations = { enabled: false };
         o.chart.height = 300;
@@ -949,6 +956,7 @@ async function test4(symbol = 'OKLO', log = true) {
                 // return round1(v / 1000) + 'K';
             },
         };
+        o.yaxis.min = -15 * 1000;
         const avg = t.length > 0 ? round((t.reduce((p, c) => p + c)) / (t.length)) : 0;
         const avg_all = temp.length > 0 ? round((temp.reduce((p, c) => p + c)) / (temp.length)) : 0;
 
