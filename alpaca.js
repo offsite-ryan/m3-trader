@@ -757,13 +757,14 @@ async function test4(symbol = 'OKLO', log = true) {
         symbol_groups.favs,
         symbol_groups.research,
         symbol_groups.crypto,
-        {
-            seed_dollars: symbol_groups.favs.seed_dollars
-                + symbol_groups.research.seed_dollars
-                + symbol_groups.crypto.seed_dollars,
-            // symbols: all_symbols_names
-            symbols: [...symbol_groups.favs.symbols, ...symbol_groups.research.symbols, ...symbol_groups.crypto.symbols]
-        }]) {
+        // {
+        //     seed_dollars: symbol_groups.favs.seed_dollars
+        //         + symbol_groups.research.seed_dollars
+        //         + symbol_groups.crypto.seed_dollars,
+        //     // symbols: all_symbols_names
+        //     symbols: [...symbol_groups.favs.symbols, ...symbol_groups.research.symbols, ...symbol_groups.crypto.symbols]
+        // }
+    ]) {
         let summary_months = {};
         const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
@@ -805,7 +806,8 @@ async function test4(symbol = 'OKLO', log = true) {
     index = 0;
     // for await (const a of (init ? [favs, research, crypto, { seed_dollars: favs.seed_dollars + research.seed_dollars + crypto.seed_dollars, symbols: all_symbols_names }] : [favs, research/*, crypto.symbols*/])) {
     // for await (const a of [favs, research, crypto, { seed_dollars: favs.seed_dollars + research.seed_dollars + crypto.seed_dollars, symbols: all_symbols_names }]) {
-    for await (const a of [symbol_groups.favs, symbol_groups.research, symbol_groups.crypto, { seed_dollars: symbol_groups.favs.seed_dollars + symbol_groups.research.seed_dollars + symbol_groups.crypto.seed_dollars, symbols: all_symbols_names }]) {
+    // for await (const a of [symbol_groups.favs, symbol_groups.research, symbol_groups.crypto, { seed_dollars: symbol_groups.favs.seed_dollars + symbol_groups.research.seed_dollars + symbol_groups.crypto.seed_dollars, symbols: all_symbols_names }]) {
+    for await (const a of [symbol_groups.favs, symbol_groups.research, symbol_groups.crypto]) {
 
         const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0)
@@ -1076,7 +1078,7 @@ async function test4(symbol = 'OKLO', log = true) {
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.fontSize = '18px';
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.color = '#fff';
         document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML = `${name} | $${g.toLocaleString()}K`;
-        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${round(g/50*100).toLocaleString()}%`;
+        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${round(g / 50 * 100).toLocaleString()}%`;
         document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | AVG: $${avg_all.toLocaleString()}`;
         document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | 50K`;
         // document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
