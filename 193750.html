@@ -4,11 +4,11 @@
 <head>
     <title>M3-TRADER</title>
     <link id="favicon" rel="icon" href="./favicon.ico" type="image/png" sizes="16x16">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="./style.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="apple-touch-icon" sizes="128x128" href="./favicon-2.png">
     <link rel="manifest" href="./manifest.json">
     <script src="https://www.w3schools.com/lib/w3.js"></script>
@@ -68,21 +68,25 @@
     <!-- Bollinger -->
     <div id="content-bollinger" class="_w3-margin" style="display:none;">
         <br />
-        <div class="w3-row" style="_border:1px solid; min-height:500px;;">
+        <div class="w3-row" style="_border:1px solid; min-height:600px;;">
+            <div class="w3-padding w3-col s12 m6 l3" style="border:1px solid rgb(92, 92, 92);min-height:457px;">
+                <div id="title-symbols-stacked-6"></div>
+                <div id="chart-symbols-stacked-6"></div>
+            </div>
+            <div class="w3-col s12 m6 l6 chart-symbol-day-3 w3-padding"
+                style="border:1px solid rgb(92, 92, 92);min-height:457px;;">
+                <div id="chart-positions"></div>
+            </div>
+            <div class="w3-col s12 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);">
+                <div id="total-positions-2" class="w3-center w3-xxlarge"
+                    style="_min-height: 440px;align-content: center;font-weight:900;font-size:7.8vh !important;flex:inline-grid;">
+                </div>
+            </div>
             <div class="w3-col s12 l2 w3-padding w3-hide-small w3-hide-medium"
                 style="border:1px solid rgb(92, 92, 92);;_min-height:300px;;">
                 <div id="chart-bollinger-1"></div>
             </div>
-            <div class="w3-col s12 l8 chart-symbol-day-3 w3-padding"
-                style="border:1px solid rgb(92, 92, 92);;_min-height:300px;;">
-                <div id="chart-positions"></div>
-            </div>
-            <div class="w3-col s12 l2 w3-padding" style="border:1px solid rgb(92, 92, 92);">
-                <div id="total-positions-2" class="w3-center w3-xxlarge"
-                    style="min-height: 240px;align-content: center;font-weight:900;font-size:6vh !important;flex:inline-grid;">
-                </div>
-            </div>
-            <div class="w3-col s12 l9 w3-padding _w3-hide-small _w3-hide-medium"
+            <div class="w3-col s12 l7 w3-padding _w3-hide-small _w3-hide-medium"
                 style="border:1px solid rgb(92, 92, 92); _min-height:500px;;">
                 <div id="chart-bollinger-0"></div>
             </div>
@@ -114,36 +118,32 @@
 
         <!-- Stacked Chart -->
         <br />
-        <div class="w3-padding w3-border w3-col s12 m6 l3">
+        <div class="w3-padding w3-border w3-col s12 m6 l3 w3-hide">
             <div id="title-symbols-stacked-1"></div>
             <div id="chart-symbols-stacked-1"></div>
         </div>
-        <div class="w3-padding w3-border  w3-col s12 m6 l3">
+        <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
             <div id="title-symbols-stacked-2"></div>
             <div id="chart-symbols-stacked-2"></div>
         </div>
-        <div class="w3-padding w3-border  w3-col s12 m6 l3">
+        <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
             <div id="title-symbols-stacked-3"></div>
             <div id="chart-symbols-stacked-3"></div>
         </div>
-        <div class="w3-padding w3-border w3-col s12 m6 l3">
+        <div class="w3-padding w3-border w3-col s12 m6 l3 w3-hide">
             <div id="title-symbols-stacked-4"></div>
             <div id="chart-symbols-stacked-4"></div>
         </div>
         <br />
-        <div class="w3-padding w3-border  w3-col s12 m6 l3">
+        <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
             <div id="title-symbols-stacked-5"></div>
             <div id="chart-symbols-stacked-5"></div>
         </div>
-        <div class="w3-padding w3-border  w3-col s12 m6 l3">
-            <div id="title-symbols-stacked-6"></div>
-            <div id="chart-symbols-stacked-6"></div>
-        </div>
-        <div class="w3-padding w3-border  w3-col s12 m6 l3">
+        <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
             <div id="title-symbols-stacked-7"></div>
             <div id="chart-symbols-stacked-7"></div>
         </div>
-        <div class="w3-padding w3-border  w3-col s12 m6 l3">
+        <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
             <div id="title-symbols-stacked-8"></div>
             <div id="chart-symbols-stacked-8"></div>
         </div>
