@@ -402,7 +402,7 @@ async function test4(symbol = 'OKLO', log = true) {
                 'HOOD',
                 'AMD', 'AVGO', 'COIN', 'CVS',
                 'INTL', 'LEU', 'MDB', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL',
-                'QUBT', 'RKLB', 'SMCI', 'SNOW', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT',
+                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT',
             ].sort()
         }
     };
@@ -1070,13 +1070,15 @@ async function test4(symbol = 'OKLO', log = true) {
         o.yaxis.min = -15 * 1000;
         const avg = t.length > 0 ? round((t.reduce((p, c) => p + c)) / (t.length)) : 0;
         const avg_all = temp.length > 0 ? round((temp.reduce((p, c) => p + c)) / (temp.length)) : 0;
+        const g = round(o.series[0].data.map((v) => v.y).reduce((p, c) => p + c) / 1000);
 
         // const avg2 = round((temp.reduce((p, c) => p + c)) / (temp.length));
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.fontSize = '18px';
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.color = '#fff';
-        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML = `${name} | $${round(o.series[0].data.map((v) => v.y).reduce((p, c) => p + c) / 1000).toLocaleString()}K`;
-        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | TAVG: $${avg.toLocaleString()}`;
+        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML = `${name} | $${g.toLocaleString()}K`;
+        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${round(g/50*100).toLocaleString()}%`;
         document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | AVG: $${avg_all.toLocaleString()}`;
+        document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | 50K`;
         // document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
         o.annotations.yaxis.push({ y: avg, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
         // o.annotations.yaxis.push({ y: avg2, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
