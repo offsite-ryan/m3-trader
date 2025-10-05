@@ -2,7 +2,7 @@
 // =================================================
 // ALPACA DATA BARS
 // =================================================
-class AlpacaData {
+class AlpacaDataCrypto {
     baseUrl = `https://data.alpaca.markets`;
     ALPACA_KEY = null;
     ALPACA_SECRET = null;
@@ -235,7 +235,7 @@ class AlpacaData {
                 });
                 let cumulative = 0;
                 let cumulative_dollars = seed;
-                let fixed_dollars = seed;
+                let fixed_dollars = 0;
                 trades.forEach((v) => {
                     cumulative += v.gain;
                     v.g_cumulative_seed = cumulative_dollars;
@@ -273,35 +273,40 @@ class AlpacaData {
             // return data;
         });
     }
-    async summarize(res) {
+    async analyze(res) {
         return new Promise(async (resolve) => {
+            /*
+                symbol,
+                gain_pct: g,
+                gain_dollars: g_dollars,
+                gain_dollars_fixed: g_dollars_fixed,
+                own: own_at,
+                buy: last.o >= last.lb,
+                sell: last.c <= last.lb,
+                bars,
+                trades
+            */
             /** MONTH SUMMARIES */
-            let summary_months = {};
-            let summary_weeks = {};
-            let summary_month_total = 0;
+
             res.trades.forEach((v, i) => {
+                let summary_month_total = 0;
+                let summary_months = {};
                 const getMonthName = (month) => {
                     return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month];
                 }
-                const d = new Date(v.e2);
-                let month = d.getFullYear() + '_' + (d.getMonth() + 1).toString().padStart(2, '0') + '_' + getMonthName(d.getMonth());
-                let week = d.getFullYear() + '_' + d.getWeek().toString().padStart(2, '0');
-                const gain = v.gain;
-                summary_month_total += gain;
+                let month = new Date(v).getFullYear() + '_' + (new Date(v).getMonth() + 1).toString().padStart(2, '0') + '_' + getMonthName(new Date(v).getMonth());
                 if (!summary_months[month]) {
+                    summary_total += summary_month_total;
+                    // summary_total_count++;
                     summary_months[month] = gain;
+                    summary_month_total = gain;
                 } else {
+                    summary_month_total += gain;
                     summary_months[month] += gain;
                 }
-                if (!summary_weeks[week]) {
-                    summary_weeks[week] = gain;
-                } else {
-                    summary_weeks[week] += gain;
-                }
+                res.months = summary_months;
+                resolve(res);
             });
-            res.summary = { months: summary_months, total: summary_month_total, weeks: summary_weeks };
-            resolve(res);
-            summary_months = undefined;
         });
     }
     async get_next_page(symbol, url, delay, res, options) {
@@ -314,11 +319,23 @@ class AlpacaData {
                 res2 = await res2.json();
                 res.bars[symbol].push(...res2.bars[symbol]);
                 next_page_token = res2.next_page_token;
+
+                // .then(res2 => res2.json())
+                // .then(async (res2) => {
+                //     // res.bars[symbol].push(...res2.bars[symbol]);
+                //     // next_page_token = res2.next_page_token;
+                //     // // if (res2.next_page_token) {
+                //     // //     // res.bars[symbol].push(...await this.get_next_page(symbol, url, delay, res2, options).bars[symbol]);
+                //     // //     res = await this.get_next_page(symbol, url, delay, res, options);
+                //     // // }
+                //     // res = await this.get_next_page(symbol, url, delay, res2, options);
+                //     // resolve(res);
+                // });
             }
             resolve(res);
         });
     }
-    async bars(symbol, timeframe = '1D', start = this.START_OF_YEAR, end = new Date().toISOString(), delay = 100) {
+    async bars(symbol, timeframe = '1D', start = this.START_OF_YEAR, end = new Date().toISOString(), delay = 300) {
         return new Promise(async (resolve) => {
 
             await sleep(delay);
@@ -355,7 +372,7 @@ class AlpacaData {
                 fetch(url, options)
                     .then(res => res.json())
                     .then((res) => {
-                        // console.log(res); 
+                        // console.log(url, res);
                         return res;
                     })
                     .then((res) => this.get_next_page(symbol, url, delay, res, options))
@@ -364,11 +381,11 @@ class AlpacaData {
                     .then((res) => res.bars[symbol] || [])
                     .then((res) => this.addMetaData(res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
-                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
+                    .then((res) => this.addBollingerBands('bands_c', res, 50))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
                     .then((res) => this.analyze(symbol, res))
-                    .then((res) => this.summarize(res))
+                    .then((res) => this.summarize(symbol, res))
                     .then((res) => resolve(res));
             } else {
                 resolve(null);
@@ -380,12 +397,12 @@ class AlpacaData {
 // =================================================
 // MAIN
 // =================================================
-const alpaca_data = new AlpacaData()
+const alpaca_data_crypto = new AlpacaDataCrypto()
 setInterval(() => {
     const second = new Date().getSeconds();
     // if (second % 15 === 0 && auto_refresh) {
     if (second === 1 && auto_refresh) {
-        test4(bollinger_selected_symbol, second === 0);
+        test4_crypto(bollinger_selected_symbol, second === 0);
     }
 }, 1 * 1000);
 let bollinger_selected_symbol = null;
@@ -395,7 +412,7 @@ let day_results = [];
 // =================================================
 // TEST 4
 // =================================================
-async function test4(symbol = 'OKLO', log = true) {
+async function test4_crypto(symbol = 'OKLO', log = true) {
 
     //#region VARIABLES
     // * ------------------------
@@ -412,46 +429,25 @@ async function test4(symbol = 'OKLO', log = true) {
     // * SYMBOLS
     // * ------------------------
     const symbol_groups = {
-        favs: {
-            name: 'FAVS',
-            seed_dollars: 0 * 1000,
-            symbols: ['ETSY', 'SNDK',].sort()
-            // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
-        },
-        // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
         crypto: {
             name: 'CRYPTO',
             seed_dollars: 10 * 1000,
             symbols: [
-                // 'BAT/USD', 'PEPE/USD', 
-                // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD', 
-                'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'SUSHI/USD',
-                'GRT/USD', 'SOL/USD', 'UNI/USD', 'XRP/USD',
+                'GE',
+                // // 'BAT/USD', 'PEPE/USD', 
+                // // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD', 
+                // 'AVAX/USD',
+                'BCH/USD',
+                'BTC/USD',
+                'DOGE/USD',
+                'ETH/USD',
+                // 'SUSHI/USD',
+                'GRT/USD',
+                'SOL/USD',
+                // 'UNI/USD',
+                'XRP/USD',
             ].sort()
         },
-        // const research_crypto = {
-        //     seed_dollars: 10 * 1000,
-        //     symbols: [
-        //         // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
-        //         'AVAX/USD', 'BCH/USD', 'BTC/USD', 'CRV/USD', 'DOGE/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD', 'SUSHI/USD',
-        //         'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
-        //     ].sort()
-        // }
-        research: {
-            name: 'R & D',
-            seed_dollars: 50 * 1000,
-            symbols: [
-                'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
-                // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
-                // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
-                // 'Z', 'T', 'MP', 'CVX', 'PM', 
-                // 'BETZ', 'BX', 'IBIT', 
-                'HOOD', //'LAC', 
-                'AMD', 'AVGO', 'COIN', 'CVS',
-                'INTL', 'LEU', 'MDB', 'MSFT', 'NVDA', 'NIO', 'ONEQ', 'OPEN', 'ORCL',
-                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'QQQ', 'TSLA', 'UUUU', 'WMT',
-            ].sort()
-        }
     };
     //#endregion
 
@@ -493,11 +489,11 @@ async function test4(symbol = 'OKLO', log = true) {
             html += `<div 
             class="w3-col s4 m2 l1 _w3-margin w3-padding"
             style="cursor:pointer;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
-            onclick="test4('${s}')">
+            onclick="test4_crypto('${s}')">
             ${icon}
             ${s.split('/')[0]}
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
-            ${status ? `<br/><div class="" style="color:white;background-color:${status ? status_color : ''};">` + round1(status.gain_pct) + '%</div>' : ''}
+            ${status ? `<br/><div class="" style="color:white;background-color:${status ? status_color : ''};">${round(status.gain_dollars_fixed)}</div>` : ''}
             </div>`;
         });
         document.getElementById(id).innerHTML = html + '<br/>';
@@ -530,16 +526,19 @@ async function test4(symbol = 'OKLO', log = true) {
     let chart_data_reivest = [];
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-01T00:00:00-04:00`));
-    const start = new Date(new Date(`2024-09-01T00:00:00-0${tz}:00`));
-    const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
+    let start = new Date(new Date(`2025-09-06T08:00:00-0${tz}:00`));
+    let end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
+    const offset = 0;
+    start = new Date(start.getTime() - (offset * 7 * 24 * 60 * 60 * 1000));
+    end = new Date(end.getTime() - (offset * 7 * 24 * 60 * 60 * 1000));
     let index = 0;
 
     console.group('%c----------------------------------------------------', 'color:orange;');
     // const all_symbols_names = [...favs.symbols, ...crypto.symbols, ...research.symbols];
-    const all_symbols_names = [...symbol_groups.favs.symbols, ...symbol_groups.crypto.symbols, ...symbol_groups.research.symbols];
+    const all_symbols_names = [...symbol_groups.crypto.symbols];
     const promises = all_symbols_names.map((s) => {
         // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
-        return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString())
+        return alpaca_data_crypto.bars(s, '3H', start.toISOString(), end.toISOString())
     });
     let all_symbols = await Promise.all(promises);
     console.log(all_symbols);
@@ -720,8 +719,8 @@ async function test4(symbol = 'OKLO', log = true) {
         //     annotations: o.annotations,
         // });
     }
-    // chart_bollinger_2 = new ApexCharts(document.querySelector(`#chart-bollinger-1`), o);
-    // chart_bollinger_2.render();
+    chart_bollinger_2 = new ApexCharts(document.querySelector(`#chart-bollinger-1`), o);
+    chart_bollinger_2.render();
     o = undefined;
     // console.table(cumulative_data);
     //#endregion
@@ -801,8 +800,8 @@ async function test4(symbol = 'OKLO', log = true) {
     // * -------------------------------------
     index = 0;
     for await (const a of [
-        symbol_groups.favs,
-        symbol_groups.research,
+        // symbol_groups.favs,
+        // symbol_groups.research,
         symbol_groups.crypto,
         // {
         //     seed_dollars: symbol_groups.favs.seed_dollars
@@ -854,7 +853,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // for await (const a of (init ? [favs, research, crypto, { seed_dollars: favs.seed_dollars + research.seed_dollars + crypto.seed_dollars, symbols: all_symbols_names }] : [favs, research/*, crypto.symbols*/])) {
     // for await (const a of [favs, research, crypto, { seed_dollars: favs.seed_dollars + research.seed_dollars + crypto.seed_dollars, symbols: all_symbols_names }]) {
     // for await (const a of [symbol_groups.favs, symbol_groups.research, symbol_groups.crypto, { seed_dollars: symbol_groups.favs.seed_dollars + symbol_groups.research.seed_dollars + symbol_groups.crypto.seed_dollars, symbols: all_symbols_names }]) {
-    for await (const a of [symbol_groups.favs, symbol_groups.research, symbol_groups.crypto]) {
+    for await (const a of [/*symbol_groups.favs, symbol_groups.research,*/ symbol_groups.crypto]) {
 
         const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0)
