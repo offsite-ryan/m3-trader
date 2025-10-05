@@ -278,6 +278,7 @@ class AlpacaData {
             /** MONTH SUMMARIES */
             let summary_months = {};
             let summary_weeks = {};
+            let summary_quarters = {};
             let summary_month_total = 0;
             res.trades.forEach((v, i) => {
                 const getMonthName = (month) => {
@@ -286,6 +287,9 @@ class AlpacaData {
                 const d = new Date(v.e2);
                 let month = d.getFullYear() + '_' + (d.getMonth() + 1).toString().padStart(2, '0') + '_' + getMonthName(d.getMonth());
                 let week = d.getFullYear() + '_' + d.getWeek().toString().padStart(2, '0');
+                let q = d.getMonth() + 1;
+                q = q < 4 ? 1 : (q < 7 ? 2 : (q < 10 ? 3 : 4));
+                let quarter = d.getFullYear() + '_' + (q).toString().padStart(2, '0');
                 const gain = v.gain;
                 summary_month_total += gain;
                 if (!summary_months[month]) {
@@ -298,8 +302,13 @@ class AlpacaData {
                 } else {
                     summary_weeks[week] += gain;
                 }
+                if (!summary_quarters[quarter]) {
+                    summary_quarters[quarter] = gain;
+                } else {
+                    summary_quarters[quarter] += gain;
+                }
             });
-            res.summary = { months: summary_months, total: summary_month_total, weeks: summary_weeks };
+            res.summary = { months: summary_months, total: summary_month_total, weeks: summary_weeks, quarters: summary_quarters };
             resolve(res);
             summary_months = undefined;
         });
@@ -604,7 +613,7 @@ async function test4(symbol = 'OKLO', log = true) {
             strokeDashArray: 0,
             opacity: 1,
             label: {
-                text: mobile_view ? '' : `${g}`,
+                text: isMobile() && !isTablet() ? '' : `${g}`,
                 _text: `${round(INVESTMENT_SEED * (a.gain / 100))}`,
                 orientation: 'horizontal',
                 style: {
