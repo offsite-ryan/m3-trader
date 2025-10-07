@@ -263,3 +263,7 @@ Date.prototype.getWeekYear = function () {
     date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
     return date.getFullYear();
 }
+function reduceArray(arr, defaultValue = 0) {
+    if (arr.length === 0) return defaultValue;
+    return arr.reduce((p, c) => p + c, 0);
+}
