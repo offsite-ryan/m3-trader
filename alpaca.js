@@ -313,6 +313,38 @@ class AlpacaData {
             summary_months = undefined;
         });
     }
+    async positions(symbol, positions, res) {
+        return new Promise(async (resolve) => {
+            // const p = positions.filter((v) => v.symbol === symbol)[0] || null;
+            const p = positions.length > 0 ? positions[0] : null;
+            res.position = p ? {
+                cost_basis: p ? +p.cost_basis : 0,
+                avg_entry_price: p ? +p.avg_entry_price : 0,
+                market_value: p ? +p.market_value : 0,
+                qty: p ? +p.qty : 0,
+                gain: p ? +p.unrealized_pl : 0,
+                pct: p ? round2(+p.unrealized_plpc * 100) : 0,
+                t: p ? p.t : null,
+                e: p ? new Date(p.t).getTime() : null,
+            } : null;
+            resolve(res);
+            positions = undefined;
+        });
+    }
+    async orders(symbol, orders, res) {
+        return new Promise(async (resolve) => {
+            // res.orders = orders.filter((v) => v.symbol === symbol);
+            orders.forEach((v) => {
+                v.c = v.side === 'buy' ? -(+(v.p) * (+(v.q))) : +(v.p) * (+(v.q));
+                v.p = +(v.p);
+                v.q = +(v.q);
+                v.spend = +(v.spend);
+            });
+            res.orders = orders;
+            resolve(res);
+            orders = undefined;
+        });
+    }
     async get_next_page(symbol, url, delay, res, options) {
         return new Promise(async (resolve) => {
             let next_page_token = res.next_page_token;
@@ -327,7 +359,7 @@ class AlpacaData {
             resolve(res);
         });
     }
-    async bars(symbol, timeframe = '1D', start = this.START_OF_YEAR, end = new Date().toISOString(), delay = 100) {
+    async bars(symbol, timeframe = '1D', start = this.START_OF_YEAR, end = new Date().toISOString(), open_positions, orders_list, delay = 100) {
         return new Promise(async (resolve) => {
 
             await sleep(delay);
@@ -360,6 +392,11 @@ class AlpacaData {
 
             // symbol = symbol.replace('/', '-');
             // url = `http://localhost:3102/yahoo/${symbol.replace('/', '-')}/1d/${start}/${end}`
+            open_positions = open_positions.filter((v) => v.symbol === symbol.replace('/', '')) || [];
+            orders_list = orders_list.filter((v) => v.symbol === symbol) || [];
+            if (open_positions.length > 0) {
+                open_positions[0].t = orders_list[0].t;
+            }
             if (url) {
                 fetch(url, options)
                     .then(res => res.json())
@@ -378,6 +415,8 @@ class AlpacaData {
                     .then((res) => this.refactor(symbol, res))
                     .then((res) => this.analyze(symbol, res))
                     .then((res) => this.summarize(res))
+                    .then((res) => this.positions(symbol, open_positions, res))
+                    .then((res) => this.orders(symbol, orders_list, res))
                     .then((res) => resolve(res));
             } else {
                 resolve(null);
@@ -424,7 +463,7 @@ async function test4(symbol = 'OKLO', log = true) {
         favs: {
             name: 'FAVS',
             seed_dollars: 0 * 1000,
-            symbols: ['ETSY', 'SNDK',].sort()
+            symbols: ['ETSY', 'SNDK', 'DKNG', 'TAC', 'VXX', 'VIXY', ].sort()
             // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
         },
         // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
@@ -492,18 +531,21 @@ async function test4(symbol = 'OKLO', log = true) {
             const should_buy = current.c >= current.lb;
             const should_sell = current.c <= current.lb;
             // console.log(s, should_sell);
-            const icon = [
-                'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
-                'LEU', 'MP', 'TPB', 'QUBT'
-            ].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
-
+            
             // up carot: &#9650;  &#9651;
             // down caret: &#9660;  &#9661;
+            const icon = status.position ? (status.position.gain >= 0 ? '&#9650' : '&#9660') : '';
+            const icon_color = status.position ? (status.position.gain >= 0 ? '#00b90a' : 'red') : '';
+            // const icon = [
+            //     'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
+            //     'LEU', 'MP', 'TPB', 'QUBT'
+            // ].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
+
             html += `<div 
             class="w3-col s4 m2 l1 _w3-margin w3-padding"
             style="cursor:pointer;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
             onclick="test4('${s}')">
-            ${icon}
+            <span style="color:${icon_color};font-size:20px;">${icon}</span>
             ${s.split('/')[0]}
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
             ${status ? `<br/><div class="" style="color:white;background-color:${status ? status_color : ''};">` + round1(status.gain_pct) + '%</div>' : ''}
@@ -532,7 +574,7 @@ async function test4(symbol = 'OKLO', log = true) {
                 q: v2.filled_qty
             }
         });
-    // console.log(open_positions, all_orders);
+    console.log(open_positions, all_orders);
 
     let total_groups = 0;
     let total_groups_reinvest = 0;
@@ -548,7 +590,7 @@ async function test4(symbol = 'OKLO', log = true) {
     const all_symbols_names = [...symbol_groups.favs.symbols, ...symbol_groups.crypto.symbols, ...symbol_groups.research.symbols];
     const promises = all_symbols_names.map((s) => {
         // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
-        return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString())
+        return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), open_positions, all_orders);
     });
     let all_symbols = await Promise.all(promises);
     console.log(all_symbols);
@@ -624,7 +666,28 @@ async function test4(symbol = 'OKLO', log = true) {
             }
         });
         seed += g;
-    })
+    });
+    /** current position */
+    if (data.position) {
+        o.annotations.xaxis.push({
+            x: data.position ? new Date(data.position.t.split(',')[0]).getTime() : null,
+            x2: Date.now(),
+            borderColor: '#fc038c80',
+            fillColor: '#fc038c20',
+            strokeDashArray: 0,
+            opacity: 1,
+            label: {
+                text: isMobile() && !isTablet() ? '' : `${round(data.position.gain)}`,
+                orientation: 'horizontal',
+                position: 'bottom',
+                style: {
+                    background: '#fc038cff', //data.position.gain >= 0 ? colors.green : colors.red,
+                    color: colors.white,
+                    fontSize: '20px',
+                }
+            }
+        });
+    }
 
     const pct = round1(chart_annotations.map((v) => v.gain).reduce((p, c) => p + c));
     let g = round(INVESTMENT_SEED * (pct / 100));
@@ -657,7 +720,7 @@ async function test4(symbol = 'OKLO', log = true) {
     o.series.forEach((s) => {
         s.data = s.data.slice(-10);
     });
-    o.annotations.xaxis.forEach((v) => v.label.text = v.label._text);
+    // o.annotations.xaxis.forEach((v) => v.label.text = v.label._text);
     if (chart_bollinger_1) {
         chart_bollinger_1.destroy();
         // chart_bollinger_1.updateOptions({
@@ -848,7 +911,7 @@ async function test4(symbol = 'OKLO', log = true) {
         message += ` | AVG: ${round(total / Object.keys(summary_months).length / 1000).toLocaleString()}K`;
         message += ` | SEED: ${a.seed_dollars / 1000}K`;
         console.log(message, 'color:yellow;');
-        console.log(summary_months);
+        // console.log(summary_months);
         index++;
     }
     //#endregion
