@@ -200,6 +200,10 @@ class AlpacaData {
                                 // }
                                 trades.push({
                                     s: symbol,
+                                    o: bars[own_at].o,
+                                    c: bars[i].c,
+                                    gain_1K: (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o),
+                                    // q: bars[own_at].o,
                                     num_days: i - own_at,
                                     1: own_at,
                                     2: i,
@@ -217,11 +221,15 @@ class AlpacaData {
                     }
                     if (i === bars.length - 1) {
                         if (own_at > -1) {
-                            const gain = (bars[i].c - bars[own_at].c) / bars[own_at].c * 100
-                            //     ? (bars[i].c - bars[own_at].c) / bars[own_at].c * 100
-                            //     : (bars[i].c - bars[own_at].o) / bars[own_at].o * 100;
+                            const gain = (bars[i].c - bars[own_at].o) / bars[own_at].o * 100
+                            //*     ? (bars[i].c - bars[own_at].c) / bars[own_at].c * 100
+                            //*     : (bars[i].c - bars[own_at].o) / bars[own_at].o * 100;
                             trades.push({
                                 s: symbol,
+                                o: bars[own_at].o,
+                                c: bars[i].c,
+                                gain_1K: (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o),
+                                // q: bars[own_at].o,
                                 num_days: i - own_at,
                                 1: own_at,
                                 2: i, gain,
@@ -249,8 +257,11 @@ class AlpacaData {
                     // v.gain_cumulative = cumulative;
                     // v.gain_dollars = cumulative_dollars;
                     v.g_fixed = fixed_dollars;
+                    v.g_fixed_pct = ((fixed_dollars / seed)) * 100; // remove the seed (-1)
                     v.g_cumulative = cumulative_dollars;
-                    v.g_cumulative_pct = ((cumulative_dollars / fixed_dollars) - 1) * 100;
+                    v.g_cumulative_pct = ((cumulative_dollars / seed)) * 100; // remove the seed (-1)
+
+                    v.g_cumulative_pct_diff = ((cumulative_dollars / fixed_dollars) - 1) * 100; // remove the seed (-1)
                 });
                 g = reduceArray(trades.map((v) => v.gain));
                 g_dollars = cumulative_dollars;
@@ -259,9 +270,9 @@ class AlpacaData {
             const last = bars[bars.length - 1];
             resolve({
                 symbol,
-                gain_pct: g,
-                gain_dollars: g_dollars,
-                gain_dollars_fixed: g_dollars_fixed,
+                // gain_pct: g,
+                // gain_dollars: g_dollars,
+                // gain_dollars_fixed: g_dollars_fixed,
                 own: own_at,
                 buy: last.o >= last.lb,
                 sell: last.c <= last.lb,
@@ -463,7 +474,7 @@ async function test4(symbol = 'OKLO', log = true) {
         favs: {
             name: 'FAVS',
             seed_dollars: 0 * 1000,
-            symbols: ['ETSY', 'SNDK', 'DKNG', 'TAC', 'VXX', 'VIXY', 'ARBK', ].sort()
+            symbols: ['ETSY', 'SNDK', 'DKNG', 'TAC', 'VXX', 'VIXY', 'ARBK',].sort()
             // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
         },
         // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
@@ -507,22 +518,45 @@ async function test4(symbol = 'OKLO', log = true) {
     // * ------------------------
     // * ADD BUTTONS
     // * ------------------------
-    const add_buttons = (symbols, id, title = 'Title') => {
+    const add_buttons = (symbols, id, title = 'Title', group = 'research') => {
+        const seed = symbol_groups[group].seed_dollars / 1000; //! TODO: change to INVESTMENT_SEED
+        let sum = 0;
+        let sum_all = 0;
+        let sum_all_c = 0;
+        try {
+            sum = reduceArray(open_positions.filter((v) => symbols.map((v) => v.replace('/', '')).indexOf(v.symbol) >= 0).map((v) => +(v.unrealized_pl)));
+            sum_all = reduceArray(all_symbols
+                .filter((v) => symbols.indexOf(v.symbol) >= 0)
+                .filter((v, i, a) => a.indexOf(v) === i) // unique
+                .map((v) => v.trades[v.trades.length - 1].g_fixed)
+            ) - (seed / symbols.length * 1000);
+            // sum_all_c = all_symbols.filter((v) => symbols.indexOf(v.symbol) >= 0).map((v) => v.gain_dollars_fixed).reduce((p, c) => p + c) - (50 / symbols.length * 1000);
+            sum_all_c = reduceArray(all_symbols
+                .filter((v) => symbols.indexOf(v.symbol) >= 0)
+                .filter((v, i, a) => a.indexOf(v) === i) // unique
+                .map((v) => v.trades[v.trades.length - 1].g_cumulative)
+            ) - (seed / symbols.length * 1000);
+        } catch (e) { console.error(e); }
         let html = `<div 
             id="title-${title}"
-            class="w3-col s12 m4 l2 _w3-margin w3-padding"
-            style="border:1px solid white;"><b>${title}</b></div>`;
+            class="w3-col s12 m8 l2 _w3-margin w3-padding"
+            style="border:1px solid white;font-size:24px;">
+            <b>${title}</b>
+            <hr style="border-top:1px solid white"/>
+            <b>$${round(sum).toLocaleString()} | $${round1(sum_all / 1000).toLocaleString()}K | $${round1(sum_all_c / 1000).toLocaleString()}K C</b>
+            </div>`;
         symbols.forEach((s) => {
             const has_position = open_positions.findIndex((v) => v.symbol === s.replace('/', ''));
             // console.log(s, has_position);
 
             const status = all_symbols.find((v) => v.symbol === s);
+            const g = status.trades[status.trades.length - 1].g_fixed_pct - 100;
             let status_color = '';
             if (status) {
-                if (status.gain_pct >= 0) {
-                    status_color = `rgb(0, 128, 0, ${Math.abs(status.gain_pct / 100)})`;
-                } else if (status.gain_pct < 0) {
-                    status_color = `rgb(255, 0, 0, ${Math.abs(status.gain_pct / 100)})`;
+                if (g >= 0) {
+                    status_color = `rgb(0, 128, 0, ${Math.abs(g / 100)})`;
+                } else if (g < 0) {
+                    status_color = `rgb(255, 0, 0, ${Math.abs(g / 100)})`;
                 }
             }
             // const last = status.bars[status.bars.length-2];
@@ -531,7 +565,7 @@ async function test4(symbol = 'OKLO', log = true) {
             const should_buy = current.c >= current.lb;
             const should_sell = current.c <= current.lb;
             // console.log(s, should_sell);
-            
+
             // up carot: &#9650;  &#9651;
             // down caret: &#9660;  &#9661;
             const icon = status.position ? (status.position.gain >= 0 ? '&#9650' : '&#9660') : '';
@@ -543,12 +577,13 @@ async function test4(symbol = 'OKLO', log = true) {
 
             html += `<div 
             class="w3-col s4 m2 l1 _w3-margin w3-padding"
-            style="cursor:pointer;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
+            style="cursor:pointer;font-size:20px;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
             onclick="test4('${s}')">
-            <span style="color:${icon_color};font-size:20px;">${icon}</span>
             ${s.split('/')[0]}
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
-            ${status ? `<br/><div class="" style="color:white;background-color:${status ? status_color : ''};">` + round1(status.gain_pct) + '%</div>' : ''}
+            <br/>
+            <span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> ${status.position ? '$' + round(status.position.gain) : '-'}</span>
+            ${status ? `<br/><div class="" style="color:white;background-color:${status ? status_color : ''};">` + round1(g) + '%</div>' : ''}
             </div>`;
         });
         document.getElementById(id).innerHTML = html + '<br/>';
@@ -574,7 +609,7 @@ async function test4(symbol = 'OKLO', log = true) {
                 q: v2.filled_qty
             }
         });
-    console.log(open_positions, all_orders);
+    //! console.log(open_positions, all_orders);
 
     let total_groups = 0;
     let total_groups_reinvest = 0;
@@ -689,7 +724,7 @@ async function test4(symbol = 'OKLO', log = true) {
         });
     }
 
-    const pct = round1(chart_annotations.map((v) => v.gain).reduce((p, c) => p + c));
+    const pct = round1(reduceArray(chart_annotations.map((v) => v.gain)));
     let g = round(INVESTMENT_SEED * (pct / 100));
     const delta = round1((bars[bars.length - 1].c - bars[14].c) / bars[0].c * 100);
     o.title.text = `${symbol} | SEED $${seed.toLocaleString()} | 1K $${g.toLocaleString()} | ${pct}% | ${delta}% | ${chart_annotations.length} | $${o.series[0].data[o.series[0].data.length - 1].y}`;
@@ -854,8 +889,8 @@ async function test4(symbol = 'OKLO', log = true) {
     // * -------------------------------------
     // * TOTAL SUMMARY
     // * -------------------------------------
-    const total = open_positions.length > 0 ? open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c) : 0;
-    const total_invested = open_positions.length > 0 ? open_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c) : 0;
+    const total = reduceArray(open_positions.map((v) => +(v.unrealized_pl)));
+    const total_invested = reduceArray(open_positions.map((v) => +(v.cost_basis)));
     // const total_pct = open_positions.map((v) => +(v.unrealized_plpc) * 100).reduce((p, c) => p + c);
     const elem = document.getElementById('total-positions-2');
     elem.style.backgroundColor = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : colors.red);
@@ -891,7 +926,7 @@ async function test4(symbol = 'OKLO', log = true) {
         let trade_days = all_trades.map((v) => v.e2).filter((v, i, a) => a.indexOf(v) === i).sort();
         trade_days.forEach((v, i) => {
             let filtered = all_trades.filter((v2) => v2.e2 === v);
-            const trades_total = filtered.length > 0 ? filtered.map((v2) => v2.gain).reduce((p, c) => p + c) : 0;
+            const trades_total = reduceArray(filtered.map((v2) => v2.gain));
             // const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length * filtered.length);
             const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length);
             const getMonthName = (month) => {
@@ -905,7 +940,7 @@ async function test4(symbol = 'OKLO', log = true) {
             }
         });
         let message = `%c${group_name} SUMMARY`;
-        const total = round(Object.keys(summary_months).map((k) => summary_months[k]).reduce((p, c) => p + c));
+        const total = round(reduceArray(Object.keys(summary_months).map((k) => summary_months[k])));
         message += ` | TOTAL: ${total.toLocaleString()}`;
         message += ` | PCT: ${round(total / a.seed_dollars * 100).toLocaleString()}%`;
         message += ` | AVG: ${round(total / Object.keys(summary_months).length / 1000).toLocaleString()}K`;
@@ -938,7 +973,8 @@ async function test4(symbol = 'OKLO', log = true) {
             add_buttons(
                 a.symbols,
                 index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger' : 'symbol-buttons-bollinger-crypto'),
-                group_name
+                group_name,
+                index === 0 ? 'favs' : (index === 1 ? 'research' : (index === 2 ? 'crypto' : 'all'))
             );
         }
 
@@ -958,7 +994,7 @@ async function test4(symbol = 'OKLO', log = true) {
         trade_days.forEach((v, i) => {
             let filtered = all_trades.filter((v2) => v2.e2 === v);
             const num_symbols = filtered.map((v) => v.s).filter((v, i, a) => i === a.indexOf(v)).length;
-            const trades_total = filtered.length > 0 ? filtered.map((v2) => v2.gain).reduce((p, c) => p + c) : 0;
+            const trades_total = reduceArray(filtered.map((v2) => v2.gain));
             // const gain = (trades_total / 100) * (num_symbols * 1000);
             // const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length); // TODO: REVIEW NUMBERS !!!
             // const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length) * filtered.length;
@@ -1031,7 +1067,7 @@ async function test4(symbol = 'OKLO', log = true) {
                 // return round1(v / 1000) + 'K';
             },
         };
-        const avg = t.length > 0 ? round((t.reduce((p, c) => p + c)) / (t.length)) : 0;
+        const avg = t.length > 0 ? round((reduceArray(t)) / (t.length)) : 0;
         // const avg2 = round((temp.reduce((p, c) => p + c)) / (temp.length));
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.fontSize = '18px';
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.color = '#fff';
@@ -1106,15 +1142,17 @@ async function test4(symbol = 'OKLO', log = true) {
         // console.log('----------------------------------------------------');
         // console.log(`%c${group_name} | CUMULATIVE |  $${round2(cumulative_temp).toLocaleString()} | $${a.seed_dollars / 1000}K | ${round(cumulative_temp / a.seed_dollars * 100)}%`, 'color:yellow;');
         // console.log(chart_data_reivest);
-        const cumulative_g = all.length > 0 ? round2(all.map((v) => v.gain_dollars).reduce((p, c) => p + c)) : 0;
+        const cumulative_g = round2(reduceArray(all.map((v) => v.gain_dollars)));
         total_groups_reinvest += index < 3 ? round1(cumulative_g) : 0;
         // console.log(`%c${group_name} | ${cumulative_g.toLocaleString()} | ${round(cumulative_g / (1000 * a.length) * 100)} %`, 'color:aquamarine');
 
         /** GROUP TITLE CARD */
-        if (index < 3) {
-            document.getElementById(`title-${group_name}`)
-                .innerHTML += `<br/><div style="border-top:1px solid;">$<b>${round(cumulative_g / 1000).toLocaleString()} K</b> | ${round(cumulative_g / (1000 * a.length) * 100)}% | ${a.symbols.length}K</div>`
-        }
+        // if (index < 3) {
+        //     document.getElementById(`title-${group_name}`)
+        //         .innerHTML += `<br/>
+        //         <div style="border-top:1px solid;">$<b>${round(cumulative_g / 1000).toLocaleString()} K</b> | ${round(cumulative_g / (1000 * a.length) * 100)}% | ${a.symbols.length}K
+        //         </div>`
+        // }
 
         let months_total = 0;
         Object.keys(summary_months).forEach((k) => {
@@ -1189,9 +1227,9 @@ async function test4(symbol = 'OKLO', log = true) {
             },
         };
         o.yaxis.min = -15 * 1000;
-        const avg = t.length > 0 ? round((t.reduce((p, c) => p + c)) / (t.length)) : 0;
-        const avg_all = temp.length > 0 ? round((temp.reduce((p, c) => p + c)) / (temp.length)) : 0;
-        const g = round(o.series[0].data.map((v) => v.y).reduce((p, c) => p + c) / 1000);
+        const avg = t.length > 0 ? round((reduceArray(t)) / (t.length)) : 0;
+        const avg_all = temp.length > 0 ? round((reduceArray(temp)) / (temp.length)) : 0;
+        const g = round(reduceArray(o.series[0].data.map((v) => v.y)) / 1000);
 
         // const avg2 = round((temp.reduce((p, c) => p + c)) / (temp.length));
         document.getElementById(`title-symbols-stacked-${index + 5}`).style.fontSize = '18px';
@@ -1227,12 +1265,12 @@ async function test4(symbol = 'OKLO', log = true) {
     const months = {};
     Object.keys(group_results[0]).forEach((k) => months[k] = 0);
     Object.keys(months).forEach((m, i) => {
-        const g = group_results.map((v) => v[m]).reduce((p, c) => p + c)
+        const g = reduceArray(group_results.map((v) => v[m]))
         months[m] += g;
         // console.log(`%c$${round1(g).toLocaleString()}`, 'color:aquamarine;');
     });
     // console.log(months);
-    console.log(round2(Object.keys(months).map((k) => round1(months[k])).reduce((p, c) => p + c)).toLocaleString());
+    console.log(round2(reduceArray(Object.keys(months).map((k) => round1(months[k])))).toLocaleString());
     group_results.push(months);
     // console.log(group_results);
     group_results.forEach((v, i) => update_months_chart(i, '', v));
