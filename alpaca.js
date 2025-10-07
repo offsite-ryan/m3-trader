@@ -463,7 +463,7 @@ async function test4(symbol = 'OKLO', log = true) {
         favs: {
             name: 'FAVS',
             seed_dollars: 0 * 1000,
-            symbols: ['ETSY', 'SNDK', 'DKNG', 'TAC', 'VXX', 'VIXY', ].sort()
+            symbols: ['ETSY', 'SNDK', 'DKNG', 'TAC', 'VXX', 'VIXY', 'ARBK', ].sort()
             // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
         },
         // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
