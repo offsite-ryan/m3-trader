@@ -627,7 +627,7 @@ async function test4(symbol = 'OKLO', log = true) {
             }
         });
     //! console.log(open_positions, all_orders);
-    console.chart(open_positions.map((v)=>v.unrealized_pl))
+    // console.chart(open_positions.map((v)=>v.unrealized_pl))
 
     let total_groups = 0;
     let total_groups_reinvest = 0;
@@ -1003,8 +1003,11 @@ async function test4(symbol = 'OKLO', log = true) {
         // data = data.map((v) => v / max * 100 / 10);
         console.chart(data, group_name);
 
+        
         index++;
     }
+    console.log('%cOPEN POSITIONS', 'color:yellow;');
+    console.chart(open_positions.map((v) => v.unrealized_pl), 'OPEN POSITIONS');
     //#endregion
 
     //#region GROUP SUMMARIES
