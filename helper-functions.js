@@ -289,7 +289,7 @@ function getQuarterName(d) {
  */
 console.chart = function (data, group = '-') {
     // const cols = data.map((v, i)=>i+1)
-    console.log(data);
+    // console.log(data);
     cumulativeSumArray(data);
 
     const max = Math.max(...data);
@@ -310,7 +310,7 @@ console.chart = function (data, group = '-') {
             .join(''))
         .join('\n');
     console.log(msg, 'color:lime; font-size:8px; _line-height:8px;', 'color:white; font-size:8px; line-height:8px;', 'color:red; font-size:8px; line-height:8px;');
-    console.log(data);
+    // console.log(data);
     // cumulativeSumArray(data);
 
     // const consoleMessage = "This is a multiline\nconsole message that\nwe want to convert to HTML.";
@@ -325,7 +325,7 @@ console.chart = function (data, group = '-') {
     split[1] = `<span style="color:lime;">${split[1]}</span>`;
     split[3] = `<span style="color:red;">${split[3]}</span>`;
     // const htmlContent = replaceAll(msg,'%c',''); //.replace(/\n/g, '<br>');
-    preElement.innerHTML = `<span class="w3-padding w3-center w3-col s6">${split.join('')}</span>`;
+    preElement.innerHTML = `<span class="w3-padding w3-center w3-col ${group === 'OPEN POSITIONS' ? 's12' : 's12 m6'}">${split.join('')}</span>`;
     // preElement.innerHTML = split.join('');
 
     // Assuming you have an HTML element with id="output"
@@ -343,5 +343,5 @@ function cumulativeSumArray(arr = [1, 3, 5, 7, 9, 11]) {
         return accumulator;
     }, []); // Initialize accumulator as an empty array
 
-    console.log(cumulativeSumArray);
+    // console.log(cumulativeSumArray);
 }
