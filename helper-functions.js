@@ -267,3 +267,81 @@ function reduceArray(arr, defaultValue = 0) {
     if (arr.length === 0) return defaultValue;
     return arr.reduce((p, c) => p + c, 0);
 }
+function getMonthName(d) {
+    const getMonthName = (month) => {
+        return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month];
+    }
+    return d.getFullYear() + '_' + (d.getMonth() + 1).toString().padStart(2, '0') + '_' + getMonthName(d.getMonth());
+}
+function getWeekName(d) {
+    return d.getFullYear() + '_' + d.getWeek().toString().padStart(2, '0');
+}
+function getQuarterName(d) {
+    let q = d.getMonth() + 1;
+    q = q < 4 ? 1 : (q < 7 ? 2 : (q < 10 ? 3 : 4));
+    let quarter = d.getFullYear() + '_' + (q).toString().padStart(2, '0');
+    return quarter;
+}
+/**
+ * Displays a simple vertical bar chart in the console using the provided data array.
+ * Each value in the data array is represented as a column of bars.
+ * @param {number[]} data - Array of numbers (0- 10) to visualize as a chart.
+ */
+console.chart = function (data, group = '-') {
+    // const cols = data.map((v, i)=>i+1)
+    console.log(data);
+    cumulativeSumArray(data);
+
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    // data = data.map((v) => v / max * 100 / 10);
+    data = data.map((v) => round(v / (max + Math.abs(min)) * 100 / 10));
+    let msg = '%c';
+    msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        .filter((v) => v <= Math.max(...data) - 0)
+        .map((v, i) => data.map((v2, i2) => v2 >= (i + 1) ? ' █ ' : '   ')
+            .join(''))
+        .reverse()
+        .join('\n');
+    msg += '%c\n' + '─'.repeat(data.length * 3) + '\n%c';
+    msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        .filter((v) => (v) <= Math.abs(Math.min(...data) - 0))
+        .map((v, i) => data.map((v2, i2) => v2 < 0 && Math.abs(v2) >= (i + 1) ? ' █ ' : '   ')
+            .join(''))
+        .join('\n');
+    console.log(msg, 'color:lime; font-size:8px; _line-height:8px;', 'color:white; font-size:8px; line-height:8px;', 'color:red; font-size:8px; line-height:8px;');
+    console.log(data);
+    // cumulativeSumArray(data);
+
+    // const consoleMessage = "This is a multiline\nconsole message that\nwe want to convert to HTML.";
+
+
+    // Create a <pre> element and set its text content
+    const preElement = document.createElement('pre');
+    // msg = replaceAll(msg, ' █ ', '█');
+    msg = replaceAll(msg, '_', '&#9472;');
+    let split = msg.split('%c');
+    split[0] = `<span style="font-size:24px;">${group}<hr/></span>`;
+    split[1] = `<span style="color:lime;">${split[1]}</span>`;
+    split[3] = `<span style="color:red;">${split[3]}</span>`;
+    // const htmlContent = replaceAll(msg,'%c',''); //.replace(/\n/g, '<br>');
+    preElement.innerHTML = `<span class="w3-padding w3-center w3-col s6">${split.join('')}</span>`;
+    // preElement.innerHTML = split.join('');
+
+    // Assuming you have an HTML element with id="output"
+    const outputContainer = document.getElementById('output');
+    if (outputContainer) {
+        // outputContainer.innerHTML = ''; // Clear previous content
+        outputContainer.appendChild(preElement);
+    }
+}
+
+function cumulativeSumArray(arr = [1, 3, 5, 7, 9, 11]) {
+    const cumulativeSumArray = arr.reduce((accumulator, currentValue) => {
+        const lastSum = accumulator.length > 0 ? accumulator[accumulator.length - 1] : 0;
+        accumulator.push(lastSum + currentValue);
+        return accumulator;
+    }, []); // Initialize accumulator as an empty array
+
+    console.log(cumulativeSumArray);
+}

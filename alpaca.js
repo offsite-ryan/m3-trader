@@ -292,15 +292,20 @@ class AlpacaData {
             let summary_quarters = {};
             let summary_month_total = 0;
             res.trades.forEach((v, i) => {
-                const getMonthName = (month) => {
-                    return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month];
-                }
+                // const getMonthName = (month) => {
+                //     return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month];
+                // }
+                // const d = new Date(v.e2);
+                // let month = d.getFullYear() + '_' + (d.getMonth() + 1).toString().padStart(2, '0') + '_' + getMonthName(d.getMonth());
+                // let week = d.getFullYear() + '_' + d.getWeek().toString().padStart(2, '0');
+                // let q = d.getMonth() + 1;
+                // q = q < 4 ? 1 : (q < 7 ? 2 : (q < 10 ? 3 : 4));
+                // let quarter = d.getFullYear() + '_' + (q).toString().padStart(2, '0');
                 const d = new Date(v.e2);
-                let month = d.getFullYear() + '_' + (d.getMonth() + 1).toString().padStart(2, '0') + '_' + getMonthName(d.getMonth());
-                let week = d.getFullYear() + '_' + d.getWeek().toString().padStart(2, '0');
-                let q = d.getMonth() + 1;
-                q = q < 4 ? 1 : (q < 7 ? 2 : (q < 10 ? 3 : 4));
-                let quarter = d.getFullYear() + '_' + (q).toString().padStart(2, '0');
+                let month = getMonthName(d);
+                let week = getWeekName(d);
+                let quarter = getQuarterName(d);
+
                 const gain = v.gain;
                 summary_month_total += gain;
                 if (!summary_months[month]) {
@@ -421,7 +426,8 @@ class AlpacaData {
                     .then((res) => res.bars[symbol] || [])
                     .then((res) => this.addMetaData(res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
-                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
+                    // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
+                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 14, isCrypto ? 1.0 : 0.7))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
                     .then((res) => this.analyze(symbol, res))
@@ -474,18 +480,21 @@ async function test4(symbol = 'OKLO', log = true) {
         favs: {
             name: 'FAVS',
             seed_dollars: 0 * 1000,
-            symbols: ['ETSY', 'SNDK', 'DKNG', 'TAC', 'VXX', 'VIXY', 'ARBK',].sort()
+            // 'BTQ', 'VXX', 'VIXY', 
+            // symbols: ['APP']
+            symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
             // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
         },
         // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
         crypto: {
             name: 'CRYPTO',
-            seed_dollars: 10 * 1000,
+            seed_dollars: 50 * 1000,
             symbols: [
                 // 'BAT/USD', 'PEPE/USD', 
                 // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD', 
-                'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'SUSHI/USD',
-                'GRT/USD', 'SOL/USD', 'UNI/USD', 'XRP/USD',
+                // 'AVAX/USD', 'SUSHI/USD',
+                'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'UNI/USD', 'XRP/USD',
+                // 'GRT/USD', 'SOL/USD', 'UNI/USD',
             ].sort()
         },
         // const research_crypto = {
@@ -500,6 +509,7 @@ async function test4(symbol = 'OKLO', log = true) {
             name: 'R & D',
             seed_dollars: 50 * 1000,
             symbols: [
+                'IREN', 'CIFR', 'HUT', 'BETR', 'TMC',
                 'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
                 // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
                 // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
@@ -525,12 +535,19 @@ async function test4(symbol = 'OKLO', log = true) {
         let sum_all_c = 0;
         try {
             sum = reduceArray(open_positions.filter((v) => symbols.map((v) => v.replace('/', '')).indexOf(v.symbol) >= 0).map((v) => +(v.unrealized_pl)));
+            // sum_all = reduceArray(all_symbols
+            //     .filter((v) => symbols.indexOf(v.symbol) >= 0)
+            //     .filter((v, i, a) => a.indexOf(v) === i) // unique
+            //     .map((v) => v.trades[v.trades.length - 1].g_fixed)
+            // ) - (seed / symbols.length * 1000);
             sum_all = reduceArray(all_symbols
                 .filter((v) => symbols.indexOf(v.symbol) >= 0)
                 .filter((v, i, a) => a.indexOf(v) === i) // unique
                 .map((v) => v.trades[v.trades.length - 1].g_fixed)
             ) - (seed / symbols.length * 1000);
+
             // sum_all_c = all_symbols.filter((v) => symbols.indexOf(v.symbol) >= 0).map((v) => v.gain_dollars_fixed).reduce((p, c) => p + c) - (50 / symbols.length * 1000);
+
             sum_all_c = reduceArray(all_symbols
                 .filter((v) => symbols.indexOf(v.symbol) >= 0)
                 .filter((v, i, a) => a.indexOf(v) === i) // unique
@@ -539,7 +556,7 @@ async function test4(symbol = 'OKLO', log = true) {
         } catch (e) { console.error(e); }
         let html = `<div 
             id="title-${title}"
-            class="w3-col s12 m8 l2 _w3-margin w3-padding"
+            class="w3-col s12 m12 l4 _w3-margin w3-padding"
             style="border:1px solid white;font-size:24px;">
             <b>${title}</b>
             <hr style="border-top:1px solid white"/>
@@ -610,6 +627,7 @@ async function test4(symbol = 'OKLO', log = true) {
             }
         });
     //! console.log(open_positions, all_orders);
+    console.chart(open_positions.map((v)=>v.unrealized_pl))
 
     let total_groups = 0;
     let total_groups_reinvest = 0;
@@ -907,6 +925,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // * CALCULATE MONTHS - NEW
     // * -------------------------------------
     index = 0;
+    document.getElementById('output').innerHTML = '';
     for await (const a of [
         symbol_groups.favs,
         symbol_groups.research,
@@ -919,34 +938,71 @@ async function test4(symbol = 'OKLO', log = true) {
         //     symbols: [...symbol_groups.favs.symbols, ...symbol_groups.research.symbols, ...symbol_groups.crypto.symbols]
         // }
     ]) {
-        let summary_months = {};
-        const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
+        // let summary_months = {};
+        // const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
+        // let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
+        // let all_trades = all.length > 0 ? all.map((v) => v.trades).reduce((p, c) => [...p, ...c]) : [];
+        // let trade_days = all_trades.map((v) => v.e2).filter((v, i, a) => a.indexOf(v) === i).sort();
+        // trade_days.forEach((v, i) => {
+        //     let filtered = all_trades.filter((v2) => v2.e2 === v);
+        //     const trades_total = reduceArray(filtered.map((v2) => v2.gain));
+        //     // const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length * filtered.length);
+        //     const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length);
+        //     const getMonthName = (month) => {
+        //         return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month];
+        //     }
+        //     let month = new Date(v).getFullYear() + '_' + (new Date(v).getMonth() + 1).toString().padStart(2, '0') + '_' + getMonthName(new Date(v).getMonth());
+        //     if (!summary_months[month]) {
+        //         summary_months[month] = gain;
+        //     } else {
+        //         summary_months[month] += gain;
+        //     }
+        // });
+        // let message = `%c${group_name} SUMMARY`;
+        // const total = round(reduceArray(Object.keys(summary_months).map((k) => summary_months[k])));
+        // message += ` | TOTAL: ${total.toLocaleString()}`;
+        // message += ` | PCT: ${round(total / a.seed_dollars * 100).toLocaleString()}%`;
+        // message += ` | AVG: ${round(total / Object.keys(summary_months).length / 1000).toLocaleString()}K`;
+        // message += ` | SEED: ${a.seed_dollars / 1000}K`;
+        // console.log(message, 'color:yellow;');
+        // // console.log(summary_months);
+
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
-        let all_trades = all.length > 0 ? all.map((v) => v.trades).reduce((p, c) => [...p, ...c]) : [];
-        let trade_days = all_trades.map((v) => v.e2).filter((v, i, a) => a.indexOf(v) === i).sort();
-        trade_days.forEach((v, i) => {
-            let filtered = all_trades.filter((v2) => v2.e2 === v);
-            const trades_total = reduceArray(filtered.map((v2) => v2.gain));
-            // const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length * filtered.length);
-            const gain = (trades_total / 100) * (a.seed_dollars / a.symbols.length);
-            const getMonthName = (month) => {
-                return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month];
-            }
-            let month = new Date(v).getFullYear() + '_' + (new Date(v).getMonth() + 1).toString().padStart(2, '0') + '_' + getMonthName(new Date(v).getMonth());
-            if (!summary_months[month]) {
-                summary_months[month] = gain;
-            } else {
-                summary_months[month] += gain;
-            }
+        const field_name = 'months' // months | weeks | quarters
+        let temp = all.map((v) => v.summary[field_name]).map((v) => Object.keys(v)).reduce((p, c) => [...p, ...c]).filter((v, i, a) => a.indexOf(v) === i).sort();
+        let temp_data = {};
+        // let investment = 50 * 1000;
+        let investment = symbol_groups[index === 0 ? 'favs' : (index === 1 ? 'research' : (index === 2 ? 'crypto' : 'all'))]?.seed_dollars || 10 * 1000;
+        temp.forEach((m) => {
+            let sum = 0;
+            let count = 0;
+            all.forEach((s) => {
+                count++;
+                if (s.summary[field_name][m]) {
+                    sum += (s.summary[field_name][m]);
+                }
+            });
+            temp_data[m] = round1(investment * (sum / 100) / count);
         });
+
+        const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
         let message = `%c${group_name} SUMMARY`;
-        const total = round(reduceArray(Object.keys(summary_months).map((k) => summary_months[k])));
-        message += ` | TOTAL: ${total.toLocaleString()}`;
-        message += ` | PCT: ${round(total / a.seed_dollars * 100).toLocaleString()}%`;
-        message += ` | AVG: ${round(total / Object.keys(summary_months).length / 1000).toLocaleString()}K`;
-        message += ` | SEED: ${a.seed_dollars / 1000}K`;
         console.log(message, 'color:yellow;');
-        // console.log(summary_months);
+        console.log(`%cSUMMARY TOTAL | ${round2(Object.keys(temp_data).map((k) => temp_data[k]).reduce((p, c) => p + c)).toLocaleString()}`, 'color:orange;');
+        let t = 0;
+        let t2 = 0;
+        all.forEach((s) => {
+            t += s.trades[s.trades.length - 1] ? s.trades[s.trades.length - 1].g_fixed : 0;
+            t2 += s.trades[s.trades.length - 1] ? s.trades[s.trades.length - 1].g_cumulative : 0;
+        });
+        // console.log(`%cAVG: $${round2(Object.keys(temp_data).map((k) => temp_data[k]).reduce((p, c) => p + c) / t).toLocaleString()} | TOTAL ENTRIES: ${t}`, 'color:aqua;');
+        console.log(`%cTRADES TOTAL | ${round2(t / 1000).toLocaleString()}K | ${round2(t2 / 1000).toLocaleString()}K C`, 'color:orange;');
+        // console.table(temp_data);
+        let data = Object.keys(temp_data).map((k) => temp_data[k]);
+        // const max = Math.max(...data);
+        // data = data.map((v) => v / max * 100 / 10);
+        console.chart(data, group_name);
+
         index++;
     }
     //#endregion
@@ -1270,7 +1326,7 @@ async function test4(symbol = 'OKLO', log = true) {
         // console.log(`%c$${round1(g).toLocaleString()}`, 'color:aquamarine;');
     });
     // console.log(months);
-    console.log(round2(reduceArray(Object.keys(months).map((k) => round1(months[k])))).toLocaleString());
+    // console.log(round2(reduceArray(Object.keys(months).map((k) => round1(months[k])))).toLocaleString());
     group_results.push(months);
     // console.log(group_results);
     group_results.forEach((v, i) => update_months_chart(i, '', v));
