@@ -135,7 +135,7 @@ class AlpacaData {
                     // *** 
                     buy: (v, i) => v.c >= v.lb,
                     sell: (v, i) => v.c < v.lb,
-                    gain: (v, i) => (bars[i].c - bars[own_at].c) / bars[own_at].c * 100,
+                    gain_pct: (v, i) => (bars[i].c - bars[own_at].c) / bars[own_at].c * 100,
                 },
                 // FC: {
                 //     buy: (v, i) => v.c >= v.lb,
@@ -150,12 +150,13 @@ class AlpacaData {
                 FOC: {
                     buy: (v, i) => v.o >= v.lb,
                     sell: (v, i) => v.c < v.lb,
-                    gain: (v, i) => (bars[i].c - bars[own_at].o) / bars[own_at].o * 100,
+                    gain_pct: (v, i) => (bars[i].c - bars[own_at].o) / bars[own_at].o * 100,
+                    gain_1K: (v, i) => (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o)
                 },
                 FOOC: {
                     buy: (v, i) => v.o >= v.lb,
                     sell: (v, i) => v.c < v.lb || v.o < v.lb,
-                    gain: (v, i) => (bars[i].c - bars[own_at].o) / bars[own_at].o * 100,
+                    gain_pct: (v, i) => (bars[i].c - bars[own_at].o) / bars[own_at].o * 100,
                 },
                 // F0: { buy: (v, i) => v.c >= v.lb, sell: (v, i) => v.c < v.lb }, // ***
                 // F1: { buy: (v, i) => v.dow !== 5 && v.o >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
@@ -175,6 +176,29 @@ class AlpacaData {
             const algo = isCrypto ? 'FOC' : 'FOC';
 
             if (bars) {
+                /**
+                 * ADD TRADE
+                 * @param {*} v - bar object
+                 * @param {*} i1 - buy index
+                 * @param {*} i2 - sell index
+                 */
+                const push_trade = (v, i1, i2) => {
+                    trades.push({
+                        s: symbol,
+                        o: bars[i1].o,
+                        c: bars[i2].c,
+                        q: 1000 / bars[i1].o,
+                        gain_pct: algos[algo].gain_pct(v, i2),
+                        gain_1K: algos[algo].gain_1K(v, i2),
+                        num_days: i2 - i1,
+                        i1,
+                        i2,
+                        e1: bars[i1].e,
+                        e2: bars[i2].e,
+                        t1: getYMD(bars[i1].tl),
+                        t2: getYMD(bars[i2].tl),
+                    });
+                }
                 bars.forEach((v, i) => {
                     if (v.sma) {
                         if (v.c >= v.ub) {
@@ -198,23 +222,24 @@ class AlpacaData {
                                 // if (TRADE) {
                                 //     sell(symbol);
                                 // }
-                                trades.push({
-                                    s: symbol,
-                                    o: bars[own_at].o,
-                                    c: bars[i].c,
-                                    gain_1K: (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o),
-                                    // q: bars[own_at].o,
-                                    num_days: i - own_at,
-                                    1: own_at,
-                                    2: i,
-                                    gain: algos[algo].gain(v, i),
-                                    // gain: (bars[i].c - bars[own_at].c) / bars[own_at].c * 100,
-                                    // gain: (bars[i].c - bars[own_at].o) / bars[own_at].o * 100,
-                                    e1: bars[own_at].e,
-                                    e2: v.e,
-                                    t1: getYMD(bars[own_at].tl),
-                                    t2: getYMD(v.tl),
-                                });
+                                push_trade(v, own_at, i);
+                                // trades.push({
+                                //     s: symbol,
+                                //     o: bars[own_at].o,
+                                //     c: bars[i].c,
+                                //     gain_1K: (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o),
+                                //     // q: bars[own_at].o,
+                                //     num_days: i - own_at,
+                                //     1: own_at,
+                                //     2: i,
+                                //     gain: algos[algo].gain(v, i),
+                                //     // gain: (bars[i].c - bars[own_at].c) / bars[own_at].c * 100,
+                                //     // gain: (bars[i].c - bars[own_at].o) / bars[own_at].o * 100,
+                                //     e1: bars[own_at].e,
+                                //     e2: v.e,
+                                //     t1: getYMD(bars[own_at].tl),
+                                //     t2: getYMD(v.tl),
+                                // });
                                 own_at = -1;
                             }
                         }
@@ -224,48 +249,50 @@ class AlpacaData {
                             const gain = (bars[i].c - bars[own_at].o) / bars[own_at].o * 100
                             //*     ? (bars[i].c - bars[own_at].c) / bars[own_at].c * 100
                             //*     : (bars[i].c - bars[own_at].o) / bars[own_at].o * 100;
-                            trades.push({
-                                s: symbol,
-                                o: bars[own_at].o,
-                                c: bars[i].c,
-                                gain_1K: (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o),
-                                // q: bars[own_at].o,
-                                num_days: i - own_at,
-                                1: own_at,
-                                2: i, gain,
-                                e1: bars[own_at].e,
-                                e2: v.e,
-                                t1: getYMD(bars[own_at].tl),
-                                t2: getYMD(v.tl),
-                            });
+                            push_trade(v, own_at, i);
+                            // trades.push({
+                            //     s: symbol,
+                            //     o: bars[own_at].o,
+                            //     c: bars[i].c,
+                            //     gain_1K: (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o),
+                            //     // q: bars[own_at].o,
+                            //     num_days: i - own_at,
+                            //     1: own_at,
+                            //     2: i, gain,
+                            //     e1: bars[own_at].e,
+                            //     e2: v.e,
+                            //     t1: getYMD(bars[own_at].tl),
+                            //     t2: getYMD(v.tl),
+                            // });
                         }
                     }
                 });
                 let cumulative = 0;
-                let cumulative_dollars = seed;
-                let fixed_dollars = seed;
+                // let cumulative_dollars = seed;
+                // let fixed_dollars = seed;
                 trades.forEach((v) => {
-                    cumulative += v.gain;
-                    v.g_cumulative_seed = cumulative_dollars;
-                    v.g_fixed_seed = seed;
+                    cumulative += v.gain_1K;
+                    v.cumulative = cumulative;
+                    // v.g_cumulative_seed = cumulative_dollars;
+                    // v.g_fixed_seed = seed;
 
-                    // /** FIXED INVESTMENT */
-                    fixed_dollars += seed * (v.gain / 100);
-                    // /** RE-INVEST GAINS (+/-) */
-                    cumulative_dollars += cumulative_dollars * (v.gain / 100);
+                    // // /** FIXED INVESTMENT */
+                    // fixed_dollars += seed * (v.gain / 100);
+                    // // /** RE-INVEST GAINS (+/-) */
+                    // cumulative_dollars += cumulative_dollars * (v.gain / 100);
 
-                    // v.gain_cumulative = cumulative;
-                    // v.gain_dollars = cumulative_dollars;
-                    v.g_fixed = fixed_dollars;
-                    v.g_fixed_pct = ((fixed_dollars / seed)) * 100; // remove the seed (-1)
-                    v.g_cumulative = cumulative_dollars;
-                    v.g_cumulative_pct = ((cumulative_dollars / seed)) * 100; // remove the seed (-1)
+                    // // v.gain_cumulative = cumulative;
+                    // // v.gain_dollars = cumulative_dollars;
+                    // v.g_fixed = fixed_dollars;
+                    // v.g_fixed_pct = ((fixed_dollars / seed)) * 100; // remove the seed (-1)
+                    // v.g_cumulative = cumulative_dollars;
+                    // v.g_cumulative_pct = ((cumulative_dollars / seed)) * 100; // remove the seed (-1)
 
-                    v.g_cumulative_pct_diff = ((cumulative_dollars / fixed_dollars) - 1) * 100; // remove the seed (-1)
+                    // v.g_cumulative_pct_diff = ((cumulative_dollars / fixed_dollars) - 1) * 100; // remove the seed (-1)
                 });
-                g = reduceArray(trades.map((v) => v.gain));
-                g_dollars = cumulative_dollars;
-                g_dollars_fixed = fixed_dollars;
+                // g = reduceArray(trades.map((v) => v.gain));
+                // g_dollars = cumulative_dollars;
+                // g_dollars_fixed = fixed_dollars;
             };
             const last = bars[bars.length - 1];
             resolve({
@@ -306,7 +333,7 @@ class AlpacaData {
                 let week = getWeekName(d);
                 let quarter = getQuarterName(d);
 
-                const gain = v.gain;
+                const gain = v.gain_1K;
                 summary_month_total += gain;
                 if (!summary_months[month]) {
                     summary_months[month] = gain;
@@ -481,7 +508,7 @@ async function test4(symbol = 'OKLO', log = true) {
             name: 'FAVS',
             seed_dollars: 0 * 1000,
             // 'BTQ', 'VXX', 'VIXY', 
-            // symbols: ['APP']
+            // symbols: ['COIN'],
             symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
             // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
         },
@@ -567,7 +594,7 @@ async function test4(symbol = 'OKLO', log = true) {
             // console.log(s, has_position);
 
             const status = all_symbols.find((v) => v.symbol === s);
-            const g = status.trades[status.trades.length - 1].g_fixed_pct - 100;
+            const g = status.trades[status.trades.length - 1].g_fixed_pct;
             let status_color = '';
             if (status) {
                 if (g >= 0) {
@@ -967,43 +994,78 @@ async function test4(symbol = 'OKLO', log = true) {
         // console.log(message, 'color:yellow;');
         // // console.log(summary_months);
 
+        // --------------------------------------------------------------------
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
-        const field_name = 'months' // months | weeks | quarters
-        let temp = all.map((v) => v.summary[field_name]).map((v) => Object.keys(v)).reduce((p, c) => [...p, ...c]).filter((v, i, a) => a.indexOf(v) === i).sort();
-        let temp_data = {};
-        // let investment = 50 * 1000;
-        let investment = symbol_groups[index === 0 ? 'favs' : (index === 1 ? 'research' : (index === 2 ? 'crypto' : 'all'))]?.seed_dollars || 10 * 1000;
-        temp.forEach((m) => {
-            let sum = 0;
-            let count = 0;
-            all.forEach((s) => {
-                count++;
-                if (s.summary[field_name][m]) {
-                    sum += (s.summary[field_name][m]);
-                }
-            });
-            temp_data[m] = round1(investment * (sum / 100) / count);
-        });
-
         const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
         let message = `%c${group_name} SUMMARY`;
         console.log(message, 'color:yellow;');
-        console.log(`%cSUMMARY TOTAL | ${round2(Object.keys(temp_data).map((k) => temp_data[k]).reduce((p, c) => p + c)).toLocaleString()}`, 'color:orange;');
-        let t = 0;
-        let t2 = 0;
-        all.forEach((s) => {
-            t += s.trades[s.trades.length - 1] ? s.trades[s.trades.length - 1].g_fixed : 0;
-            t2 += s.trades[s.trades.length - 1] ? s.trades[s.trades.length - 1].g_cumulative : 0;
-        });
-        // console.log(`%cAVG: $${round2(Object.keys(temp_data).map((k) => temp_data[k]).reduce((p, c) => p + c) / t).toLocaleString()} | TOTAL ENTRIES: ${t}`, 'color:aqua;');
-        console.log(`%cTRADES TOTAL | ${round2(t / 1000).toLocaleString()}K | ${round2(t2 / 1000).toLocaleString()}K C`, 'color:orange;');
-        // console.table(temp_data);
-        let data = Object.keys(temp_data).map((k) => temp_data[k]);
-        // const max = Math.max(...data);
-        // data = data.map((v) => v / max * 100 / 10);
-        console.chart(data, group_name);
+        // console.log(`%cSUMMARY TOTAL | ${round2(Object.keys(temp_data).map((k) => temp_data[k]).reduce((p, c) => p + c)).toLocaleString()}`, 'color:orange;');
+        // let t = 0;
+        // let t2 = 0;
+        // let data = [];
+        // all.forEach((s) => {
+        //     t += s.trades[s.trades.length - 1] ? s.trades[s.trades.length - 1].g_fixed : 0;
+        //     t2 += s.trades[s.trades.length - 1] ? s.trades[s.trades.length - 1].g_cumulative : 0;
+        //     data.push(s)
+        // });
+        const t = all.map((v) => v.summary.total).reduce((p, c) => p + c);
+        console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS`, 'color:orange;');
 
-        
+        //! --------------------------------------------------------------------
+        // const field_name = 'months' // months | weeks | quarters
+        // let data = {};
+        // let temp_data = {};
+        // let count = 0;
+        // Object.keys(all.map((v)=>v.summary).summary[field_name]).forEach((k) => {
+        //     let sum = 0;
+        //     all.forEach((s) => {
+        //         count++;
+        //         if (s.summary[field_name][k]) {
+        //             sum += (s.summary[field_name][k]);
+        //         }
+        //     });
+        //     data[k] = round1(investment * (sum / 100) / count);
+        // });
+        // console.chart(data, group_name);
+        //! --------------------------------------------------------------------
+
+        // let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
+        // const field_name = 'months' // months | weeks | quarters
+        // let temp = all.map((v) => v.summary[field_name]).map((v) => Object.keys(v)).reduce((p, c) => [...p, ...c]).filter((v, i, a) => a.indexOf(v) === i).sort();
+        // let temp_data = {};
+        // // let investment = 50 * 1000;
+        // let investment = symbol_groups[index === 0 ? 'favs' : (index === 1 ? 'research' : (index === 2 ? 'crypto' : 'all'))]?.seed_dollars ?? 10 * 1000;
+        // temp.forEach((m) => {
+        //     let sum = 0;
+        //     let count = 0;
+        //     all.forEach((s) => {
+        //         count++;
+        //         if (s.summary[field_name][m]) {
+        //             sum += (s.summary[field_name][m]);
+        //         }
+        //     });
+        //     temp_data[m] = round1(investment * (sum / 100) / count);
+        // });
+
+        // const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
+        // let message = `%c${group_name} SUMMARY`;
+        // console.log(message, 'color:yellow;');
+        // console.log(`%cSUMMARY TOTAL | ${round2(Object.keys(temp_data).map((k) => temp_data[k]).reduce((p, c) => p + c)).toLocaleString()}`, 'color:orange;');
+        // let t = 0;
+        // let t2 = 0;
+        // all.forEach((s) => {
+        //     t += s.trades[s.trades.length - 1] ? s.trades[s.trades.length - 1].g_fixed : 0;
+        //     t2 += s.trades[s.trades.length - 1] ? s.trades[s.trades.length - 1].g_cumulative : 0;
+        // });
+        // // console.log(`%cAVG: $${round2(Object.keys(temp_data).map((k) => temp_data[k]).reduce((p, c) => p + c) / t).toLocaleString()} | TOTAL ENTRIES: ${t}`, 'color:aqua;');
+        // console.log(`%cTRADES TOTAL | ${round2(t / 1000).toLocaleString()}K | ${round2(t2 / 1000).toLocaleString()}K C`, 'color:orange;');
+        // // console.table(temp_data);
+        // let data = Object.keys(temp_data).map((k) => temp_data[k]);
+        // // const max = Math.max(...data);
+        // // data = data.map((v) => v / max * 100 / 10);
+        // console.chart(data, group_name);
+
+
         index++;
     }
     console.log('%cOPEN POSITIONS', 'color:yellow;');

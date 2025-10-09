@@ -335,7 +335,13 @@ console.chart = function (data, group = '-') {
         outputContainer.appendChild(preElement);
     }
 }
-
+function reduceObjectValues(obj, defaultValue = 0) {
+    const values = Object.values(obj);
+    if (values.length === 0) {
+        return defaultValue;
+    }
+    return values.reduce((p, c) => p + c, 0);
+}
 function cumulativeSumArray(arr = [1, 3, 5, 7, 9, 11]) {
     const cumulativeSumArray = arr.reduce((accumulator, currentValue) => {
         const lastSum = accumulator.length > 0 ? accumulator[accumulator.length - 1] : 0;
