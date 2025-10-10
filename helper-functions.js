@@ -299,17 +299,17 @@ console.chart = function (data, group = '-') {
     let msg = '%c';
     msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         .filter((v) => v <= Math.max(...data) - 0)
-        .map((v, i) => data.map((v2, i2) => v2 >= (i + 1) ? ' █ ' : '   ')
+        .map((v, i) => data.map((v2, i2) => v2 >= (i + 1) ? ' █' : '  ')
             .join(''))
         .reverse()
         .join('\n');
-    msg += '%c\n' + '─'.repeat(data.length * 3) + '\n%c';
+    msg += '%c\n' + '─'.repeat(data.length * 2) + '\n%c';
     msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         .filter((v) => (v) <= Math.abs(Math.min(...data) - 0))
-        .map((v, i) => data.map((v2, i2) => v2 < 0 && Math.abs(v2) >= (i + 1) ? ' █ ' : '   ')
+        .map((v, i) => data.map((v2, i2) => v2 < 0 && Math.abs(v2) >= (i + 1) ? ' █' : '  ')
             .join(''))
         .join('\n');
-    console.log(msg, 'color:lime; font-size:8px; _line-height:8px;', 'color:white; font-size:8px; line-height:8px;', 'color:red; font-size:8px; line-height:8px;');
+    console.log(msg, 'color:lime; font-size:8px; line-height:8px;', 'color:white; font-size:8px; line-height:8px;', 'color:red; font-size:8px; line-height:8px;');
     // console.log(data);
     // cumulativeSumArray(data);
 
@@ -325,7 +325,7 @@ console.chart = function (data, group = '-') {
     split[1] = `<span style="color:lime;">${split[1]}</span>`;
     split[3] = `<span style="color:red;">${split[3]}</span>`;
     // const htmlContent = replaceAll(msg,'%c',''); //.replace(/\n/g, '<br>');
-    preElement.innerHTML = `<span class="w3-padding w3-center w3-col ${group === 'OPEN POSITIONS' ? 's12' : 's12 m6'}">${split.join('')}</span>`;
+    preElement.innerHTML = `<span class="w3-padding w3-center w3-col ${group.startsWith('OPEN POSITIONS') ? 's12' : 's12 m4'}">${split.join('')}</span>`;
     // preElement.innerHTML = split.join('');
 
     // Assuming you have an HTML element with id="output"

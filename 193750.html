@@ -68,30 +68,35 @@
     <!-- Bollinger -->
     <div id="content-bollinger" class="_w3-margin" style="display:none;">
         <br />
-        <div class="w3-row" style="_border:1px solid; min-height:600px;;">
-            <div class="w3-padding w3-col s12 m6 l3" style="border:1px solid rgb(92, 92, 92);min-height:457px;">
-                <div id="title-symbols-stacked-6"></div>
-                <div id="chart-symbols-stacked-6"></div>
+        <div class="w3-row" style="_border:1px solid; min-height:600px;">
+            <div class="w3-col s12 m6 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);">
+                <div id="total-positions-2" class="w3-center w3-xxlarge"
+                    style="min-height: 390.5px;align-content: center;font-weight:900;font-size:6.0vh !important;flex:inline-grid;">
+                </div>
             </div>
             <div class="w3-col s12 m6 l6 chart-symbol-day-3 w3-padding"
-                style="border:1px solid rgb(92, 92, 92);min-height:457px;;">
+                style="border:1px solid rgb(92, 92, 92);min-height:407px;;">
                 <div _id="" style="font-size: 18px; color: rgb(255, 255, 255);">OPEN POSITIONS</div>
                 <div id="chart-positions"></div>
             </div>
-            <div class="w3-col s12 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);">
+            <div class="w3-padding w3-col s12 m16 l3" style="display:none;border:1px solid rgb(92, 92, 92);min-height:457px;">
+                <div id="title-symbols-stacked-6"></div>
+                <div id="chart-symbols-stacked-6"></div>
+            </div>
+            <!-- <div class="w3-col s12 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);">
                 <div id="total-positions-2" class="w3-center w3-xxlarge"
                     style="_min-height: 440px;align-content: center;font-weight:900;font-size:7.8vh !important;flex:inline-grid;">
                 </div>
-            </div>
-            <div class="w3-col s12 l2 w3-padding w3-hide-small w3-hide-medium"
-                style="border:1px solid rgb(92, 92, 92);;_min-height:300px;;">
+            </div> -->
+            <div class="w3-col s9 l2 w3-padding w3-hide-small w3-hide-medium"
+                style="border:1px solid rgb(92, 92, 92);_min-height:300px;;">
                 <div id="chart-bollinger-1"></div>
             </div>
-            <div class="w3-col s12 l7 w3-padding _w3-hide-small _w3-hide-medium"
+            <div class="w3-col s8 l7 w3-padding _w3-hide-small _w3-hide-medium"
                 style="border:1px solid rgb(92, 92, 92); _min-height:500px;;">
                 <div id="chart-bollinger-0"></div>
             </div>
-            <div class="w3-col s12 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);_min-height:500px;">
+            <div class="w3-col s4 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);_min-height:500px;">
                 <div id="chart-bollinger-2"></div>
                 <!-- <input class="w3-col s6" type="number" value="1000"/> -->
                 <input type="range" min="0" max="5" value="1" step="0.5" style="accent-color:#00b90a;"
