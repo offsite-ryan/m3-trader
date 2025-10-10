@@ -696,10 +696,11 @@ async function test4(symbol = 'OKLO', log = true) {
         symbol_groups.favs,
         symbol_groups.research,
         symbol_groups.crypto,
+        {symbols: [...symbol_groups.favs.symbols,...symbol_groups.research.symbols,...symbol_groups.crypto.symbols]}
     ]) {
         //! --------------------------------------------------------------------
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
-        const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
+        const group_name = index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
         let message = `%c${group_name} SUMMARY`;
         console.log(message, 'color:yellow;');
         const t = all.map((v) => v.summary.total).reduce((p, c) => p + c);
@@ -1015,7 +1016,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // for await (const a of [symbol_groups.favs, symbol_groups.research, symbol_groups.crypto, { seed_dollars: symbol_groups.favs.seed_dollars + symbol_groups.research.seed_dollars + symbol_groups.crypto.seed_dollars, symbols: all_symbols_names }]) {
     for await (const a of [symbol_groups.favs, symbol_groups.research, symbol_groups.crypto]) {
 
-        const group_name = index === 0 ? 'FAVS' : (index === 1 ? 'R & D' : (index === 2 ? 'CRYPTO' : 'ALL'));
+        const group_name = index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0)
 
         // const day_results = all;
