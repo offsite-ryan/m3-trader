@@ -454,7 +454,7 @@ class AlpacaData {
                     .then((res) => this.addMetaData(res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
                     // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
-                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
+                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 48 : 28, isCrypto ? 1.0 : 0.7))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
                     .then((res) => this.analyze(symbol, res))

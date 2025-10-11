@@ -298,14 +298,14 @@ console.chart = function (data, group = '-') {
     data = data.map((v) => round(v / (max + Math.abs(min)) * 100 / 10));
     let msg = '%c';
     msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        .filter((v) => v <= Math.max(...data) - 0)
+        .filter((v) => v <= Math.max(...data) + 3)
         .map((v, i) => data.map((v2, i2) => v2 >= (i + 1) ? ' █' : '  ')
             .join(''))
         .reverse()
         .join('\n');
     msg += '%c\n' + '─'.repeat(data.length * 2) + '\n%c';
     msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        .filter((v) => (v) <= Math.abs(Math.min(...data) - 0))
+        .filter((v) => (v) <= Math.abs(Math.min(...data) - 1))
         .map((v, i) => data.map((v2, i2) => v2 < 0 && Math.abs(v2) >= (i + 1) ? ' █' : '  ')
             .join(''))
         .join('\n');
@@ -319,7 +319,7 @@ console.chart = function (data, group = '-') {
     // Create a <pre> element and set its text content
     const preElement = document.createElement('pre');
     // msg = replaceAll(msg, ' █ ', '█');
-    msg = replaceAll(msg, '_', '&#9472;');
+    // msg = replaceAll(msg, '_', '&#9472;');
     let split = msg.split('%c');
     split[0] = `<span style="font-size:24px;">${group}<hr/></span>`;
     split[1] = `<span style="color:lime;">${split[1]}</span>`;
