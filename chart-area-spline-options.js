@@ -70,7 +70,7 @@ var chart_area_spline_options = {
         theme: 'dark',
         shared: true,
         x: {
-            // format: 'dd/MM/yy HH:mm'
+            format: 'dd-MMM HH:mm'
         },
         style: {
             fontSize: '18px',

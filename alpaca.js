@@ -199,15 +199,36 @@ class AlpacaData {
                         t2: getYMD(bars[i2].tl),
                     });
                 }
+                // const get_window = (t) => { return new Date(t).getDate() === 1; };
+                // const get_window = (t) => { return new Date(t).getDay() === 5; };
+                // const get_window = (t1, t2) => { return (new Date(t2).getTime() - new Date(t1).getTime()) > (7*24*60*60*1000); };
+                const get_window = (t) => { return new Date(t).getMonth(); };
+                let last = get_window(bars[0].t);
                 bars.forEach((v, i) => {
                     if (v.sma) {
+                        const current = get_window(v.t);
+                        if (current !== last && own_at >- 0) {
+                            push_trade(v, own_at, i);
+                            own_at = -1;
+                            last = current;
+                        }
+                        // if (own_at >= 0 && get_window(bars[own_at].t, v.t)) {
+                        //     push_trade(v, own_at, i);
+                        //     own_at = -1;
+                        //     // last = current;
+                        // }
+                        // if (own_at >= 0 && get_window(v.t)) {
+                        //     push_trade(v, own_at, i);
+                        //     own_at = -1;
+                        // }
+
                         if (v.c >= v.ub) {
                             was_above = true;
                         }
                         if (v.c <= v.lb) {
                             was_below = true;
                         }
-                        // * BUY *
+                        // * BUY * //
                         if (algos[algo].buy(v, i)) {
                             if (was_below === true && own_at === -1) {
                                 // if (TRADE) {
@@ -215,8 +236,9 @@ class AlpacaData {
                                 // }
                                 own_at = i;
                             }
+                            // own_at = i;
                         }
-                        // * SELL *
+                        // * SELL * //
                         else if (algos[algo].sell(v, i)) {
                             if (own_at >= 0) {
                                 // if (TRADE) {
@@ -592,7 +614,7 @@ async function test4(symbol = 'OKLO', log = true) {
             style="border:1px solid white;font-size:24px;">
             <b>${title}</b>
             <hr style="border-top:1px solid white"/>
-            <b>$${round(sum).toLocaleString()} | $${round(sum_all).toLocaleString()} | ${round1(sum_all / (symbols.length*1000) * 100).toLocaleString()}%</b>
+            <b>$${round(sum).toLocaleString()} | $${round(sum_all).toLocaleString()} | ${round1(sum_all / (symbols.length * 1000) * 100).toLocaleString()}%</b>
             </div>`;
         symbols.forEach((s) => {
             const has_position = open_positions.findIndex((v) => v.symbol === s.replace('/', ''));
@@ -665,13 +687,15 @@ async function test4(symbol = 'OKLO', log = true) {
     let chart_data_reivest = [];
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-01T00:00:00-04:00`));
-    const start = new Date(new Date(`2024-09-01T00:00:00-0${tz}:00`));
+    const start = new Date(new Date(`2024-10-01T00:00:00-0${tz}:00`));
     const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
     let index = 0;
 
     console.group('%c----------------------------------------------------', 'color:orange;');
     // const all_symbols_names = [...favs.symbols, ...crypto.symbols, ...research.symbols];
     const all_symbols_names = [...symbol_groups.favs.symbols, ...symbol_groups.crypto.symbols, ...symbol_groups.research.symbols];
+    // const all_symbols_names = ['GE', 'BTC/USD', 'QQQ'];
+
     const promises = all_symbols_names.map((s) => {
         // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
         return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), open_positions, all_orders);
@@ -696,39 +720,44 @@ async function test4(symbol = 'OKLO', log = true) {
         symbol_groups.favs,
         symbol_groups.research,
         symbol_groups.crypto,
-        {symbols: [...symbol_groups.favs.symbols,...symbol_groups.research.symbols,...symbol_groups.crypto.symbols]}
+        { symbols: [...symbol_groups.favs.symbols, ...symbol_groups.research.symbols, ...symbol_groups.crypto.symbols] }
     ]) {
         //! --------------------------------------------------------------------
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
-        const group_name = index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
-        let message = `%c${group_name} SUMMARY`;
-        console.log(message, 'color:yellow;');
-        const t = all.map((v) => v.summary.total).reduce((p, c) => p + c);
-        console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 50)}K @ 50K`, 'color:orange;');
+        if (all.length > 0) {
+            const group_name = index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
+            let message = `%c${group_name} SUMMARY`;
+            console.log(message, 'color:yellow;');
+            const t = all.map((v) => v.summary.total).reduce((p, c) => p + c);
+            console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 50)}K @ 50K`, 'color:orange;');
 
-        //! --------------------------------------------------------------------
-        const field_name = 'months' // months | weeks | quarters
-        let data = {};
-        let temp_data = {};
-        let count = 0;
-        let investment = all.length * 1000;
-        const keys = all.map((v) => Object.keys(v.summary[field_name])).reduce((p, c) => [...p, ...c]).filter((v, i, a) => a.indexOf(v) === i).sort();
-        // console.log(keys);
-        keys.forEach((k) => {
-            let sum = 0;
-            all.forEach((s) => {
-                count++;
-                if (s.summary[field_name][k]) {
-                    sum += (s.summary[field_name][k]);
-                }
+            //! --------------------------------------------------------------------
+            const field_name = 'months' // months | weeks | quarters
+            let data = {};
+            let temp_data = {};
+            let count = 0;
+            let investment = all.length * 1000;
+            const keys = all.map((v) => Object.keys(v.summary[field_name])).reduce((p, c) => [...p, ...c]).filter((v, i, a) => a.indexOf(v) === i).sort();
+            // console.log(keys);
+            keys.forEach((k) => {
+                let sum = 0;
+                all.forEach((s) => {
+                    count++;
+                    if (s.summary[field_name][k]) {
+                        sum += (s.summary[field_name][k]);
+                    }
+                });
+                data[k] = round1(sum);
             });
-            data[k] = round1(sum);
-        });
-        console.log(round2(Object.values(data).reduce((p, c) => p + c)), round2(Object.values(data).reduce((p, c) => p + c) / Object.keys(data).length), data);
-        console.chart(Object.values(data), `${group_name}<br/>$${round2(Object.values(data).reduce((p, c) => p + c)).toLocaleString()} | $${round(Object.values(data).reduce((p, c) => p + c) / Object.keys(data).length)}`);
-        //! --------------------------------------------------------------------
-
-        groups[group_name] = data;
+            const num = Object.keys(data).length;
+            const sum = round2(Object.values(data).reduce((p, c) => p + c))
+            const avg = round2(sum / num);
+            const pct = round(sum / (all.length * 1000) * 100);
+            console.log(sum, avg, pct, num, data);
+            console.chart(Object.values(data), `${group_name} | ${pct}%<br/>$${sum.toLocaleString()} | $${round(sum / Object.keys(data).length)}`);
+            //! --------------------------------------------------------------------
+            groups[group_name] = data;
+        }
         index++;
     }
     console.log(`%cOPEN POSITIONS | $${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()}`, 'color:yellow;');
