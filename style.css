@@ -13,7 +13,10 @@ h3,
 h4,
 h5,
 h6 {
+    /* font-family: monospace; */
+    /* font-size: 24px; */
     font-family: Verdana;
+    /* font-family: cursive; */
 }
 
 hr {

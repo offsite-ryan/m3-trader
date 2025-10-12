@@ -30,8 +30,8 @@
 <body class="">
 
     <div class="_w3-container" style="padding: 8px;background-color:#00b90a;">
-        <h2><img src="./favicon-black.png" style="width:90px;margin-right:20px;" /><span>M<sup>3</sup> Trader</span>
-            <span class="w3-tiny w3-text-light-grey">
+        <h2><img src="./favicon-black.png" style="width:90px;margin-right:20px;" /><span class="w3-text-black">M<sup>3</sup> Trader</span>
+            <span class="w3-tiny w3-text-black">
                 <span id="datetime" class="w3-large"></span>
             </span>
             <span class="_w3-xxxlarge w3-right" style="font-size:40px;margin-left: 5px;cursor:pointer;"
@@ -79,15 +79,30 @@
                 <div _id="" style="font-size: 18px; color: rgb(255, 255, 255);">OPEN POSITIONS</div>
                 <div id="chart-positions"></div>
             </div>
-            <div class="w3-padding w3-col s12 m16 l3" style="display:none;border:1px solid rgb(92, 92, 92);min-height:457px;">
+            <div class="w3-padding w3-col s12 m6 l3" style="display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
                 <div id="title-symbols-stacked-6"></div>
                 <div id="chart-symbols-stacked-6"></div>
             </div>
-            <!-- <div class="w3-col s12 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);">
-                <div id="total-positions-2" class="w3-center w3-xxlarge"
-                    style="_min-height: 440px;align-content: center;font-weight:900;font-size:7.8vh !important;flex:inline-grid;">
-                </div>
-            </div> -->
+            <!-- --------------------------------------------------------- -->
+            <div class="w3-padding w3-col s12 m4 l3" style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
+                <div id="title-symbols-group-1"></div>
+                <div id="chart-symbols-group-1"></div>
+            </div>
+            <div class="w3-padding w3-col s12 m4 l3" style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
+                <div id="title-symbols-group-2"></div>
+                <div id="chart-symbols-group-2"></div>
+            </div>
+            <div class="w3-padding w3-col s12 m4 l3" style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
+                <div id="title-symbols-group-3"></div>
+                <div id="chart-symbols-group-3"></div>
+            </div>
+            <div class="w3-padding w3-col s12 m4 l3" style="display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
+                <div id="title-symbols-group-4"></div>
+                <div id="chart-symbols-group-4"></div>
+            </div>
+            <!-- --------------------------------------------------------- -->
+
+            <br/>
             <div class="w3-col s9 l2 w3-padding w3-hide-small w3-hide-medium"
                 style="border:1px solid rgb(92, 92, 92);_min-height:300px;;">
                 <div id="chart-bollinger-1"></div>
@@ -317,6 +332,10 @@
     let chart_symbols_stacked_6 = null;
     let chart_symbols_stacked_7 = null;
     let chart_symbols_stacked_8 = null;
+    let chart_symbols_group_1 = null;
+    let chart_symbols_group_2 = null;
+    let chart_symbols_group_3 = null;
+    let chart_symbols_group_4 = null;
 
 
     const isCrypto = localStorage.getItem('m3-trader-v5-crypto') === 'true' ? true : false;
