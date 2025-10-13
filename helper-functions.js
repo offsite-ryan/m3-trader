@@ -317,23 +317,23 @@ console.chart = function (data, group = '-') {
 
 
     // Create a <pre> element and set its text content
-    const preElement = document.createElement('pre');
-    // msg = replaceAll(msg, ' █ ', '█');
-    // msg = replaceAll(msg, '_', '&#9472;');
-    let split = msg.split('%c');
-    split[0] = `<span style="font-size:24px;">${group}<hr/></span>`;
-    split[1] = `<span style="color:lime;">${split[1]}</span>`;
-    split[3] = `<span style="color:red;">${split[3]}</span>`;
-    // const htmlContent = replaceAll(msg,'%c',''); //.replace(/\n/g, '<br>');
-    preElement.innerHTML = `<span class="_w3-padding w3-center w3-col ${group.startsWith('OPEN POSITIONS') ? 's12 m12' : (group.startsWith('ALL') ? 's12 m4' : 's12 m4')}">${split.join('')}</span>`;
-    // preElement.innerHTML = split.join('');
+    // const preElement = document.createElement('pre');
+    // // msg = replaceAll(msg, ' █ ', '█');
+    // // msg = replaceAll(msg, '_', '&#9472;');
+    // let split = msg.split('%c');
+    // split[0] = `<span style="font-size:24px;">${group}<hr/></span>`;
+    // split[1] = `<span style="color:lime;">${split[1]}</span>`;
+    // split[3] = `<span style="color:red;">${split[3]}</span>`;
+    // // const htmlContent = replaceAll(msg,'%c',''); //.replace(/\n/g, '<br>');
+    // preElement.innerHTML = `<span class="_w3-padding w3-center w3-col ${group.startsWith('OPEN POSITIONS') ? 's12 m12' : (group.startsWith('ALL') ? 's12 m4' : 's12 m4')}">${split.join('')}</span>`;
+    // // preElement.innerHTML = split.join('');
 
-    // Assuming you have an HTML element with id="output"
-    const outputContainer = document.getElementById('output');
-    if (outputContainer) {
-        // outputContainer.innerHTML = ''; // Clear previous content
-        outputContainer.appendChild(preElement);
-    }
+    // // Assuming you have an HTML element with id="output"
+    // const outputContainer = document.getElementById('output');
+    // if (outputContainer) {
+    //     // outputContainer.innerHTML = ''; // Clear previous content
+    //     outputContainer.appendChild(preElement);
+    // }
 }
 function reduceObjectValues(obj, defaultValue = 0) {
     const values = Object.values(obj);

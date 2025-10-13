@@ -140,6 +140,7 @@ class AlpacaData {
                 C1: { buy: (v, i) => v.o >= v.sma, sell: (v) => v.c <= v.lb },
                 C2: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c <= v.ub },
                 C3: { buy: (v, i) => v.c >= v.o, sell: (v) => v.c <= v.o },
+                Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => false },
                 Z: { buy: (v, i) => true, sell: (v) => false },
                 // * ----------
                 // * IDEAS
@@ -173,7 +174,8 @@ class AlpacaData {
             };
             const isCrypto = symbol.endsWith('USD');
             // const algo = isCrypto ? 'A' : 'A';
-            const algo = isCrypto ? 'F' : 'F';
+            // const algo = isCrypto ? 'F' : 'F';
+            const algo = isCrypto ? 'Y' : 'Y';
             // const algo = 'F';
 
             if (bars) {
@@ -204,14 +206,15 @@ class AlpacaData {
                 // const get_window = (t) => { return new Date(t).getDay() === 5; };
                 // const get_window = (t1, t2) => { return (new Date(t2).getTime() - new Date(t1).getTime()) > (7*24*60*60*1000); };
                 const get_window = (t) => { return new Date(t).getMonth(); };
-                // const get_window = (t) => { return new Date(t).getDate() <= 7; };
+                // const get_window = (t) => { return getWeekName(new Date(t)); };
+                // const get_window = (t) => { return getMonthName(new Date(t)); };
                 let last = get_window(bars[0].t);
                 bars.forEach((v, i) => {
                     if (v.sma) {
                         const current = get_window(v.t);
                         if (current !== last && own_at > - 0) {
-                            // push_trade(v, own_at, i);
-                            // own_at = -1;
+                            push_trade(v, own_at, i);
+                            own_at = -1;
                             last = current;
                         }
                         // if (own_at >= 0 && get_window(bars[own_at].t, v.t)) {
@@ -478,7 +481,7 @@ class AlpacaData {
                     .then((res) => this.addMetaData(res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
                     // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
-                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 10 : 10, isCrypto ? 0.7 : 0.7))
+                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 10 : 28, isCrypto ? 0.7 : 0.7))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
                     .then((res) => this.analyze(symbol, res))
@@ -545,7 +548,7 @@ async function test4(symbol = 'OKLO', log = true) {
                 // 'BAT/USD', 'PEPE/USD', 
                 // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD',  
                 // 'AVAX/USD', 'SUSHI/USD',
-                'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'UNI/USD', 'XRP/USD',
+                'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD',
                 // 'GRT/USD', 'SOL/USD', 'UNI/USD',
             ].sort()
         },
@@ -722,7 +725,10 @@ async function test4(symbol = 'OKLO', log = true) {
         symbol_groups.ETF,
         symbol_groups.STOCKS,
         symbol_groups.CRYPTO,
-        { symbols: [...symbol_groups.ETF.symbols, ...symbol_groups.STOCKS.symbols, ...symbol_groups.CRYPTO.symbols] }
+        // { symbols: [...symbol_groups.ETF.symbols, ...symbol_groups.STOCKS.symbols, ...symbol_groups.CRYPTO.symbols] }
+        { symbols: [...symbol_groups.ETF.symbols, ...symbol_groups.STOCKS.symbols] }
+        // { symbols: ['DOGE/USD'] },
+        // { symbols: ['PLTR'] },
     ]) {
         //! --------------------------------------------------------------------
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
@@ -756,14 +762,14 @@ async function test4(symbol = 'OKLO', log = true) {
             const avg = round2(sum / num);
             const pct = round(sum / (all.length * 1000) * 100);
             console.log(sum, avg, pct, num, data);
-            console.chart(Object.values(data), `${group_name} | ${pct}%<br/>$${round(sum).toLocaleString()} | $${round(sum / Object.keys(data).length).toLocaleString()}`);
+            //! console.chart(Object.values(data), `${group_name} | ${pct}%<br/>$${round(sum).toLocaleString()} | $${round(sum / Object.keys(data).length).toLocaleString()}`);
             //! --------------------------------------------------------------------
             // data['_TOTAL_'] = round2(Object.values(data).reduce((p, c) => p + c));
             groups[group_name] = data;
         }
         index++;
     }
-    console.log(`%cOPEN POSITIONS | $${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()}`, 'color:yellow;');
+    console.log(`%cOPEN POSITIONS | $${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()} | $${round2(open_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c)).toLocaleString()}`, 'color:yellow;');
     console.chart(open_positions.map((v) => v.unrealized_pl), `OPEN POSITIONS<br/>$${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()}`);
     console.log('%cGROUPS', 'color:yellow;', groups)
     //#endregion
@@ -783,8 +789,12 @@ async function test4(symbol = 'OKLO', log = true) {
     o.series.push({ name: 'Close', data: [] }); // , type: 'area', color: colors.blue + '10'
     o.series[0].data = bars.map((v) => { return { x: v.e, y: round2(v.c) } });
     o.series.push({ name: 'Trigger', color: colors.yellow, data: [] });
-    o.series[1].data = bars.map((v) => { return { x: v.e, y: v.sma ? round2(v.sma) : null } });
-    // o.series[1].data = bars.map((v) => { return { x: v.e, y: v.lb ? round2(v.lb) : null } });
+    // o.series[1].data = bars.map((v) => { return { x: v.e, y: v.sma ? round2(v.sma) : null } });
+    o.series[1].data = bars.map((v) => { return { x: v.e, y: v.lb ? round2(v.lb) : null } });
+
+
+    const tl = calculateTrendline(o.series[0].data.map((v) => v.y));
+    o.series.push({ name: 'Trendline', type: 'line', color: '#89f100ff', data: o.series[0].data.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
 
     // o.series.push({ name: 'SMA', hidden: mobile_view, data: [] });
     // o.series[1].data = bars.map((v) => { return { x: v.e, y: v.sma ? round2(v.sma) : null } });
@@ -886,6 +896,7 @@ async function test4(symbol = 'OKLO', log = true) {
     o.legend.show = false;
     o.chart.toolbar = { show: false };
     o.series.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
+    o.series[2].name = 'Open';
     o.series[2].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
     o.series.forEach((s) => {
         s.data = s.data.slice(-10);
@@ -1158,11 +1169,15 @@ async function test4(symbol = 'OKLO', log = true) {
         const g = round(Object.values(groups[group_name]).reduce((p, c) => p + c));
         const avg = round(g / Object.values(groups[group_name]).length);
         const pct = round(g / (num * 1000) * 100);
+        const last = round2(Object.values(groups[group_name])[Object.values(groups[group_name]).length - 1]);
+
         // const avg2 = round((temp.reduce((p, c) => p + c)) / (temp.length));
         document.getElementById(`title-symbols-group-${index + 1}`).style.fontSize = '18px';
         document.getElementById(`title-symbols-group-${index + 1}`).style.color = '#fff';
-        document.getElementById(`title-symbols-group-${index + 1}`).innerHTML = `${group_name} | $${round1(g / 1000).toLocaleString()}K`;
-        document.getElementById(`title-symbols-group-${index + 1}`).innerHTML += `<br/>AVG: $${avg.toLocaleString()} | ${pct.toLocaleString()}%`;
+        document.getElementById(`title-symbols-group-${index + 1}`).innerHTML = `<b>${group_name}</b> | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span>`;
+        document.getElementById(`title-symbols-group-${index + 1}`).innerHTML += `<br/>TAVG: <span style="color:lime;">$${avg.toLocaleString()}</span> | SEED: <span style="color:lime;">$${num}K</span>`;
+        document.getElementById(`title-symbols-group-${index + 1}`).innerHTML += `<br/>LAST: <span style="color:lime;">$${last.toLocaleString()}</span>`;
+        document.getElementById(`title-symbols-group-${index + 1}`).innerHTML += `<hr/>`;
         // document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
         o.annotations.yaxis.push({ y: avg, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
         // o.annotations.yaxis.push({ y: avg2, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
