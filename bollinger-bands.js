@@ -24,7 +24,7 @@ function calculateBollingerBands(data, period = 20, multiplier = 2) {
     return { sma, upperBand, lowerBand };
 }
 
-function applyBands(bars, period = 14, multiplier = 0.7) {
+function applyBands(bars, period = 14, multiplier = 0.7, stop_pct = 0.9) {
     const bandsClose = calculateBollingerBands(bars.map((b) => b.c), period, multiplier);
     // const bandsClose = calculateBollingerBands(entry.bars.map((b) => b.c), 30, 1.7);
     // const bandsClose = calculateBollingerBands(entry.bars.map((b) => b.c), 7, 1);
@@ -38,6 +38,7 @@ function applyBands(bars, period = 14, multiplier = 0.7) {
                 lowerBand: bandsClose.lowerBand[i],
                 upperBand: bandsClose.upperBand[i],
                 delta: bandsClose.upperBand[i] - bandsClose.sma[i],
+                stop: bandsClose.lowerBand[i] * stop_pct,
             };
         } else {
             bars[i].bands_c = {
@@ -45,6 +46,7 @@ function applyBands(bars, period = 14, multiplier = 0.7) {
                 lowerBand: 0,
                 upperBand: 0,
                 delta: 0,
+                stop: 0,
             };
         }
     }

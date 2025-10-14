@@ -68,11 +68,11 @@ class AlpacaData {
         })
         return data;
     }
-    addBollingerBands(key = 'bands_c', data, period = 14, multiplier = 0.7) {
-        applyBands(data, period, multiplier);
+    addBollingerBands(key = 'bands_c', data, period = 14, multiplier = 0.7, stop_pct = 0.9) {
+        applyBands(data, period, multiplier, stop_pct);
         data.forEach((v) => {
             if (!v[key]) {
-                v[key] = { sma: 0, lowerBand: 0, upperBand: 0, delta: 0 };
+                v[key] = { sma: 0, lowerBand: 0, upperBand: 0, delta: 0, stop: 0 };
             }
         })
         return data;
@@ -105,6 +105,7 @@ class AlpacaData {
                 v: v.v,
                 vw: v.vw,
                 sma: v.bands_c.sma,
+                stop: v.bands_c.stop,
                 lb: v.bands_c.lowerBand,
                 ub: v.bands_c.upperBand,
                 p5: v.tl5,
@@ -115,6 +116,9 @@ class AlpacaData {
     }
     async analyze(symbol, bars, seed = 1000) {
         return new Promise(async (resolve) => {
+            // const invest_schedule = [
+            //     { t: '2024-01-05', e: 1704499200000, amount: 1000 }
+            // ];
             let was_below = true;
             let was_above = true;
             let own_at = -1;
@@ -140,6 +144,7 @@ class AlpacaData {
                 C1: { buy: (v, i) => v.o >= v.sma, sell: (v) => v.c <= v.lb },
                 C2: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c <= v.ub },
                 C3: { buy: (v, i) => v.c >= v.o, sell: (v) => v.c <= v.o },
+                X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, // stop loss
                 Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => false },
                 Z: { buy: (v, i) => true, sell: (v) => false },
                 // * ----------
@@ -175,7 +180,7 @@ class AlpacaData {
             const isCrypto = symbol.endsWith('USD');
             // const algo = isCrypto ? 'A' : 'A';
             // const algo = isCrypto ? 'F' : 'F';
-            const algo = isCrypto ? 'Y' : 'Y';
+            const algo = isCrypto ? 'X' : 'X';
             // const algo = 'F';
 
             if (bars) {
@@ -481,7 +486,7 @@ class AlpacaData {
                     .then((res) => this.addMetaData(res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
                     // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
-                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 10 : 28, isCrypto ? 0.7 : 0.7))
+                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 10 : 28, isCrypto ? 0.7 : 0.7, 0.85))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
                     .then((res) => this.analyze(symbol, res))
@@ -535,7 +540,7 @@ async function test4(symbol = 'OKLO', log = true) {
             name: 'ETF',
             seed_dollars: 0 * 1000,
             // 'BTQ', 'VXX', 'VIXY', 
-            symbols: ['ONEQ', 'QQQ', 'VXUS', 'IXUS', 'RING', 'FGM', 'SMH',].sort()
+            symbols: ['ONEQ', 'QQQ', 'VXUS', 'IXUS', 'RING', 'FGM', 'SMH', 'SLVO', 'AIQ', 'FCA', 'PIE', 'FLN', 'EFAS',].sort()
             // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
             // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
             // symbols: ['VOO', 'SPY', 'BRK.A', 'BRK.B', 'IWV', 'VTHR',].sort()
@@ -737,7 +742,7 @@ async function test4(symbol = 'OKLO', log = true) {
             let message = `%c${group_name} SUMMARY`;
             console.log(message, 'color:yellow;');
             const t = all.map((v) => v.summary.total).reduce((p, c) => p + c);
-            console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 50)}K @ 50K`, 'color:orange;');
+            console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 10)}K @ 10K`, 'color:orange;');
 
             //! --------------------------------------------------------------------
             const field_name = 'months' // months | weeks | quarters
@@ -897,6 +902,7 @@ async function test4(symbol = 'OKLO', log = true) {
     o.chart.toolbar = { show: false };
     o.series.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
     o.series[2].name = 'Open';
+    o.series[2].color = '#fc03ec';
     o.series[2].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
     o.series.forEach((s) => {
         s.data = s.data.slice(-10);
@@ -1172,12 +1178,16 @@ async function test4(symbol = 'OKLO', log = true) {
         const last = round2(Object.values(groups[group_name])[Object.values(groups[group_name]).length - 1]);
 
         // const avg2 = round((temp.reduce((p, c) => p + c)) / (temp.length));
-        document.getElementById(`title-symbols-group-${index + 1}`).style.fontSize = '18px';
-        document.getElementById(`title-symbols-group-${index + 1}`).style.color = '#fff';
-        document.getElementById(`title-symbols-group-${index + 1}`).innerHTML = `<b>${group_name}</b> | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span>`;
-        document.getElementById(`title-symbols-group-${index + 1}`).innerHTML += `<br/>TAVG: <span style="color:lime;">$${avg.toLocaleString()}</span> | SEED: <span style="color:lime;">$${num}K</span>`;
-        document.getElementById(`title-symbols-group-${index + 1}`).innerHTML += `<br/>LAST: <span style="color:lime;">$${last.toLocaleString()}</span>`;
-        document.getElementById(`title-symbols-group-${index + 1}`).innerHTML += `<hr/>`;
+        const elem = document.getElementById(`title-symbols-group-${index + 1}`)
+        elem.style.fontSize = '18px';
+        elem.style.color = '#fff';
+        elem.innerHTML = `<b>${group_name}</b>`;
+        elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span>`;
+        elem.innerHTML += `<hr/>`;
+        elem.innerHTML += `TAVG: <span style="color:lime;">$${avg.toLocaleString()}</span> @ <span style="color:lime;">$${num}K</span>`;
+        elem.innerHTML += `<br/>75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span>`;
+        elem.innerHTML += `<br/>LAST: <span style="color:lime;">$${round(last).toLocaleString()}</span>`;
+        elem.innerHTML += `<hr/>`;
         // document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
         o.annotations.yaxis.push({ y: avg, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
         // o.annotations.yaxis.push({ y: avg2, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
