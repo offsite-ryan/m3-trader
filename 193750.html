@@ -49,14 +49,226 @@
                     onclick="window.location=window.location">&#x27F3;
                 </span> -->
             </div>
-            <div id="current_conditions" class="w3-medium"></div>
+            <!-- <div id="current_conditions" class="w3-medium"></div> -->
         </h2>
     </div>
 
     <div id="tabs" class="w3-bar w3-black">
     </div>
 
-    <div id="content-ytd" class="_w3-margin" style="display:none;">
+    <div id="content-ytd" class="_w3-margin" style="_display:none;">
+        <div class="w3-container w3-text-black" style="background-color:#00b90a;">
+            <h1 class="w3-xxxlarge"><b id="total-positions-banner">&nbsp;</b></h1>
+        </div>
+
+        <div class="w3-content">
+
+            <div class="w3-row w3-margin" style="border-bottom: 1px solid white;">
+
+                <div class="_w3-third _w3-padding w3-center w3-large">
+                    <!-- <span id="">OPEN POSITIONS</span> -->
+                    <div id="chart-positions"></div>
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>
+                    </h2>
+                </div>
+
+            </div>
+            <div class="w3-row w3-margin" style="border-bottom: 1px solid white;">
+
+                <div class="w3-third w3-padding">
+                    <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
+                    <div id="chart-symbols-group-2"></div>
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>
+                        <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
+                            style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
+                        <div id="title-symbols-group-2"></div>
+                        <!-- </div> -->
+                    </h2>
+                    <div id="chart-symbols-breakdown-2"></div>
+                    <!-- <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat.
+                    </p> -->
+                </div>
+
+            </div>
+            <div class="w3-row w3-margin" style="border-bottom: 1px solid white;">
+
+                <div class="w3-third w3-padding" _class="w3-col s12 m5 w3-padding">
+                    <div id="chart-symbols-group-1"></div>
+                </div>
+                <div class="w3-twothird w3-container" _class="w3-col s12 m7 w3-container">
+                    <h2>
+                        <div id="title-symbols-group-1"></div>
+                    </h2>
+
+                    <!-- <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat.
+                    </p> -->
+                </div>
+
+            </div>
+            <div class="w3-row w3-margin" style="border-bottom: 1px solid white;">
+
+                <div class="w3-third w3-padding">
+                    <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
+                    <div id="chart-symbols-group-3"></div>
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>
+                        <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
+                            style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
+                        <div id="title-symbols-group-3"></div>
+                        <!-- </div> -->
+                    </h2>
+                    <!-- <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat.
+                    </p> -->
+                </div>
+
+            </div>
+
+
+            <div class="w3-row-padding">
+
+                <div class="w3-third w3-margin-bottom">
+                    <ul class="w3-ul w3-border w3-center w3-hover-shadow">
+                        <li class="w3-black w3-xlarge w3-padding-32">Basic</li>
+                        <li class="w3-padding-16"><b>10GB</b> Storage</li>
+                        <li class="w3-padding-16"><b>10</b> Emails</li>
+                        <li class="w3-padding-16"><b>10</b> Domains</li>
+                        <li class="w3-padding-16"><b>Endless</b> Support</li>
+                        <li class="w3-padding-16">
+                            <h2 class="w3-wide">$ 10</h2>
+                            <span class="w3-opacity">per month</span>
+                        </li>
+                        <li class="_w3-light-grey w3-padding-24">
+                            <button class="w3-button w3-green w3-padding-large">Sign Up</button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="w3-third w3-margin-bottom">
+
+                    <ul class="w3-ul w3-border w3-center w3-hover-shadow">
+                        <li class="w3-green w3-xlarge w3-padding-32">Pro</li>
+                        <li class="w3-padding-16"><b>25GB</b> Storage</li>
+                        <li class="w3-padding-16"><b>25</b> Emails</li>
+                        <li class="w3-padding-16"><b>25</b> Domains</li>
+                        <li class="w3-padding-16"><b>Endless</b> Support</li>
+                        <li class="w3-padding-16">
+                            <h2 class="w3-wide">$ 25</h2>
+                            <span class="w3-opacity">per month</span>
+                        </li>
+                        <li class="_w3-light-grey w3-padding-24">
+                            <button class="w3-button w3-green w3-padding-large">Sign Up</button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="w3-third w3-margin-bottom">
+                    <ul class="w3-ul w3-border w3-center w3-hover-shadow">
+                        <li class="w3-black w3-xlarge w3-padding-32">Premium</li>
+                        <li class="w3-padding-16"><b>50GB</b> Storage</li>
+                        <li class="w3-padding-16"><b>50</b> Emails</li>
+                        <li class="w3-padding-16"><b>50</b> Domains</li>
+                        <li class="w3-padding-16"><b>Endless</b> Support</li>
+                        <li class="w3-padding-16">
+                            <h2 class="w3-wide">$ 50</h2>
+                            <span class="w3-opacity">per month</span>
+                        </li>
+                        <li class="_w3-light-grey w3-padding-24">
+                            <button class="w3-button w3-green w3-padding-large">Sign Up</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- <div class="w3-row w3-margin">
+
+                <div class="w3-third">
+                    <img src="img_monterosso.jpg" style="width:100%;min-height:200px">
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>Monterosso</h2>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                </div>
+
+            </div>
+            <div class="w3-row w3-margin">
+
+                <div class="w3-third">
+                    <img src="img_vernazza.jpg" style="width:100%;min-height:200px">
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>Vernazza</h2>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                </div>
+
+            </div>
+            <div class="w3-row w3-margin">
+
+                <div class="w3-third">
+                    <img src="img_manarola.jpg" style="width:100%;min-height:200px">
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>Manarola</h2>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                </div>
+
+            </div>
+            <div class="w3-row w3-margin">
+
+                <div class="w3-third">
+                    <img src="img_corniglia.jpg" style="width:100%;min-height:200px">
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>Corniglia</h2>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                </div>
+
+            </div>
+            <div class="w3-row w3-margin">
+
+                <div class="w3-third">
+                    <img src="img_riomaggiore.jpg" style="width:100%;min-height:200px">
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>Riomaggiore</h2>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat.
+                    </p>
+                </div>
+
+            </div> -->
+        </div>
     </div>
 
     <div id="content-weeks" class="w3-margin" style="display:none;">
@@ -93,16 +305,16 @@
                 <div id="title-symbols-group-1"></div>
                 <div id="chart-symbols-group-1"></div>
             </div>
-            <div class="w3-padding w3-col s12 m4 l3 w3-center"
+            <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
                 style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
                 <div id="title-symbols-group-2"></div>
                 <div id="chart-symbols-group-2"></div>
-            </div>
-            <div class="w3-padding w3-col s12 m4 l3 w3-center"
+            </div> -->
+            <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
                 style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
                 <div id="title-symbols-group-3"></div>
                 <div id="chart-symbols-group-3"></div>
-            </div>
+            </div> -->
             <div class="w3-padding w3-col s12 m4 l3 w3-center"
                 style="display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
                 <div id="title-symbols-group-4"></div>
@@ -442,18 +654,19 @@
                 html_tabs += html;
             }
         });
-        html_tabs += isMobile() ? '' : `<span class="w3-right" style="font-size:32px;margin:0px 24px 0px 0px;color: #00b90a;">
-            <i class="fa fa-toggle-on" style="cursor:pointer;" onclick="toggleAutoReset(this)"></i>
-            <span class="w3-medium" style="padding-right: 5px;top: -7px;display: inline;position: relative;">Auto Refresh </span>
-            
-            <i id="toggle-crypto" class="fa fa-toggle-on" style="cursor:pointer;" onclick="toggleCryptoStocks(this)"></i>
-            <span class="w3-medium" style="padding-right: 5px;top: -7px;display: inline;position: relative;">Crypto </span>
+        // html_tabs += isMobile() ? '' : `<span class="w3-right" style="font-size:32px;margin:0px 24px 0px 0px;color: #00b90a;">
+        //     <i class="fa fa-toggle-on" style="cursor:pointer;" onclick="toggleAutoReset(this)"></i>
+        //     <span class="w3-medium" style="padding-right: 5px;top: -7px;display: inline;position: relative;">Auto Refresh </span>
 
-            <i id="open-settings" class="fa fa-gear" style="cursor:pointer;" onclick="open_settings()"></i>
-            <span class="w3-medium" style="padding-right: 5px;top: -7px;display: inline;position: relative;">Settings </span>
+        //     <i id="toggle-crypto" class="fa fa-toggle-on" style="cursor:pointer;" onclick="toggleCryptoStocks(this)"></i>
+        //     <span class="w3-medium" style="padding-right: 5px;top: -7px;display: inline;position: relative;">Crypto </span>
 
-            </span>
-            `;
+        //     <i id="open-settings" class="fa fa-gear" style="cursor:pointer;" onclick="open_settings()"></i>
+        //     <span class="w3-medium" style="padding-right: 5px;top: -7px;display: inline;position: relative;">Settings </span>
+
+        //     </span>
+        //     `;
+        // html_tabs += `<hr/>`;
         document.getElementById('tabs').innerHTML += html_tabs;
         // if (!isCrypto) {
         //     toggleCryptoStocks(null, false);

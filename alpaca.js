@@ -127,9 +127,12 @@ class AlpacaData {
             let g_dollars_fixed = 0;
             let trades = [];
             const algos = {
-                // ----------
-                // STOCKS
-                // ----------
+                //#region CALCS
+                default_gain_pct: (i1, i2) => (bars[i2].c - bars[i1].o) / bars[i1].o * 100,
+                default_gain_1K: (i1, i2) => (1000 / bars[i1].o) * (bars[i2].c - bars[i1].o),
+                //#endregion
+
+                //#region STOCKS
                 A: { buy: (v, i) => v.o >= v.ub, sell: (v, i) => v.c <= v.ub, },
                 B: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c <= v.ub },
                 C: { buy: (v, i) => v.sma >= v.lb, sell: (v, i) => false },
@@ -137,19 +140,19 @@ class AlpacaData {
                 E: { buy: (v, i) => v.o >= v.sma, sell: (v, i) => v.c < v.sma }, //# GOOD ONE */
                 F: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c < v.lb, },
                 G: { buy: (v, i) => v.c >= v.lb && v.p5 >= v.c, sell: (v, i) => v.c < v.lb },
-                H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // bu/sell each day if above lower bound
-                // * ----------
-                // * CRYPTO
-                // * ----------
+                H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // buy/sell each day if above lower bound
+                X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
+                Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => false },
+                Z: { buy: (v, i) => true, sell: (v) => false },
+                //#endregion
+
+                //#region CRYPTO
                 C1: { buy: (v, i) => v.o >= v.sma, sell: (v) => v.c <= v.lb },
                 C2: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c <= v.ub },
                 C3: { buy: (v, i) => v.c >= v.o, sell: (v) => v.c <= v.o },
-                X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, // stop loss
-                Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => false },
-                Z: { buy: (v, i) => true, sell: (v) => false },
-                // * ----------
-                // * IDEAS
-                // * ----------
+                //#endregion
+                
+                //#region IDEAS
                 // C: { buy: (v, i) => v.sma >= v.lb, sell: (v, i) => v.c <= v.ub },
                 // H: { buy: (v, i) => v.c >= v.p5, sell: (v, i) => v.c < v.p5 },
                 // FC: {
@@ -176,28 +179,24 @@ class AlpacaData {
                 // F0: { buy: (v, i) => v.c >= v.lb, sell: (v, i) => v.c < v.lb }, // ***
                 // F1: { buy: (v, i) => v.dow !== 5 && v.o >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
                 // F2: { buy: (v, i) => v.dow !== 5 && v.c >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
+                //#endregion
             };
             const isCrypto = symbol.endsWith('USD');
             // const algo = isCrypto ? 'A' : 'A';
             // const algo = isCrypto ? 'F' : 'F';
-            const algo = isCrypto ? 'X' : 'X';
+            const algo = isCrypto ? 'X' : 'E';
             // const algo = 'F';
 
             if (bars) {
-                /**
-                 * ADD TRADE
-                 * @param {*} v - bar object
-                 * @param {*} i1 - buy index
-                 * @param {*} i2 - sell index
-                 */
+                /** ADD TRADE @param {*} v - bar object, @param {*} i1 - buy index @param {*} i2 - sell index*/
                 const push_trade = (v, i1, i2) => {
                     trades.push({
                         s: symbol,
                         o: bars[i1].o,
                         c: bars[i2].c,
                         q: 1000 / bars[i1].o,
-                        gain_pct: algos[algo].gain_pct ? algos[algo].gain_pct(v, i2) : (bars[i2].c - bars[i1].o) / bars[i1].o * 100,
-                        gain_1K: algos[algo].gain_1K ? algos[algo].gain_1K(v, i2) : (1000 / bars[i1].o) * (bars[i2].c - bars[i1].o),
+                        gain_pct: algos[algo].gain_pct ? algos[algo].gain_pct(v, i2) : algos.default_gain_pct(i1, i2),
+                        gain_1K: algos[algo].gain_1K ? algos[algo].gain_1K(v, i2) : algos.default_gain_1K(i1, i2),
                         num_days: i2 - i1,
                         i1,
                         i2,
@@ -504,6 +503,10 @@ class AlpacaData {
 // =================================================
 // MAIN
 // =================================================
+let all_symbols_names = null;
+let all_symbols = null;
+let open_positions = null;
+let all_orders = null;
 const alpaca_data = new AlpacaData()
 setInterval(() => {
     const second = new Date().getSeconds();
@@ -676,9 +679,9 @@ async function test4(symbol = 'OKLO', log = true) {
     // * LOAD DATA
     // * ------------------------
 
-    let open_positions = await positions();
+    open_positions = await positions();
     // .filter((v2)=>new Date(v2.t) >= new Date('2025-08-26'))
-    let all_orders = (await orders())
+    all_orders = (await orders())
         .map((v2) => {
             return {
                 symbol: v2.symbol,
@@ -703,14 +706,14 @@ async function test4(symbol = 'OKLO', log = true) {
 
     console.group('%c----------------------------------------------------', 'color:orange;');
     // const all_symbols_names = [...favs.symbols, ...crypto.symbols, ...research.symbols];
-    const all_symbols_names = [...symbol_groups.ETF.symbols, ...symbol_groups.CRYPTO.symbols, ...symbol_groups.STOCKS.symbols];
+    all_symbols_names = [...symbol_groups.ETF.symbols, ...symbol_groups.CRYPTO.symbols, ...symbol_groups.STOCKS.symbols];
     // const all_symbols_names = ['GE', 'BTC/USD', 'QQQ'];
 
     const promises = all_symbols_names.map((s) => {
         // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
         return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), open_positions, all_orders);
     });
-    let all_symbols = await Promise.all(promises);
+    all_symbols = await Promise.all(promises);
     console.log(all_symbols);
 
     // let data = await analyze_days('E', symbol, '1D', start.toISOString(), end.toISOString());
@@ -1014,7 +1017,7 @@ async function test4(symbol = 'OKLO', log = true) {
         o.annotations.yaxis = [];
         o.dataLabels.enabled = true;
     }
-    o.chart.height = isMobile() ? 350 : (isTablet() ? 450 : 350);
+    o.chart.height = isMobile() ? 250 : (isTablet() ? 200 : 200);
     o.dataLabels = {
         // offsetY: mobile_view ? 0 :  -24,
         style: {
@@ -1044,7 +1047,7 @@ async function test4(symbol = 'OKLO', log = true) {
     const total = reduceArray(open_positions.map((v) => +(v.unrealized_pl)));
     const total_invested = reduceArray(open_positions.map((v) => +(v.cost_basis)));
     // const total_pct = open_positions.map((v) => +(v.unrealized_plpc) * 100).reduce((p, c) => p + c);
-    const elem = document.getElementById('total-positions-2');
+    let elem = document.getElementById('total-positions-2');
     elem.style.backgroundColor = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : colors.red);
     elem.style.color = colors.black;
     elem.style.padding = '10px';
@@ -1052,6 +1055,9 @@ async function test4(symbol = 'OKLO', log = true) {
     // <br/><span class="w3-small">${new Date().toLocaleString()}</span>
     elem.innerHTML = `$${round(total).toLocaleString()}<hr/>${round2(total / total_invested * 100)}%`;
     document.title = `M#-TRADER | $${round(total).toLocaleString()}`;
+
+    elem = document.getElementById('total-positions-banner');
+    elem.innerHTML = `$${round(total).toLocaleString()} | ${round2(total / total_invested * 100)}%`;
     //#endregion
 
     //#region GROUP SUMMARIES CHARTS
@@ -1181,11 +1187,12 @@ async function test4(symbol = 'OKLO', log = true) {
         const elem = document.getElementById(`title-symbols-group-${index + 1}`)
         elem.style.fontSize = '18px';
         elem.style.color = '#fff';
-        elem.innerHTML = `<b>${group_name}</b>`;
-        elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span>`;
+        elem.innerHTML = `<b>${group_name} | <span style="color:lime;">${round(pct).toLocaleString()}%</span></b>`;
+        elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span> @ <span style="color:lime;">$${num}K</span>`;
         elem.innerHTML += `<hr/>`;
-        elem.innerHTML += `AVG: <span style="color:lime;">$${avg.toLocaleString()}</span> @ <span style="color:lime;">$${num}K</span>`;
-        elem.innerHTML += `<br/>75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span>`;
+        elem.innerHTML += `AVG: <span style="color:lime;">$${avg.toLocaleString()}</span>`;
+        elem.innerHTML += `<br/>$10K SEED: <span style="color:lime;">$${(round1(g / num * 10 / 1000)).toLocaleString()}K</span>`;
+        elem.innerHTML += `<br/>$75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span>`;
         elem.innerHTML += `<br/>LAST: <span style="color:lime;">$${round(last).toLocaleString()}</span>`;
         elem.innerHTML += `<hr/>`;
         // document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
@@ -1405,9 +1412,9 @@ async function test4(symbol = 'OKLO', log = true) {
     // console.log(all_symbols);
 
     /** dipose objects */
-    open_positions = undefined;
-    all_orders = undefined;
-    all_symbols = undefined;
+    // open_positions = undefined;
+    // all_orders = undefined;
+    // all_symbols = undefined;
     data = undefined;
     bars = undefined;
 }
