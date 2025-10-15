@@ -1192,9 +1192,11 @@ async function test4(symbol = 'OKLO', log = true) {
         elem.innerHTML += `<hr/>`;
         elem.innerHTML += `AVG: <span style="color:lime;">$${avg.toLocaleString()}</span>`;
         elem.innerHTML += `<br/>$10K SEED: <span style="color:lime;">$${(round1(g / num * 10 / 1000)).toLocaleString()}K</span>`;
+        elem.innerHTML += `<br/>$50K SEED: <span style="color:lime;">$${(round1(g / num * 50 / 1000)).toLocaleString()}K</span>`;
         elem.innerHTML += `<br/>$75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span>`;
+        elem.innerHTML += `<br/>$100K SEED: <span style="color:lime;">$${(round1(g / num * 100 / 1000)).toLocaleString()}K</span>`;
         elem.innerHTML += `<br/>LAST: <span style="color:lime;">$${round(last).toLocaleString()}</span>`;
-        elem.innerHTML += `<hr/>`;
+        // elem.innerHTML += `<hr/>`;
         // document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
         o.annotations.yaxis.push({ y: avg, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
         // o.annotations.yaxis.push({ y: avg2, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
