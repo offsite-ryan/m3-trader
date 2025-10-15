@@ -1184,7 +1184,7 @@ async function test4(symbol = 'OKLO', log = true) {
         elem.innerHTML = `<b>${group_name}</b>`;
         elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span>`;
         elem.innerHTML += `<hr/>`;
-        elem.innerHTML += `TAVG: <span style="color:lime;">$${avg.toLocaleString()}</span> @ <span style="color:lime;">$${num}K</span>`;
+        elem.innerHTML += `AVG: <span style="color:lime;">$${avg.toLocaleString()}</span> @ <span style="color:lime;">$${num}K</span>`;
         elem.innerHTML += `<br/>75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span>`;
         elem.innerHTML += `<br/>LAST: <span style="color:lime;">$${round(last).toLocaleString()}</span>`;
         elem.innerHTML += `<hr/>`;
