@@ -543,7 +543,10 @@ async function test4(symbol = 'OKLO', log = true) {
             name: 'ETF',
             seed_dollars: 0 * 1000,
             // 'BTQ', 'VXX', 'VIXY', 
-            symbols: ['ONEQ', 'QQQ', 'VXUS', 'IXUS', 'RING', 'FGM', 'SMH', 'SLVO', 'AIQ', 'FCA', 'PIE', 'FLN', 'EFAS',].sort()
+            symbols: [
+                // /* renmoved */ 'EFAS', 'FLN', 'SLVO', 'VXUS', 
+                'ONEQ', 'QQQ', 'IXUS', 'RING', 'FGM', 'SMH', 'AIQ', 'FCA', 'PIE', 
+            ].sort()
             // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
             // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
             // symbols: ['VOO', 'SPY', 'BRK.A', 'BRK.B', 'IWV', 'VTHR',].sort()
@@ -572,18 +575,21 @@ async function test4(symbol = 'OKLO', log = true) {
             name: 'STOCKS',
             seed_dollars: 50 * 1000,
             symbols: [
+                // /* renmoved */ 'FOX', 'CVS', 'INTL', 'NVDA', 'WMT', 'ORCL', 'MSFT', 'JPM', 'MDB', 'WMT', 'TSLA', 
+                // 'GM', 'F', 'LULU', 'UBER', 'DKNG', 'VZ', 'WM', 'BP', 'T', 
+                'NEGG', 
                 'IREN', 'CIFR', 'HUT', 'BETR', 'TMC',
-                'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
+                'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
                 // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
                 // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
                 // 'Z', 'T', 'MP', 'CVX', 'PM', 
                 // 'BETZ', 'BX', 'IBIT', 
                 'HOOD', //'LAC', 
-                'AMD', 'AVGO', 'COIN', 'CVS',
-                'INTL', 'LEU', 'MDB', 'MSFT', 'NVDA', 'NIO',
+                'AMD', 'AVGO', 'COIN', 
+                'LEU', 'NIO',
                 // 'ONEQ', 
-                'OPEN', 'ORCL',
-                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'TSLA', 'UUUU', 'WMT',
+                'OPEN', 
+                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU', 
             ].sort()
         }
     };
@@ -1191,11 +1197,11 @@ async function test4(symbol = 'OKLO', log = true) {
         elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span> @ <span style="color:lime;">$${num}K</span>`;
         elem.innerHTML += `<hr/>`;
         elem.innerHTML += `AVG: <span style="color:lime;">$${avg.toLocaleString()}</span>`;
-        elem.innerHTML += `<span class="w3-right">$10K SEED:&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:lime;">$${(round1(g / num * 10 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<span class="w3-right">$10K SEED: <span style="color:lime;">$${(round1(g / num * 10 / 1000)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/>LAST: <span style="color:lime;">$${round(last).toLocaleString()}</span>`;
-        elem.innerHTML += `<span class="w3-right">$50K SEED:&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:lime;">$${(round1(g / num * 50 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<br/><span class="w3-right">$75K SEED:&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<br/><span class="w3-right">$100K SEED:&nbsp;&nbsp;<span style="color:lime;">$${(round1(g / num * 100 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<span class="w3-right">$50K SEED: <span style="color:lime;">$${(round1(g / num * 50 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<br/><span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<br/><span class="w3-right">$100K SEED: <span style="color:lime;">$${(round1(g / num * 100 / 1000)).toLocaleString()}K</span></span>`;
 
         // elem.innerHTML += `<hr/>`;
         // document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
