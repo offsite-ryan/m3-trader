@@ -114,7 +114,7 @@ class AlpacaData {
         });
         return obj;
     }
-    async analyze(symbol, bars, seed = 1000) {
+    async analyze(symbol, bars, reset = true, seed = 1000) {
         return new Promise(async (resolve) => {
             // const invest_schedule = [
             //     { t: '2024-01-05', e: 1704499200000, amount: 1000 }
@@ -151,7 +151,7 @@ class AlpacaData {
                 C2: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c <= v.ub },
                 C3: { buy: (v, i) => v.c >= v.o, sell: (v) => v.c <= v.o },
                 //#endregion
-                
+
                 //#region IDEAS
                 // C: { buy: (v, i) => v.sma >= v.lb, sell: (v, i) => v.c <= v.ub },
                 // H: { buy: (v, i) => v.c >= v.p5, sell: (v, i) => v.c < v.p5 },
@@ -184,7 +184,7 @@ class AlpacaData {
             const isCrypto = symbol.endsWith('USD');
             // const algo = isCrypto ? 'A' : 'A';
             // const algo = isCrypto ? 'F' : 'F';
-            const algo = isCrypto ? 'X' : 'E';
+            const algo = isCrypto ? 'X' : 'X';
             // const algo = 'F';
 
             if (bars) {
@@ -217,8 +217,10 @@ class AlpacaData {
                     if (v.sma) {
                         const current = get_window(v.t);
                         if (current !== last && own_at > - 0) {
-                            push_trade(v, own_at, i);
-                            own_at = -1;
+                            if (reset) {
+                                push_trade(v, own_at, i);
+                                own_at = -1;
+                            }
                             last = current;
                         }
                         // if (own_at >= 0 && get_window(bars[own_at].t, v.t)) {
@@ -488,7 +490,8 @@ class AlpacaData {
                     .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 10 : 28, isCrypto ? 0.7 : 0.7, 0.85))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
-                    .then((res) => this.analyze(symbol, res))
+                    .then((res) => this.analyze(symbol, res, true))
+                    // .then((res) => this.analyze(symbol, res, false))
                     .then((res) => this.summarize(res))
                     .then((res) => this.positions(symbol, open_positions, res))
                     .then((res) => this.orders(symbol, orders_list, res))
@@ -545,7 +548,7 @@ async function test4(symbol = 'OKLO', log = true) {
             // 'BTQ', 'VXX', 'VIXY', 
             symbols: [
                 // /* renmoved */ 'EFAS', 'FLN', 'SLVO', 'VXUS', 
-                'ONEQ', 'QQQ', 'IXUS', 'RING', 'FGM', 'SMH', 'AIQ', 'FCA', 'PIE', 
+                'ONEQ', 'QQQ', 'IXUS', 'RING', 'FGM', 'SMH', 'AIQ', 'FCA', 'PIE',
             ].sort()
             // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
             // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
@@ -577,7 +580,7 @@ async function test4(symbol = 'OKLO', log = true) {
             symbols: [
                 // /* renmoved */ 'FOX', 'CVS', 'INTL', 'NVDA', 'WMT', 'ORCL', 'MSFT', 'JPM', 'MDB', 'WMT', 'TSLA', 
                 // 'GM', 'F', 'LULU', 'UBER', 'DKNG', 'VZ', 'WM', 'BP', 'T', 
-                'NEGG', 
+                'NEGG', 'VRT',
                 'IREN', 'CIFR', 'HUT', 'BETR', 'TMC',
                 'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
                 // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
@@ -585,11 +588,11 @@ async function test4(symbol = 'OKLO', log = true) {
                 // 'Z', 'T', 'MP', 'CVX', 'PM', 
                 // 'BETZ', 'BX', 'IBIT', 
                 'HOOD', //'LAC', 
-                'AMD', 'AVGO', 'COIN', 
+                'AMD', 'AVGO', 'COIN',
                 'LEU', 'NIO',
                 // 'ONEQ', 
-                'OPEN', 
-                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU', 
+                'OPEN',
+                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU',
             ].sort()
         }
     };
@@ -1193,8 +1196,10 @@ async function test4(symbol = 'OKLO', log = true) {
         const elem = document.getElementById(`title-symbols-group-${index + 1}`)
         elem.style.fontSize = '18px';
         elem.style.color = '#fff';
-        elem.innerHTML = `<b>${group_name} | <span style="color:lime;">${round(pct).toLocaleString()}%</span></b>`;
-        elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span> @ <span style="color:lime;">$${num}K</span>`;
+        // elem.innerHTML = `<div class="w3-xxlarge">`;
+        elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${num}K</span></span>`;
+        // elem.innerHTML = `</div>`;
+        // elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span> @ <span style="color:lime;">$${num}K</span>`;
         elem.innerHTML += `<hr/>`;
         elem.innerHTML += `AVG: <span style="color:lime;">$${avg.toLocaleString()}</span>`;
         elem.innerHTML += `<span class="w3-right">$10K SEED: <span style="color:lime;">$${(round1(g / num * 10 / 1000)).toLocaleString()}K</span></span>`;
