@@ -171,20 +171,13 @@ class AlpacaData {
                     gain_pct: (v, i) => (bars[i].c - bars[own_at].o) / bars[own_at].o * 100,
                     gain_1K: (v, i) => (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o)
                 },
-                // FOOC: {
-                //     buy: (v, i) => v.o >= v.lb,
-                //     sell: (v, i) => v.c < v.lb || v.o < v.lb,
-                //     gain_pct: (v, i) => (bars[i].c - bars[own_at].o) / bars[own_at].o * 100,
-                // },
-                // F0: { buy: (v, i) => v.c >= v.lb, sell: (v, i) => v.c < v.lb }, // ***
-                // F1: { buy: (v, i) => v.dow !== 5 && v.o >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
-                // F2: { buy: (v, i) => v.dow !== 5 && v.c >= v.lb, sell: (v, i) => v.dow === 5 || v.c < v.lb },
                 //#endregion
             };
             const isCrypto = symbol.endsWith('USD');
             // const algo = isCrypto ? 'A' : 'A';
             // const algo = isCrypto ? 'F' : 'F';
-            const algo = isCrypto ? 'X' : 'X';
+            const algo = isCrypto ? 'E' : 'X';
+            // const algo = isCrypto ? 'X' : 'X';
             // const algo = 'F';
 
             if (bars) {
@@ -389,6 +382,11 @@ class AlpacaData {
             summary_months = undefined;
         });
     }
+    async levels(res) {
+        return new Promise(async (resolve) => {
+            resolve(res);
+        });
+    }
     async positions(symbol, positions, res) {
         return new Promise(async (resolve) => {
             // const p = positions.filter((v) => v.symbol === symbol)[0] || null;
@@ -435,7 +433,7 @@ class AlpacaData {
             resolve(res);
         });
     }
-    async bars(symbol, timeframe = '1D', start = this.START_OF_YEAR, end = new Date().toISOString(), open_positions, orders_list, delay = 100) {
+    async bars(symbol, timeframe = '1D', start = this.START_OF_YEAR, end = new Date().toISOString(), open_positions, orders_list, reset = true, delay = 100) {
         return new Promise(async (resolve) => {
 
             await sleep(delay);
@@ -487,12 +485,14 @@ class AlpacaData {
                     .then((res) => this.addMetaData(res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
                     // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
-                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 10 : 28, isCrypto ? 0.7 : 0.7, 0.85))
+                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 10 : 28, isCrypto ? 0.7 : 0.7, 0.80))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
+                    .then((res) => this.analyze(symbol, res, reset))
                     .then((res) => this.analyze(symbol, res, true))
                     // .then((res) => this.analyze(symbol, res, false))
                     .then((res) => this.summarize(res))
+                    .then((res) => this.levels(res))
                     .then((res) => this.positions(symbol, open_positions, res))
                     .then((res) => this.orders(symbol, orders_list, res))
                     .then((res) => resolve(res));
@@ -638,11 +638,12 @@ async function test4(symbol = 'OKLO', log = true) {
             <hr style="border-top:1px solid white"/>
             <b>$${round(sum).toLocaleString()} | $${round(sum_all).toLocaleString()} | ${round1(sum_all / (symbols.length * 1000) * 100).toLocaleString()}%</b>
             </div>`;
+
         symbols.forEach((s) => {
             const has_position = open_positions.findIndex((v) => v.symbol === s.replace('/', ''));
             // console.log(s, has_position);
 
-            const status = all_symbols.find((v) => v.symbol === s);
+            let status = all_symbols.find((v) => v.symbol === s);
             const g = status.summary.total / SEED * 100;
             let status_color = '';
             if (status) {
@@ -677,9 +678,37 @@ async function test4(symbol = 'OKLO', log = true) {
             <br/>
             <span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> ${status.position ? '$' + round(status.position.gain) : '-'}</span>
             ${status ? `<br/><div class="" style="color:white;background-color:${status ? status_color : ''};">` + round1(g) + '%</div>' : ''}
-            </div>`;
+            <div id="chart-days-${s.replace('/', '')}"></div>
+            </div>
+            `;
         });
         document.getElementById(id).innerHTML = html + '<br/>';
+        symbols.forEach((s) => {
+            let status = all_symbols.find((v) => v.symbol === s);
+            s = s.replace('/', '');
+            const o = deepClone(chart_bar_options);
+            o.chart.height = 125;
+            o.chart.animations = { enabled: false };
+            o.chart.sparkline = { enabled: true };
+            o.dataLabels.enabled = false;
+            o.xaxis.labels.rotate = -45;
+            o.series[0].data = Object.keys(status.summary.weeks).map((k) => {
+                return { x: k, y: status.summary.weeks[k] };
+            });
+            o.annotations.points = [];
+            o.yaxis.labels.formatter = function (val) {
+                return '$' + round1(val);
+            };
+            // if (chart_bollinger) {
+            // chart_bollinger.destroy();
+            // chart_bollinger.updateOptions({
+            //         title: o.title,
+            //         series: o.series,
+            //         annotations: o.annotations,
+            // });
+            let chart = new ApexCharts(document.querySelector(`#chart-days-${s}`), o);
+            chart.render();
+        });
     }
     //#endregion
 
@@ -718,9 +747,9 @@ async function test4(symbol = 'OKLO', log = true) {
     all_symbols_names = [...symbol_groups.ETF.symbols, ...symbol_groups.CRYPTO.symbols, ...symbol_groups.STOCKS.symbols];
     // const all_symbols_names = ['GE', 'BTC/USD', 'QQQ'];
 
-    const promises = all_symbols_names.map((s) => {
+    const promises = all_symbols_names.map((s, i) => {
         // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
-        return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), open_positions, all_orders);
+        return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), open_positions, all_orders/*, i > 13 ? true : false*/);
     });
     all_symbols = await Promise.all(promises);
     console.log(all_symbols);
@@ -1169,6 +1198,20 @@ async function test4(symbol = 'OKLO', log = true) {
                 y: round(groups[group_name][k])
             }
         });
+        o.series.push({ name: '50K Seed', type: 'line', color: colors.orange, data: [] });
+        o.series[1].data = Object.keys(groups[group_name]).map((k) => {
+            return {
+                x: k,
+                y: round(groups[group_name][k] * 1.666)
+            }
+        });
+        // o.series.push({name:'75K Seed', type:'line', color: colors.yellow, data: []});
+        // o.series[2].data = Object.keys(groups[group_name]).map((k) => {
+        //     return {
+        //         x: k,
+        //         y: round(groups[group_name][k]*2.5)
+        //     }
+        // });
         o.yaxis.labels.formatter = function (x) {
             return `$${x.toLocaleString()}`;
         }
@@ -1176,6 +1219,7 @@ async function test4(symbol = 'OKLO', log = true) {
         o.dataLabels = {
             enabled: true,
             offsetY: -24,
+            enabledOnSeries: [0],
             style: {
                 fontSize: '16px',
             },
