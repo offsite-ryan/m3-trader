@@ -489,7 +489,7 @@ class AlpacaData {
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
                     .then((res) => this.analyze(symbol, res, reset))
-                    .then((res) => this.analyze(symbol, res, true))
+                    // .then((res) => this.analyze(symbol, res, true))
                     // .then((res) => this.analyze(symbol, res, false))
                     .then((res) => this.summarize(res))
                     .then((res) => this.levels(res))
