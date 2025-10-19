@@ -144,6 +144,7 @@ class AlpacaData {
                 X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => false },
                 Z: { buy: (v, i) => true, sell: (v) => false },
+                A1: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c < v.lb, },
                 //#endregion
 
                 //#region CRYPTO
@@ -176,7 +177,7 @@ class AlpacaData {
             const isCrypto = symbol.endsWith('USD');
             // const algo = isCrypto ? 'A' : 'A';
             // const algo = isCrypto ? 'F' : 'F';
-            const algo = isCrypto ? 'E' : 'X';
+            const algo = isCrypto ? 'A1' : 'A1';
             // const algo = isCrypto ? 'X' : 'X';
             // const algo = 'F';
 
@@ -483,9 +484,9 @@ class AlpacaData {
                     .then((res) => { if (!res.bars[symbol]) { throw new Error(res) } return res; })
                     .then((res) => res.bars[symbol] || [])
                     .then((res) => this.addMetaData(res))
-                    .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
+                    // .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
                     // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
-                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 10 : 28, isCrypto ? 0.7 : 0.7, 0.80))
+                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 10 : 14, isCrypto ? 0.7 : 0.7, 0.80))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
                     .then((res) => this.analyze(symbol, res, reset))
@@ -699,15 +700,17 @@ async function test4(symbol = 'OKLO', log = true) {
             o.yaxis.labels.formatter = function (val) {
                 return '$' + round1(val);
             };
-            // if (chart_bollinger) {
-            // chart_bollinger.destroy();
-            // chart_bollinger.updateOptions({
-            //         title: o.title,
-            //         series: o.series,
-            //         annotations: o.annotations,
-            // });
-            let chart = new ApexCharts(document.querySelector(`#chart-days-${s}`), o);
-            chart.render();
+            if (chart_symbols_bars[s]) {
+                chart_symbols_bars[s].destroy();
+                // chart_symbols_bars[s].updateOptions({
+                //     // title: o.title,
+                //     series: o.series,
+                //     // annotations: o.annotations,
+                // });
+            } //else {
+                chart_symbols_bars[s] = new ApexCharts(document.querySelector(`#chart-days-${s}`), o);
+                chart_symbols_bars[s].render();
+            //};
         });
     }
     //#endregion
@@ -738,18 +741,20 @@ async function test4(symbol = 'OKLO', log = true) {
     let chart_data_reivest = [];
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-01T00:00:00-04:00`));
-    const start = new Date(new Date(`2024-10-01T00:00:00-0${tz}:00`));
-    const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
+    const start = new Date(`2025-09-07T00:00:00-0${tz}:00`);
+    const end = new Date(`2025-10-19T23:59:59-0${tz}:00`);
+    // const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
     let index = 0;
 
     console.group('%c----------------------------------------------------', 'color:orange;');
     // const all_symbols_names = [...favs.symbols, ...crypto.symbols, ...research.symbols];
     all_symbols_names = [...symbol_groups.ETF.symbols, ...symbol_groups.CRYPTO.symbols, ...symbol_groups.STOCKS.symbols];
-    // const all_symbols_names = ['GE', 'BTC/USD', 'QQQ'];
+    // all_symbols_names = ['BTC/USD'];
 
     const promises = all_symbols_names.map((s, i) => {
+        // const promises = all_symbols_names.map((s, i) => {
         // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
-        return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), open_positions, all_orders/*, i > 13 ? true : false*/);
+        return alpaca_data.bars(s, '1H', start.toISOString(), end.toISOString(), open_positions, all_orders/*, i > 13 ? true : false*/);
     });
     all_symbols = await Promise.all(promises);
     console.log(all_symbols);
