@@ -699,15 +699,17 @@ async function test4(symbol = 'OKLO', log = true) {
             o.yaxis.labels.formatter = function (val) {
                 return '$' + round1(val);
             };
-            // if (chart_bollinger) {
-            // chart_bollinger.destroy();
-            // chart_bollinger.updateOptions({
-            //         title: o.title,
-            //         series: o.series,
-            //         annotations: o.annotations,
-            // });
-            let chart = new ApexCharts(document.querySelector(`#chart-days-${s}`), o);
-            chart.render();
+            if (chart_symbols_months[s]) {
+                chart_symbols_months[s].destroy();
+                // chart_symbols_months[s].updateOptions({
+                //     // title: o.title,
+                //     series: o.series,
+                //     // annotations: o.annotations,
+                // });
+            } //else {
+            chart_symbols_months[s] = new ApexCharts(document.querySelector(`#chart-days-${s}`), o);
+            chart_symbols_months[s].render();
+            // };
         });
     }
     //#endregion
@@ -1203,6 +1205,15 @@ async function test4(symbol = 'OKLO', log = true) {
             return {
                 x: k,
                 y: round(groups[group_name][k] * 1.666)
+            }
+        });
+        o.series.push({ name: 'Cumulative', type: 'area', color: colors.green + '60', data: [] });
+        let cumulative = 0;
+        o.series[2].data = Object.keys(groups[group_name]).map((k) => {
+            cumulative += groups[group_name][k];
+            return {
+                x: k,
+                y: round(cumulative)
             }
         });
         // o.series.push({name:'75K Seed', type:'line', color: colors.yellow, data: []});

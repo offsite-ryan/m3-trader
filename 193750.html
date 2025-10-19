@@ -114,7 +114,7 @@
                 </div>
 
             </div>
-            <div class="w3-row w3-margin w3-black" style="border-bottom: 1px solid white;">
+            <div class="w3-row w3-margin w3-black" style="display:none;border-bottom: 1px solid white;">
 
                 <div class="w3-third w3-padding">
                     <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
@@ -282,14 +282,14 @@
     <!-- Bollinger -->
     <div id="content-bollinger" class="_w3-margin" style="display:none;">
         <br />
-        <div class="w3-row" style="_border:1px solid; min-height:600px;">
-            <div class="w3-col s12 m6 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);">
+        <div class="w3-row" style="_display:none;_border:1px solid; min-height:600px;">
+            <div class="w3-col s12 m6 l3 w3-padding" style="display:none;border:1px solid rgb(92, 92, 92);">
                 <div id="total-positions-2" class="w3-center w3-xxlarge"
                     style="min-height: 390.5px;align-content: center;font-weight:900;font-size:6.0vh !important;flex:inline-grid;">
                 </div>
             </div>
             <div class="w3-col s12 m6 l6 chart-symbol-day-3 w3-padding"
-                style="border:1px solid rgb(92, 92, 92);min-height:407px;;">
+                style="display:none;border:1px solid rgb(92, 92, 92);min-height:407px;;">
                 <div _id="" style="font-size: 18px; color: rgb(255, 255, 255);">OPEN POSITIONS</div>
                 <div id="chart-positions"></div>
             </div>
@@ -300,7 +300,7 @@
             </div>
             <!-- --------------------------------------------------------- -->
             <div class="w3-padding w3-col s12 m4 l3 w3-center"
-                style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
+                style="display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
                 <div id="title-symbols-group-1"></div>
                 <div id="chart-symbols-group-1"></div>
             </div>
@@ -555,6 +555,7 @@
     let chart_symbols_group_2 = null;
     let chart_symbols_group_3 = null;
     let chart_symbols_group_4 = null;
+    let chart_symbols_months = {};
 
 
     const isCrypto = localStorage.getItem('m3-trader-v5-crypto') === 'true' ? true : false;
