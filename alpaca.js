@@ -137,8 +137,8 @@ class AlpacaData {
                 B: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c <= v.ub },
                 C: { buy: (v, i) => v.sma >= v.lb, sell: (v, i) => false },
                 D: { buy: (v, i) => v.c >= v.sma, sell: (v, i) => v.c <= v.lb },
-                E: { buy: (v, i) => v.o >= v.sma, sell: (v, i) => v.c < v.sma }, //# GOOD ONE */
-                F: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c < v.lb, },
+                E: { buy: (v, i) => v.o >= v.sma, sell: (v, i) => v.c < v.sma },
+                F: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c < v.lb, }, //# GOOD ONE */
                 G: { buy: (v, i) => v.c >= v.lb && v.p5 >= v.c, sell: (v, i) => v.c < v.lb },
                 H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // buy/sell each day if above lower bound
                 X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
@@ -176,7 +176,7 @@ class AlpacaData {
             const isCrypto = symbol.endsWith('USD');
             // const algo = isCrypto ? 'A' : 'A';
             // const algo = isCrypto ? 'F' : 'F';
-            const algo = isCrypto ? 'E' : 'X';
+            const algo = isCrypto ? 'F' : 'Z';
             // const algo = isCrypto ? 'X' : 'X';
             // const algo = 'F';
 
@@ -202,14 +202,14 @@ class AlpacaData {
                 // const get_window = (t) => { return new Date(t).getDate() === 1; };
                 // const get_window = (t) => { return new Date(t).getDay() === 5; };
                 // const get_window = (t1, t2) => { return (new Date(t2).getTime() - new Date(t1).getTime()) > (7*24*60*60*1000); };
-                const get_window = (t) => { return new Date(t).getMonth(); };
-                // const get_window = (t) => { return getWeekName(new Date(t)); };
+                // const get_window = (t) => { return new Date(t).getMonth(); };
+                const get_window = (t) => { return getWeekName(new Date(t)); };
                 // const get_window = (t) => { return getMonthName(new Date(t)); };
                 let last = get_window(bars[0].t);
                 bars.forEach((v, i) => {
                     if (v.sma) {
                         const current = get_window(v.t);
-                        if (current !== last && own_at > - 0) {
+                        if (current !== last && own_at >= 0) {
                             if (reset) {
                                 push_trade(v, own_at, i);
                                 own_at = -1;
@@ -234,7 +234,7 @@ class AlpacaData {
                         }
                         // * BUY * //
                         if (algos[algo].buy(v, i)) {
-                            if (was_below === true && own_at === -1) {
+                            if (/*was_below === true &&*/ own_at === -1) {
                                 // if (TRADE) {
                                 //     buy(symbol, 5000); // TODO: change to INVVESTMENT_SEED
                                 // }
@@ -354,7 +354,7 @@ class AlpacaData {
                 // let q = d.getMonth() + 1;
                 // q = q < 4 ? 1 : (q < 7 ? 2 : (q < 10 ? 3 : 4));
                 // let quarter = d.getFullYear() + '_' + (q).toString().padStart(2, '0');
-                const d = new Date(v.e2);
+                const d = new Date(v.t2);
                 let month = getMonthName(d);
                 let week = getWeekName(d);
                 let quarter = getQuarterName(d);
@@ -522,6 +522,69 @@ let bollinger_selected_symbol = null;
 let treemap_data = [];
 let day_results = [];
 
+//#region SYMBOLS
+// * ------------------------
+// * SYMBOLS
+// * ------------------------
+const symbol_groups = {
+    ETF: {
+        name: 'ETF',
+        seed_dollars: 0 * 1000,
+        // 'BTQ', 'VXX', 'VIXY', 
+        symbols: [
+            // /* renmoved */ 'EFAS', 'FLN', 'SLVO', 'VXUS', 
+            // 'RING', 'FGM', 'IXUS', 
+            'ONEQ', 'QQQ', 'SMH', 'AIQ', 'FCA', 'PIE',
+        ].sort()
+        // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
+        // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
+        // symbols: ['VOO', 'SPY', 'BRK.A', 'BRK.B', 'IWV', 'VTHR',].sort()
+    },
+    // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
+    CRYPTO: {
+        name: 'CRYPTO',
+        seed_dollars: 50 * 1000,
+        symbols: [
+            // 'BAT/USD', 'PEPE/USD', 
+            // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD',  
+            // 'AVAX/USD', 'SUSHI/USD',
+            'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD',
+            // 'GRT/USD', 'SOL/USD', 'UNI/USD',
+        ].sort()
+    },
+    // const research_crypto = {
+    //     seed_dollars: 10 * 1000,
+    //     symbols: [
+    //         // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
+    //         'AVAX/USD', 'BCH/USD', 'BTC/USD', 'CRV/USD', 'DOGE/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD', 'SUSHI/USD',
+    //         'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
+    //     ].sort()
+    // }
+    STOCKS: {
+        name: 'STOCKS',
+        seed_dollars: 50 * 1000,
+        symbols: [
+            // /* renmoved */ 'FOX', 'CVS', 'INTL', 'NVDA', 'WMT', 'ORCL', 'MSFT', 'JPM', 'MDB', 'WMT', 'TSLA', 
+            // 'GM', 'F', 'LULU', 'UBER', 'DKNG', 'VZ', 'WM', 'BP', 'T', 
+            // 'NEGG', 'BETR', 
+            'RING',
+            'IREN', 'CIFR', 'HUT', 'TMC',
+            'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
+            // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
+            // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
+            // 'Z', 'T', 'MP', 'CVX', 'PM', 
+            // 'BETZ', 'BX', 'IBIT', 
+            'HOOD', 'FGM', //'LAC', 
+            'AMD', 'AVGO', 'COIN',
+            'LEU', 'NIO',
+            // 'ONEQ', 
+            'OPEN',
+            'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU',
+        ].sort()
+    }
+};
+//#endregion
+
 // =================================================
 // TEST 4
 // =================================================
@@ -537,66 +600,7 @@ async function test4(symbol = 'OKLO', log = true) {
     bollinger_selected_symbol = symbol;
     //#endregion
 
-    //#region SYMBOLS
-    // * ------------------------
-    // * SYMBOLS
-    // * ------------------------
-    const symbol_groups = {
-        ETF: {
-            name: 'ETF',
-            seed_dollars: 0 * 1000,
-            // 'BTQ', 'VXX', 'VIXY', 
-            symbols: [
-                // /* renmoved */ 'EFAS', 'FLN', 'SLVO', 'VXUS', 
-                'ONEQ', 'QQQ', 'IXUS', 'RING', 'FGM', 'SMH', 'AIQ', 'FCA', 'PIE',
-            ].sort()
-            // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
-            // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
-            // symbols: ['VOO', 'SPY', 'BRK.A', 'BRK.B', 'IWV', 'VTHR',].sort()
-        },
-        // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
-        CRYPTO: {
-            name: 'CRYPTO',
-            seed_dollars: 50 * 1000,
-            symbols: [
-                // 'BAT/USD', 'PEPE/USD', 
-                // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD',  
-                // 'AVAX/USD', 'SUSHI/USD',
-                'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD',
-                // 'GRT/USD', 'SOL/USD', 'UNI/USD',
-            ].sort()
-        },
-        // const research_crypto = {
-        //     seed_dollars: 10 * 1000,
-        //     symbols: [
-        //         // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
-        //         'AVAX/USD', 'BCH/USD', 'BTC/USD', 'CRV/USD', 'DOGE/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD', 'SUSHI/USD',
-        //         'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
-        //     ].sort()
-        // }
-        STOCKS: {
-            name: 'STOCKS',
-            seed_dollars: 50 * 1000,
-            symbols: [
-                // /* renmoved */ 'FOX', 'CVS', 'INTL', 'NVDA', 'WMT', 'ORCL', 'MSFT', 'JPM', 'MDB', 'WMT', 'TSLA', 
-                // 'GM', 'F', 'LULU', 'UBER', 'DKNG', 'VZ', 'WM', 'BP', 'T', 
-                'NEGG', 'VRT',
-                'IREN', 'CIFR', 'HUT', 'BETR', 'TMC',
-                'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
-                // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
-                // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
-                // 'Z', 'T', 'MP', 'CVX', 'PM', 
-                // 'BETZ', 'BX', 'IBIT', 
-                'HOOD', //'LAC', 
-                'AMD', 'AVGO', 'COIN',
-                'LEU', 'NIO',
-                // 'ONEQ', 
-                'OPEN',
-                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU',
-            ].sort()
-        }
-    };
-    //#endregion
+
 
     //#region ADD BUTTONS
     // * ------------------------
@@ -687,14 +691,18 @@ async function test4(symbol = 'OKLO', log = true) {
             let status = all_symbols.find((v) => v.symbol === s);
             s = s.replace('/', '');
             const o = deepClone(chart_bar_options);
-            o.chart.height = 125;
+            o.chart.height = 100;
             o.chart.animations = { enabled: false };
             o.chart.sparkline = { enabled: true };
             o.dataLabels.enabled = false;
             o.xaxis.labels.rotate = -45;
-            o.series[0].data = Object.keys(status.summary.weeks).map((k) => {
-                return { x: k, y: status.summary.weeks[k] };
+            const field = 'months';
+            o.series[0].data = Object.keys(status.summary[field]).map((k) => {
+                return { x: k, y: status.summary[field][k] };
             });
+            // o.series[0].data = status.trades.map((v) => {
+            //     return { x: v.s, y: v.gain_1K };
+            // });
             o.annotations.points = [];
             o.yaxis.labels.formatter = function (val) {
                 return '$' + round1(val);
@@ -788,7 +796,7 @@ async function test4(symbol = 'OKLO', log = true) {
             console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 10)}K @ 10K`, 'color:orange;');
 
             //! --------------------------------------------------------------------
-            const field_name = 'months' // months | weeks | quarters
+            const field_name = 'weeks' // months | weeks | quarters
             let data = {};
             let temp_data = {};
             let count = 0;
@@ -817,9 +825,11 @@ async function test4(symbol = 'OKLO', log = true) {
         }
         index++;
     }
-    console.log(`%cOPEN POSITIONS | $${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()} | $${round2(open_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c)).toLocaleString()}`, 'color:yellow;');
-    console.chart(open_positions.map((v) => v.unrealized_pl), `OPEN POSITIONS<br/>$${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()}`);
-    console.log('%cGROUPS', 'color:yellow;', groups)
+    if (open_positions.length > 0) {
+        console.log(`%cOPEN POSITIONS | $${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()} | $${round2(open_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c)).toLocaleString()}`, 'color:yellow;');
+        console.chart(open_positions.map((v) => v.unrealized_pl), `OPEN POSITIONS<br/>$${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()}`);
+        console.log('%cGROUPS', 'color:yellow;', groups)
+    }
     //#endregion
 
     //#region CHART YTD DAYS
@@ -828,7 +838,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // * ------------------------
     let o = deepClone(chart_area_spline_options);
     // let o = deepClone(chart_bar_options);
-    o.chart.height = 500;
+    o.chart.height = 522;
     o.chart.toolbar = { show: false };
     o.chart.sparkline = false;
     o.legend.show = false;
@@ -1088,7 +1098,7 @@ async function test4(symbol = 'OKLO', log = true) {
     const total_invested = reduceArray(open_positions.map((v) => +(v.cost_basis)));
     // const total_pct = open_positions.map((v) => +(v.unrealized_plpc) * 100).reduce((p, c) => p + c);
     let elem = document.getElementById('total-positions-2');
-    elem.style.backgroundColor = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : colors.red);
+    elem.style.backgroundColor = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : '#cf0000');
     elem.style.color = colors.black;
     elem.style.padding = '10px';
     elem.style.fontSize = isTablet() ? '7.8vh !important' : (isMobile() ? '55px !important' : '4vh !important');
@@ -1097,6 +1107,12 @@ async function test4(symbol = 'OKLO', log = true) {
     document.title = `M#-TRADER | $${round(total).toLocaleString()}`;
 
     elem = document.getElementById('total-positions-banner');
+    // elem.parentElement.parentElement.style.backgroundColor = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : colors.red);
+    elem.parentElement.parentElement.style.backgroundColor = '';
+    elem.parentElement.parentElement.style.borderBottom = '1px solid white';
+    elem.parentElement.parentElement.style.borderTop = '1px solid white';
+    elem.style.fontSize = '72px';
+    elem.style.color = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : colors.red);
     elem.innerHTML = `$${round(total).toLocaleString()} | ${round2(total / total_invested * 100)}%`;
     //#endregion
 
@@ -1190,7 +1206,7 @@ async function test4(symbol = 'OKLO', log = true) {
         //  TODO: get rid of the high and the low values when calculating the average
         o = deepClone(chart_bar_options);
         o.chart.animations = { enabled: false };
-        o.chart.height = 275;
+        o.chart.height = 375;
         o.chart.sparkline = { enabled: true };
         o.xaxis.labels.show = false;
         // o.yaxis.min = -200;
@@ -1226,9 +1242,10 @@ async function test4(symbol = 'OKLO', log = true) {
         o.yaxis.labels.formatter = function (x) {
             return `$${x.toLocaleString()}`;
         }
+        // o.yaxis = [{},{},{opposite: true}];
         o.annotations.points = [];
         o.dataLabels = {
-            enabled: true,
+            enabled: false,
             offsetY: -24,
             enabledOnSeries: [0],
             style: {
@@ -1241,14 +1258,19 @@ async function test4(symbol = 'OKLO', log = true) {
                 // return round1(v / 1000) + 'K';
             },
         };
-        const num = symbol_groups[index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : 'CRYPTO')].symbols.length;
-        const g = round(Object.values(groups[group_name]).reduce((p, c) => p + c));
-        const avg = round(g / Object.values(groups[group_name]).length);
+        // const num = symbol_groups[index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : 'CRYPTO')].symbols.length;
+        // const g = round(Object.values(groups[group_name]).reduce((p, c) => p + c));
+        // const avg = round(g / Object.values(groups[group_name]).length);
+        // const pct = round(g / (num * 1000) * 100);
+        // const last = round2(Object.values(groups[group_name])[Object.values(groups[group_name]).length - 1]);
+        const num = all.length;
+        const g = all.map((v) => v.trades.map((v2) => v2.gain_1K).reduce((p, c) => p + c)).reduce((p, c) => p + c);
+        const avg = round(g / num);
         const pct = round(g / (num * 1000) * 100);
-        const last = round2(Object.values(groups[group_name])[Object.values(groups[group_name]).length - 1]);
+        const last = round2(all.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c));
 
         // const avg2 = round((temp.reduce((p, c) => p + c)) / (temp.length));
-        const elem = document.getElementById(`title-symbols-group-${index + 1}`)
+        let elem = document.getElementById(`title-symbols-group-${index + 1}`)
         elem.style.fontSize = '18px';
         elem.style.color = '#fff';
         // elem.innerHTML = `<div class="w3-xxlarge">`;
@@ -1257,11 +1279,12 @@ async function test4(symbol = 'OKLO', log = true) {
         // elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span> @ <span style="color:lime;">$${num}K</span>`;
         elem.innerHTML += `<hr/>`;
         elem.innerHTML += `AVG: <span style="color:lime;">$${avg.toLocaleString()}</span>`;
-        elem.innerHTML += `<span class="w3-right">$10K SEED: <span style="color:lime;">$${(round1(g / num * 10 / 1000)).toLocaleString()}K</span></span>`;
+        // elem.innerHTML += `<span class="w3-right">$10K SEED: <span style="color:lime;">$${(round1(g / num * 10 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<span class="w3-right">$60K SEED: <span style="color:lime;">$${(round1(g / num * 60 / 1000)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/>LAST: <span style="color:lime;">$${round(last).toLocaleString()}</span>`;
-        elem.innerHTML += `<span class="w3-right">$50K SEED: <span style="color:lime;">$${(round1(g / num * 50 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<br/><span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<br/><span class="w3-right">$100K SEED: <span style="color:lime;">$${(round1(g / num * 100 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span></span>`;
+        // elem.innerHTML += `<br/><span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span></span>`;
+        // elem.innerHTML += `<br/><span class="w3-right">$100K SEED: <span style="color:lime;">$${(round1(g / num * 100 / 1000)).toLocaleString()}K</span></span>`;
 
         // elem.innerHTML += `<hr/>`;
         // document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
@@ -1280,6 +1303,57 @@ async function test4(symbol = 'OKLO', log = true) {
             c.render();
             index === 0 ? chart_symbols_group_1 = c : (index === 1 ? chart_symbols_group_2 = c : (index === 2 ? chart_symbols_group_3 = c : chart_symbols_group_4 = c))
         }
+
+        //# group tree
+        if (index === 1) {
+            o = deepClone(chart_bar_options);
+            o.chart.animations = { enabled: false };
+            // unrealized_plpc
+            o.series[0].data = all.map((v) => {
+                // const last = Object.values(v.summary.weeks)[Object.values(v.summary.weeks).length - 1];                
+                const last = v.trades[v.trades.length - 1].gain_1K;
+                return {
+                    x: [
+                        v.symbol.replace('USD', ''),
+                        // isMobile() ? '' : `${round1(v.unrealized_plpc * 100)}%`
+                    ],
+                    // x: v.symbol.replace('USD', ''),
+                    // y: round(v.summary.total)
+                    y: round(last)
+                }
+            });
+            o.yaxis.labels.formatter = function (x) {
+                return `$${x.toLocaleString()}`;
+            }
+            o.annotations.points = [];
+            if (true || mobile_view) {
+                o.chart.type = 'treemap';
+                o.annotations.yaxis = [];
+                o.dataLabels.enabled = true;
+            }
+            o.chart.height = isMobile() ? 250 : (isTablet() ? 200 : 200);
+            o.dataLabels = {
+                // offsetY: mobile_view ? 0 :  -24,
+                style: {
+                    fontSize: '14px',
+                },
+                formatter: function (text, op) {
+                    return [text, op.value]
+                },
+            };
+            if (chart_symbols_group_2_tree) {
+                chart_symbols_group_2_tree.destroy();
+                // chart_positions.updateOptions({
+                //     title: o.title,
+                //     series: o.series,
+                //     annotations: o.annotations,
+                // });
+            }
+            chart_symbols_group_2_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-2-tree`), o);
+            chart_symbols_group_2_tree.render();
+            o = undefined;
+        }
+
         //#endregion
 
         //#region day gains cumulative chart

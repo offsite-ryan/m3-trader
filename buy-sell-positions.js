@@ -51,6 +51,19 @@ function buy(symbol, spend) {
             .catch((err) => { console.error('error in buy()', err) });
     });
 }
+function buy_symbols(symbols, spend) {
+    return new Promise(async (resolve, reject) => {
+        const obj = {};
+        for await (const symbol of symbols) {
+            const res = await buy(symbol, spend);
+            obj[symbol] = res;
+            console.log(`Bought ${symbol} for $${spend}`, res);
+            await sleep(1000);
+        }
+        console.log(obj);
+        resolve(res);
+    });
+}
 function sell(symbol) {
     return new Promise((resolve, reject) => {
         const options = {
@@ -66,6 +79,24 @@ function sell(symbol) {
             .then(res => res.json())
             .then(res => resolve(res))
             .catch(err => console.error('error in sell()', err));
+    });
+}
+function liquidate() {
+    return new Promise((resolve, reject) => {
+        const options = {
+            method: 'DELETE',
+            headers: {
+                accept: 'application/json',
+                'APCA-API-KEY-ID': KEY,
+                'APCA-API-SECRET-KEY': SECRET,
+            }
+        };
+        // https://paper-api.alpaca.markets/v2/positions
+        let url = `${buy_sell_root_url}/v2/positions`;
+        fetch(url, options)
+            .then(res => res.json())
+            .then(res => resolve(res))
+            .catch(err => console.error('error in liquidate()', err));
     });
 }
 function positions() {

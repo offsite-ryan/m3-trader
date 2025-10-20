@@ -124,6 +124,21 @@ function sleep(ms) {
 }
 
 // =================================================
+// CONFIRM ACTION
+// =================================================
+function confirmAction(action = () => { }, message = "Are you sure you want to proceed?") {
+    if (confirm(message)) {
+        // User clicked "OK"
+        alert("Item deleted!");
+        // Here, you would typically add code to perform the deletion
+        action();
+    } else {
+        // User clicked "Cancel"
+        alert("Deletion cancelled.");
+    }
+}
+
+// =================================================
 // GET HOUR MINUTE AS NUMBER (8:32 -> 832)
 // =================================================
 function getHMM(date) {

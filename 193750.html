@@ -77,39 +77,47 @@
             </div>
             <div class="w3-row w3-margin w3-black" style="border-bottom: 1px solid white;">
 
-                <div class="w3-third w3-padding">
-                    <!-- <span id="">STOCKS</span> -->
-                    <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
-                    <div id="chart-symbols-group-2"></div>
-                </div>
-                <div class="w3-twothird w3-container">
-                    <h2>
-                        <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
-                            style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
-                        <div id="title-symbols-group-2"></div>
-                        <!-- </div> -->
-                    </h2>
-                    <div id="chart-symbols-breakdown-2"></div>
-                    <!-- <p>
-                        
-                    </p> -->
-                </div>
-
-            </div>
-            <div class="w3-row w3-margin w3-black" style="border-bottom: 1px solid white;">
-
                 <div class="w3-third w3-padding" _class="w3-col s12 m5 w3-padding">
-                    <div id="chart-symbols-group-1"></div>
+                    <div id="chart-symbols-group-2"></div>
                 </div>
                 <div class="w3-twothird w3-container" _class="w3-col s12 m7 w3-container">
                     <h2>
-                        <div id="title-symbols-group-1"></div>
+                        <div id="title-symbols-group-2"></div>
+                        <div id="chart-symbols-group-2-tree"></div>
                     </h2>
+                    <!-- <br /> -->
+                    <button id="buy_symbol" class="w3-button _w3-right w3-round-large w3-large w3-padding w3-half"
+                        style="background-color:#121212;border:1px solid;" onclick="liquidate()">Liquidate</button>
+                    <button id="sell_symbol" class="w3-button w3-right w3-round-large w3-large w3-padding w3-half"
+                        style="background-color:#121212;border:1px solid;"
+                        onclick="buy_symbols(symbol_groups.STOCKS.symbols, +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">BUY
+                        ALL</button>
 
                     <!-- <p>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
                         labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
                         laboris nisi ut aliquip ex ea commodo consequat.
+                    </p> -->
+                </div>
+
+            </div>
+            <div class="w3-row w3-margin w3-black" style="display:none;border-bottom: 1px solid white;">
+
+                <div class="w3-third w3-padding">
+                    <!-- <span id="">STOCKS</span> -->
+                    <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
+                    <div id="chart-symbols-group-1"></div>
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>
+                        <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
+                            style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
+                        <div id="title-symbols-group-1"></div>
+                        <!-- </div> -->
+                    </h2>
+                    <div id="chart-symbols-breakdown-1"></div>
+                    <!-- <p>
+                        
                     </p> -->
                 </div>
 
@@ -137,7 +145,7 @@
             </div>
 
 
-            <div class="w3-row-padding" style="display: none;">
+            <!-- <div class="w3-row-padding" style="display: none;">
 
                 <div class="w3-third w3-margin-bottom">
                     <ul class="w3-ul w3-border w3-center w3-hover-shadow">
@@ -190,7 +198,7 @@
                         </li>
                     </ul>
                 </div>
-            </div>
+            </div> -->
 
             <!-- <div class="w3-row w3-margin">
 
@@ -333,13 +341,14 @@
             <div class="w3-col s12 m4 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);_min-height:500px;">
                 <div id="chart-bollinger-2"></div>
                 <!-- <input class="w3-col s6" type="number" value="1000"/> -->
-                <input type="range" min="0" max="5" value="1" step="0.5" style="accent-color:#00b90a;"
+                <input type="range" min="0" max="5" value="1" step="0.5" style="accent-color:#00b90a;width:80%;"
                     oninput="document.getElementById('slider-value').innerHTML = `$${this.value}K`">
                 <span id="slider-value">$1K</span>
-                <button id="buy_symbol" class="w3-button w3-right w3-round-large w3-large w3-padding"
+                <br />
+                <button id="buy_symbol" class="w3-button _w3-right w3-round-large w3-large w3-padding w3-half"
                     style="background-color:#121212;border:1px solid;"
                     onclick="sell(bollinger_selected_symbol)">Sell</button>
-                <button id="sell_symbol" class="w3-button w3-right w3-round-large w3-large w3-padding"
+                <button id="sell_symbol" class="w3-button _w3-right w3-round-large w3-large w3-padding w3-half"
                     style="background-color:#121212;border:1px solid;"
                     onclick="buy(bollinger_selected_symbol, +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">Buy</button>
             </div>
@@ -556,6 +565,7 @@
     let chart_symbols_group_3 = null;
     let chart_symbols_group_4 = null;
     let chart_symbols_months = {};
+    let chart_symbols_group_2_tree = null;
 
 
     const isCrypto = localStorage.getItem('m3-trader-v5-crypto') === 'true' ? true : false;
