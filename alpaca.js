@@ -203,8 +203,10 @@ class AlpacaData {
                 // const get_window = (t) => { return new Date(t).getDay() === 5; };
                 // const get_window = (t1, t2) => { return (new Date(t2).getTime() - new Date(t1).getTime()) > (7*24*60*60*1000); };
                 // const get_window = (t) => { return new Date(t).getMonth(); };
+                reset = true;
                 const get_window = (t) => { return getWeekName(new Date(t)); };
                 // const get_window = (t) => { return getMonthName(new Date(t)); };
+                // const get_window = (t) => { return getYMD(new Date(t)) === '2025-10-20' ? true : getMonthName(new Date(t)) ; };
                 let last = get_window(bars[0].t);
                 bars.forEach((v, i) => {
                     if (v.sma) {
@@ -485,12 +487,12 @@ class AlpacaData {
                     .then((res) => this.addMetaData(res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
                     // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
-                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 10 : 28, isCrypto ? 0.7 : 0.7, 0.80))
+                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 28 : 14, isCrypto ? 0.7 : 0.7, 0.80))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
-                    .then((res) => this.analyze(symbol, res, reset))
+                    // .then((res) => this.analyze(symbol, res, reset))
                     // .then((res) => this.analyze(symbol, res, true))
-                    // .then((res) => this.analyze(symbol, res, false))
+                    .then((res) => this.analyze(symbol, res, false))
                     .then((res) => this.summarize(res))
                     .then((res) => this.levels(res))
                     .then((res) => this.positions(symbol, open_positions, res))
@@ -748,8 +750,12 @@ async function test4(symbol = 'OKLO', log = true) {
     let chart_data_reivest = [];
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-01T00:00:00-04:00`));
+    // ----------------------------------
     const start = new Date(new Date(`2024-10-01T00:00:00-0${tz}:00`));
     const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
+    // ----------------------------------
+    // const start = new Date(`2008-01-01`);
+    // const end = new Date(`2025-06-01`);
     let index = 0;
 
     console.group('%c----------------------------------------------------', 'color:orange;');
@@ -767,6 +773,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // let data = await analyze_days('E', symbol, '1D', start.toISOString(), end.toISOString());
     let data = all_symbols.filter((v) => v.symbol === symbol)[0];
     let bars = data.bars;
+    // const chart_annotations = [data.trades[data.trades.length - 1]];
     const chart_annotations = data.trades;
     const groups = {};
     //#endregion
@@ -796,7 +803,7 @@ async function test4(symbol = 'OKLO', log = true) {
             console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 10)}K @ 10K`, 'color:orange;');
 
             //! --------------------------------------------------------------------
-            const field_name = 'weeks' // months | weeks | quarters
+            const field_name = 'months' // months | weeks | quarters
             let data = {};
             let temp_data = {};
             let count = 0;
@@ -881,7 +888,7 @@ async function test4(symbol = 'OKLO', log = true) {
 
     /** trade gains */
     let seed = INVESTMENT_SEED;
-    chart_annotations.forEach((a) => {
+    chart_annotations.forEach((a, i) => {
         // const g = round(seed * (a.gain_1K / 100));
         const g = round(a.gain_1K);
         o.annotations.xaxis.push({
@@ -894,6 +901,7 @@ async function test4(symbol = 'OKLO', log = true) {
             label: {
                 text: isMobile() && !isTablet() ? '' : `${g}`,
                 _text: `${round(INVESTMENT_SEED * (g))}`,
+                position: g > 0 || i === chart_annotations.length - 1 ? 'top' : 'bottom',
                 orientation: 'horizontal',
                 style: {
                     background: g >= 0 ? colors.green : colors.red,
@@ -1200,8 +1208,8 @@ async function test4(symbol = 'OKLO', log = true) {
         // * -------------------------------------
         // * MONTHLY BAR CHART WITH CUMULATIVE
         // * -------------------------------------
-        const temp = Object.keys(groups[group_name]).map((k) => groups[group_name][k]).sort((a, b) => b - a);
-        const t = temp.slice(1, -1);
+        // const temp = Object.keys(groups[group_name]).map((k) => groups[group_name][k]).sort((a, b) => b - a);
+        // const t = temp.slice(1, -1);
 
         //  TODO: get rid of the high and the low values when calculating the average
         o = deepClone(chart_bar_options);
@@ -1258,31 +1266,41 @@ async function test4(symbol = 'OKLO', log = true) {
                 // return round1(v / 1000) + 'K';
             },
         };
+        // --------------------
         // const num = symbol_groups[index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : 'CRYPTO')].symbols.length;
         // const g = round(Object.values(groups[group_name]).reduce((p, c) => p + c));
         // const avg = round(g / Object.values(groups[group_name]).length);
         // const pct = round(g / (num * 1000) * 100);
         // const last = round2(Object.values(groups[group_name])[Object.values(groups[group_name]).length - 1]);
-        const num = all.length;
-        const g = all.map((v) => v.trades.map((v2) => v2.gain_1K).reduce((p, c) => p + c)).reduce((p, c) => p + c);
+        // --------------------
+        // const num = all.length;
+        // const g = all.map((v) => v.trades.map((v2) => v2.gain_1K).reduce((p, c) => p + c)).reduce((p, c) => p + c);
+        // const avg = round(g / num);
+        // const pct = round(g / (num * 1000) * 100);
+        // const last = round2(all.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c));
+        // --------------------
+        const num = o.series[0].data.length;
+        const g = o.series[0].data.map((v) => v.y).reduce((p, c) => p + c);
         const avg = round(g / num);
-        const pct = round(g / (num * 1000) * 100);
-        const last = round2(all.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c));
+        const pct = round(g / (all.length * 1000) * 100);
+        const last = round2(o.series[0].data[o.series[0].data.length - 1].y);
+        const last_trades = round2(all.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c));
 
         // const avg2 = round((temp.reduce((p, c) => p + c)) / (temp.length));
         let elem = document.getElementById(`title-symbols-group-${index + 1}`)
         elem.style.fontSize = '18px';
         elem.style.color = '#fff';
         // elem.innerHTML = `<div class="w3-xxlarge">`;
-        elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${num}K</span></span>`;
+        elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${all.length}K</span></span>`;
         // elem.innerHTML = `</div>`;
         // elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span> @ <span style="color:lime;">$${num}K</span>`;
         elem.innerHTML += `<hr/>`;
         elem.innerHTML += `AVG: <span style="color:lime;">$${avg.toLocaleString()}</span>`;
         // elem.innerHTML += `<span class="w3-right">$10K SEED: <span style="color:lime;">$${(round1(g / num * 10 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<span class="w3-right">$60K SEED: <span style="color:lime;">$${(round1(g / num * 60 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<br/>LAST: <span style="color:lime;">$${round(last).toLocaleString()}</span>`;
-        elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<span class="w3-right">$60K SEED: <span style="color:lime;">$${(round1(g / all.length * 60 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<br/>LAST: <b><span style="color:${last >= 0 ? 'lime' : 'red'};">$${round(last).toLocaleString()}</span></b>`;
+        elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / all.length * 75 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:36px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
         // elem.innerHTML += `<br/><span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span></span>`;
         // elem.innerHTML += `<br/><span class="w3-right">$100K SEED: <span style="color:lime;">$${(round1(g / num * 100 / 1000)).toLocaleString()}K</span></span>`;
 
