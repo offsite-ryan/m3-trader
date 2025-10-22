@@ -13,6 +13,7 @@
     <link rel="manifest" href="./manifest.json">
     <script src="https://www.w3schools.com/lib/w3.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="./config.js"></script>
     <script src="./HackTimer.js"></script>
     <script src="./colors.js"></script>
     <script src="./calendar.js"></script>
@@ -23,6 +24,7 @@
     <script src="./chart-bar-options.js"></script>
     <script src="./chart-area-spline-options.js"></script>
     <script src="./alpaca.js"></script>
+    <script src="./stock_symbols_detail.js"></script>
 </head>
 <style>
 </style>
@@ -66,7 +68,7 @@
             <div class="w3-row w3-margin w3-black" style="border-bottom: 1px solid white;">
 
                 <div class="_w3-twothird _w3-third w3-padding w3-center w3-large">
-                    <!-- <span id="">OPEN POSITIONS</span> -->
+                    <span id="">OPEN POSITIONS</span>
                     <div id="chart-positions"></div>
                 </div>
                 <!-- <div class="w3-twothird w3-container">
@@ -86,12 +88,12 @@
                         <div id="chart-symbols-group-2-tree"></div>
                     </h2>
                     <!-- <br /> -->
-                    <button id="buy_symbol" class="w3-button _w3-right w3-round-large w3-large w3-padding w3-half"
+                    <!-- <button id="buy_symbol" class="w3-button _w3-right w3-round-large w3-large w3-padding w3-half"
                         style="background-color:#121212;border:1px solid;" onclick="liquidate()">Liquidate</button>
                     <button id="sell_symbol" class="w3-button w3-right w3-round-large w3-large w3-padding w3-half"
                         style="background-color:#121212;border:1px solid;"
                         onclick="buy_symbols(symbol_groups.STOCKS.symbols, +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">BUY
-                        ALL</button>
+                        ALL</button> -->
 
                     <!-- <p>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
@@ -354,11 +356,11 @@
             </div>
         </div>
         <br />
-        <div id="symbol-buttons-bollinger-favs" class="_w3-col s12 w3-padding w3-center"
+        <!-- <div id="chart-symbols-treemap"></div> -->
+        <div id="symbol-buttons-bollinger" class="_w3-col s12 w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
         </div>
-        <div id="chart-symbols-treemap"></div>
-        <div id="symbol-buttons-bollinger" class="_w3-col s12 w3-padding w3-center"
+        <div id="symbol-buttons-bollinger-favs" class="_w3-col s12 w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
         </div>
         <div id="symbol-buttons-bollinger-crypto" class="_w3-col s12 w3-padding w3-center"
@@ -462,6 +464,15 @@
         </div>
     </div>
 </body>
+
+<script>
+    /* PRINT THE VERSION */
+    console.log('M3 TRADER v5.0.0');
+
+    /* SET THE ALGORITHM CONFIGURATION */
+    CONFIG.algo = CONFIG[CONFIG.algo_name];
+    console.log('CONFIG', CONFIG);
+</script>
 
 <script>
     function isMobile() {

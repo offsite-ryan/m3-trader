@@ -114,7 +114,7 @@ class AlpacaData {
         });
         return obj;
     }
-    async analyze(symbol, bars, reset = true, seed = 1000) {
+    async analyze(symbol, bars, seed = 1000) {
         return new Promise(async (resolve) => {
             // const invest_schedule = [
             //     { t: '2024-01-05', e: 1704499200000, amount: 1000 }
@@ -122,9 +122,6 @@ class AlpacaData {
             let was_below = true;
             let was_above = true;
             let own_at = -1;
-            let g = 0;
-            let g_dollars = 0;
-            let g_dollars_fixed = 0;
             let trades = [];
             const algos = {
                 //#region CALCS
@@ -145,40 +142,9 @@ class AlpacaData {
                 Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => false },
                 Z: { buy: (v, i) => true, sell: (v) => false },
                 //#endregion
-
-                //#region CRYPTO
-                C1: { buy: (v, i) => v.o >= v.sma, sell: (v) => v.c <= v.lb },
-                C2: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c <= v.ub },
-                C3: { buy: (v, i) => v.c >= v.o, sell: (v) => v.c <= v.o },
-                //#endregion
-
-                //#region IDEAS
-                // C: { buy: (v, i) => v.sma >= v.lb, sell: (v, i) => v.c <= v.ub },
-                // H: { buy: (v, i) => v.c >= v.p5, sell: (v, i) => v.c < v.p5 },
-                // FC: {
-                //     buy: (v, i) => v.c >= v.lb,
-                //     sell: (v, i) => v.c < v.lb,
-                //     gain: (v, i) => (bars[i].c - bars[own_at].c) / bars[own_at].c * 100,
-                // },
-                // FO: {
-                //     buy: (v, i) => v.o >= v.lb,
-                //     sell: (v, i) => v.o < v.lb,
-                //     gain: (v, i) => (bars[i].o - bars[own_at].o) / bars[own_at].o * 100,
-                // },
-                FOC: {
-                    buy: (v, i) => v.o >= v.lb,
-                    sell: (v, i) => v.c < v.lb,
-                    gain_pct: (v, i) => (bars[i].c - bars[own_at].o) / bars[own_at].o * 100,
-                    gain_1K: (v, i) => (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o)
-                },
-                //#endregion
             };
             const isCrypto = symbol.endsWith('USD');
-            // const algo = isCrypto ? 'A' : 'A';
-            // const algo = isCrypto ? 'F' : 'F';
-            const algo = isCrypto ? 'F' : 'Z';
-            // const algo = isCrypto ? 'X' : 'X';
-            // const algo = 'F';
+            const algo = isCrypto ? CONFIG.algo.crypto : CONFIG.algo.stocks;
 
             if (bars) {
                 /** ADD TRADE @param {*} v - bar object, @param {*} i1 - buy index @param {*} i2 - sell index*/
@@ -199,14 +165,8 @@ class AlpacaData {
                         t2: getYMD(bars[i2].tl),
                     });
                 }
-                // const get_window = (t) => { return new Date(t).getDate() === 1; };
-                // const get_window = (t) => { return new Date(t).getDay() === 5; };
-                // const get_window = (t1, t2) => { return (new Date(t2).getTime() - new Date(t1).getTime()) > (7*24*60*60*1000); };
-                // const get_window = (t) => { return new Date(t).getMonth(); };
-                reset = true;
-                const get_window = (t) => { return getWeekName(new Date(t)); };
-                // const get_window = (t) => { return getMonthName(new Date(t)); };
-                // const get_window = (t) => { return getYMD(new Date(t)) === '2025-10-20' ? true : getMonthName(new Date(t)) ; };
+                const reset = CONFIG.algo.get_reset_window ? true : false;
+                const get_window = reset ? CONFIG.algo.get_reset_window : (t) => { return null; };
                 let last = get_window(bars[0].t);
                 bars.forEach((v, i) => {
                     if (v.sma) {
@@ -218,16 +178,6 @@ class AlpacaData {
                             }
                             last = current;
                         }
-                        // if (own_at >= 0 && get_window(bars[own_at].t, v.t)) {
-                        //     push_trade(v, own_at, i);
-                        //     own_at = -1;
-                        //     // last = current;
-                        // }
-                        // if (own_at >= 0 && get_window(v.t)) {
-                        //     push_trade(v, own_at, i);
-                        //     own_at = -1;
-                        // }
-
                         if (v.c >= v.ub) {
                             was_above = true;
                         }
@@ -242,7 +192,6 @@ class AlpacaData {
                                 // }
                                 own_at = i;
                             }
-                            // own_at = i;
                         }
                         // * SELL * //
                         else if (algos[algo].sell(v, i)) {
@@ -251,83 +200,20 @@ class AlpacaData {
                                 //     sell(symbol);
                                 // }
                                 push_trade(v, own_at, i);
-                                // trades.push({
-                                //     s: symbol,
-                                //     o: bars[own_at].o,
-                                //     c: bars[i].c,
-                                //     gain_1K: (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o),
-                                //     // q: bars[own_at].o,
-                                //     num_days: i - own_at,
-                                //     1: own_at,
-                                //     2: i,
-                                //     gain: algos[algo].gain(v, i),
-                                //     // gain: (bars[i].c - bars[own_at].c) / bars[own_at].c * 100,
-                                //     // gain: (bars[i].c - bars[own_at].o) / bars[own_at].o * 100,
-                                //     e1: bars[own_at].e,
-                                //     e2: v.e,
-                                //     t1: getYMD(bars[own_at].tl),
-                                //     t2: getYMD(v.tl),
-                                // });
                                 own_at = -1;
                             }
                         }
                     }
                     if (i === bars.length - 1) {
                         if (own_at > -1) {
-                            const gain = (bars[i].c - bars[own_at].o) / bars[own_at].o * 100
-                            //*     ? (bars[i].c - bars[own_at].c) / bars[own_at].c * 100
-                            //*     : (bars[i].c - bars[own_at].o) / bars[own_at].o * 100;
                             push_trade(v, own_at, i);
-                            // trades.push({
-                            //     s: symbol,
-                            //     o: bars[own_at].o,
-                            //     c: bars[i].c,
-                            //     gain_1K: (1000 / bars[own_at].o) * (bars[i].c - bars[own_at].o),
-                            //     // q: bars[own_at].o,
-                            //     num_days: i - own_at,
-                            //     1: own_at,
-                            //     2: i, gain,
-                            //     e1: bars[own_at].e,
-                            //     e2: v.e,
-                            //     t1: getYMD(bars[own_at].tl),
-                            //     t2: getYMD(v.tl),
-                            // });
                         }
                     }
                 });
-                let cumulative = 0;
-                // let cumulative_dollars = seed;
-                // let fixed_dollars = seed;
-                trades.forEach((v) => {
-                    cumulative += v.gain_1K;
-                    v.cumulative = cumulative;
-                    // v.g_cumulative_seed = cumulative_dollars;
-                    // v.g_fixed_seed = seed;
-
-                    // // /** FIXED INVESTMENT */
-                    // fixed_dollars += seed * (v.gain / 100);
-                    // // /** RE-INVEST GAINS (+/-) */
-                    // cumulative_dollars += cumulative_dollars * (v.gain / 100);
-
-                    // // v.gain_cumulative = cumulative;
-                    // // v.gain_dollars = cumulative_dollars;
-                    // v.g_fixed = fixed_dollars;
-                    // v.g_fixed_pct = ((fixed_dollars / seed)) * 100; // remove the seed (-1)
-                    // v.g_cumulative = cumulative_dollars;
-                    // v.g_cumulative_pct = ((cumulative_dollars / seed)) * 100; // remove the seed (-1)
-
-                    // v.g_cumulative_pct_diff = ((cumulative_dollars / fixed_dollars) - 1) * 100; // remove the seed (-1)
-                });
-                // g = reduceArray(trades.map((v) => v.gain));
-                // g_dollars = cumulative_dollars;
-                // g_dollars_fixed = fixed_dollars;
             };
             const last = bars[bars.length - 1];
             resolve({
                 symbol,
-                // gain_pct: g,
-                // gain_dollars: g_dollars,
-                // gain_dollars_fixed: g_dollars_fixed,
                 own: own_at,
                 buy: last.o >= last.lb,
                 sell: last.c <= last.lb,
@@ -336,26 +222,16 @@ class AlpacaData {
             });
             bars = undefined;
             trades = undefined;
-            // return data;
         });
     }
     async summarize(res) {
         return new Promise(async (resolve) => {
-            /** MONTH SUMMARIES */
+            /** SUMMARIES */
             let summary_months = {};
             let summary_weeks = {};
             let summary_quarters = {};
             let summary_month_total = 0;
             res.trades.forEach((v, i) => {
-                // const getMonthName = (month) => {
-                //     return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month];
-                // }
-                // const d = new Date(v.e2);
-                // let month = d.getFullYear() + '_' + (d.getMonth() + 1).toString().padStart(2, '0') + '_' + getMonthName(d.getMonth());
-                // let week = d.getFullYear() + '_' + d.getWeek().toString().padStart(2, '0');
-                // let q = d.getMonth() + 1;
-                // q = q < 4 ? 1 : (q < 7 ? 2 : (q < 10 ? 3 : 4));
-                // let quarter = d.getFullYear() + '_' + (q).toString().padStart(2, '0');
                 const d = new Date(v.t2);
                 let month = getMonthName(d);
                 let week = getWeekName(d);
@@ -389,9 +265,17 @@ class AlpacaData {
             resolve(res);
         });
     }
+    async score(res) {
+        return new Promise(async (resolve) => {
+            const avg_positive = res.summary.total / Object.values(res.summary.weeks).length;
+            let score = Object.values(res.summary.weeks).reduce((p, c) => p + (c > 0 ? 1 : 0), 0);
+            score = round(score * avg_positive / 100);
+            res.score = score;
+            resolve(res);
+        });
+    }
     async positions(symbol, positions, res) {
         return new Promise(async (resolve) => {
-            // const p = positions.filter((v) => v.symbol === symbol)[0] || null;
             const p = positions.length > 0 ? positions[0] : null;
             res.position = p ? {
                 cost_basis: p ? +p.cost_basis : 0,
@@ -409,7 +293,6 @@ class AlpacaData {
     }
     async orders(symbol, orders, res) {
         return new Promise(async (resolve) => {
-            // res.orders = orders.filter((v) => v.symbol === symbol);
             orders.forEach((v) => {
                 v.c = v.side === 'buy' ? -(+(v.p) * (+(v.q))) : +(v.p) * (+(v.q));
                 v.p = +(v.p);
@@ -440,7 +323,6 @@ class AlpacaData {
 
             await sleep(delay);
 
-            // const s = symbol ? symbol.replace('/', '%2F') : symbols.map((s) => s.replace('/', '%2F')).join(',');
             const s = symbol.replace('/', '%2F');
             const feed = 'sip';
             // const feed = 'iex';
@@ -487,14 +369,13 @@ class AlpacaData {
                     .then((res) => this.addMetaData(res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
                     // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
-                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 28 : 14, isCrypto ? 0.7 : 0.7, 0.80))
+                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 28 : 14, isCrypto ? 0.7 : 0.7, CONFIG.algo.stop_pct || 0.80))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
-                    // .then((res) => this.analyze(symbol, res, reset))
-                    // .then((res) => this.analyze(symbol, res, true))
-                    .then((res) => this.analyze(symbol, res, false))
+                    .then((res) => this.analyze(symbol, res))
                     .then((res) => this.summarize(res))
                     .then((res) => this.levels(res))
+                    .then((res) => this.score(res))
                     .then((res) => this.positions(symbol, open_positions, res))
                     .then((res) => this.orders(symbol, orders_list, res))
                     .then((res) => resolve(res));
@@ -536,7 +417,11 @@ const symbol_groups = {
         symbols: [
             // /* renmoved */ 'EFAS', 'FLN', 'SLVO', 'VXUS', 
             // 'RING', 'FGM', 'IXUS', 
-            'ONEQ', 'QQQ', 'SMH', 'AIQ', 'FCA', 'PIE',
+            'FLUX',
+            'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH', 
+            'PLUG', 'NBTX', 'NTLA','MU','CAMT',
+            'BLNK','AXTI','BTDR','BTSG',
+            // 'NAUT','NEUP', 
         ].sort()
         // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
         // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
@@ -679,7 +564,7 @@ async function test4(symbol = 'OKLO', log = true) {
             class="w3-col s4 m2 l1 _w3-margin w3-padding"
             style="cursor:pointer;font-size:20px;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
             onclick="test4('${s}')">
-            ${s.split('/')[0]}
+            ${s.split('/')[0]} | ${status.score}
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
             <br/>
             <span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> ${status.position ? '$' + round(status.position.gain) : '-'}</span>
@@ -803,7 +688,7 @@ async function test4(symbol = 'OKLO', log = true) {
             console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 10)}K @ 10K`, 'color:orange;');
 
             //! --------------------------------------------------------------------
-            const field_name = 'months' // months | weeks | quarters
+            const field_name = CONFIG.algo.summary_window || 'months';
             let data = {};
             let temp_data = {};
             let count = 0;
@@ -958,15 +843,15 @@ async function test4(symbol = 'OKLO', log = true) {
     // ------------------------
     o = deepClone(o);
     o.chart.height = 454;
-    o.title.text = `${isMobile() ? symbol + ' | ' : ''}10d`;
+    o.title.text = `${isMobile() ? symbol + ' | ' : ''}20d`;
     o.legend.show = false;
     o.chart.toolbar = { show: false };
-    o.series.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
-    o.series[2].name = 'Open';
-    o.series[2].color = '#fc03ec';
-    o.series[2].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
+    // o.series.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
+    // o.series[2].name = 'Open';
+    // o.series[2].color = '#fc03ec';
+    // o.series[2].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
     o.series.forEach((s) => {
-        s.data = s.data.slice(-10);
+        s.data = s.data.slice(-20);
     });
     // o.annotations.xaxis.forEach((v) => v.label.text = v.label._text);
     if (chart_bollinger_1) {
@@ -1224,16 +1109,16 @@ async function test4(symbol = 'OKLO', log = true) {
                 y: round(groups[group_name][k])
             }
         });
-        o.series.push({ name: '50K Seed', type: 'line', color: colors.orange, data: [] });
-        o.series[1].data = Object.keys(groups[group_name]).map((k) => {
-            return {
-                x: k,
-                y: round(groups[group_name][k] * 1.666)
-            }
-        });
+        // o.series.push({ name: '75K Seed', type: 'line', color: colors.orange, data: [] });
+        // o.series[1].data = Object.keys(groups[group_name]).map((k) => {
+        //     return {
+        //         x: k,
+        //         y: round(groups[group_name][k] / 29 * 60)
+        //     }
+        // });
         o.series.push({ name: 'Cumulative', type: 'area', color: colors.green + '60', data: [] });
         let cumulative = 0;
-        o.series[2].data = Object.keys(groups[group_name]).map((k) => {
+        o.series[1].data = Object.keys(groups[group_name]).map((k) => {
             cumulative += groups[group_name][k];
             return {
                 x: k,
@@ -1253,7 +1138,7 @@ async function test4(symbol = 'OKLO', log = true) {
         // o.yaxis = [{},{},{opposite: true}];
         o.annotations.points = [];
         o.dataLabels = {
-            enabled: false,
+            enabled: true,
             offsetY: -24,
             enabledOnSeries: [0],
             style: {
@@ -1291,7 +1176,7 @@ async function test4(symbol = 'OKLO', log = true) {
         elem.style.fontSize = '18px';
         elem.style.color = '#fff';
         // elem.innerHTML = `<div class="w3-xxlarge">`;
-        elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${all.length}K</span></span>`;
+        elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${all.length}K SEED</span></span>`;
         // elem.innerHTML = `</div>`;
         // elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span> @ <span style="color:lime;">$${num}K</span>`;
         elem.innerHTML += `<hr/>`;
@@ -1578,4 +1463,41 @@ async function test4(symbol = 'OKLO', log = true) {
     // all_symbols = undefined;
     data = undefined;
     bars = undefined;
+}
+async function test_symbols(start_at = 0) {
+    return new Promise(async (resolve, reject) => {
+        // const s = 400;
+        const symbols = stock_symbols_detail
+            .filter((v) => v.tradable === true)
+            .filter((v) => v.fractionable === true)
+            .filter((v) => v.status === 'active')
+            .map((v) => v.symbol)
+            .sort()
+            .slice(start_at, start_at + 100)
+            // .filter((v) => v.indexOf('/') < 0)
+            ;
+
+        const tz = new Date().getTimezoneOffset() / 60;
+        const start = new Date(`${getYMD(Date.now() - (45 * 24 * 60 * 60 * 1000))}T23:59:59-0${tz}:00`);
+        const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
+        const promises = symbols.filter((v) => v.indexOf('/') < 0).map((s, i) => {
+            // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
+            return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), [], []);
+        });
+        let results = await Promise.all(promises);
+        results = results.sort((a, b) => {
+            const nameA = a.symbol.toUpperCase(); // Convert to uppercase for case-insensitive sorting
+            const nameB = b.symbol.toUpperCase(); // Convert to uppercase for case-insensitive sorting
+
+            if (nameA < nameB) {
+                return -1; // nameA comes before nameB
+            }
+            if (nameA > nameB) {
+                return 1; // nameB comes before nameA
+            }
+            return 0; // names are equal
+        });
+        console.log(results);
+        console.table(results.map((v, i) => { return { symbol: v.symbol, score: v.score, i }; }).filter((v) => v.score > 0).sort((a, b) => b.score - a.score));
+    });
 }
