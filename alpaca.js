@@ -268,7 +268,7 @@ class AlpacaData {
     }
     async score(res) {
         return new Promise(async (resolve) => {
-            const avg_positive = Object.values(res.summary.weeks).reduce((p,c)=>p+c) / Object.values(res.summary.weeks).length;
+            const avg_positive = Object.values(res.summary.weeks).reduce((p, c) => p + c) / Object.values(res.summary.weeks).length;
             let score = Object.values(res.summary.weeks).reduce((p, c) => p + (c > 0 ? 1 : 0), 0);
             score = round(score * avg_positive / 10);
             res.score = score;
@@ -421,7 +421,7 @@ const symbol_groups = {
             'FLUX',
             'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH',
             'PLUG', 'NBTX', 'NTLA', 'MU', 'CAMT',
-            'BLNK', 'AXTI', 'BTDR', 'BTSG','CVRX',//'CTXR',
+            'BLNK', 'AXTI', 'BTDR', 'BTSG', 'CVRX',//'CTXR',
             'GLUE',//'FTRE',
             // 'NAUT','NEUP', 
         ].sort()
@@ -942,6 +942,7 @@ async function test4(symbol = 'OKLO', log = true) {
 
     o = deepClone(chart_bar_options);
     o.chart.animations = { enabled: false };
+    // o.chart.height = open_positions.length > 0 ? 200 : 0;
     // unrealized_plpc
     o.series[0].data = open_positions.map((v) => {
         return {
@@ -982,6 +983,7 @@ async function test4(symbol = 'OKLO', log = true) {
     }
     chart_positions = new ApexCharts(document.querySelector("#chart-positions"), o);
     chart_positions.render();
+    document.getElementById('chart-positions').style.display = open_positions.length > 0 ? 'block' : 'none';
     o = undefined;
 
     document.getElementById('open-postions-banner-title').innerHTML = `OPEN POSITIONS | ${open_positions.length} SYMBOLS`;
@@ -1130,7 +1132,7 @@ async function test4(symbol = 'OKLO', log = true) {
                 y: round(cumulative)
             }
         });
-        o.series.push({name:'75K Seed', type:'bar', color: colors.yellow+'50', data: []});
+        o.series.push({ name: '75K Seed', type: 'bar', color: colors.yellow + '50', data: [] });
         o.series[2].data = Object.keys(groups[group_name]).map((k) => {
             return {
                 x: k,
