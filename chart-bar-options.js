@@ -45,7 +45,7 @@ const chart_bar_options = {
             colorScale: {
                 ranges: [
                     {
-                        from: -500,
+                        from: -1000,
                         to: 0,
                         color: colors.red
                     },

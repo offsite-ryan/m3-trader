@@ -31,8 +31,8 @@
 
 <body class="">
 
-    <div class="_w3-container" style="padding: 8px;background-color:#00b90a;">
-        <h2><img src="./favicon-black.png" style="width:90px;margin-right:20px;" /><span
+    <div class="_w3-container" style="padding: 8px 8px 0px 8px;background-color:#00b90a;position: sticky;top: 0;z-index: 9999;">
+        <h2><img src="./favicon-black.png" style="padding-bottom:16px;width:90px;margin-right:20px;" /><span
                 class="w3-text-black w3-xxlarge"><b>M<sup>3</sup> TRADER</b> | </span>
             <span class="_w3-tiny w3-text-black">
                 <span id="datetime" class="w3-xxlarge"></span>
@@ -42,33 +42,38 @@
             <span class="_w3-xxxlarge w3-right" style="font-size:40px;margin-left: 5px;cursor:pointer;"
                 onclick="window.location=window.location">&#x27F3;
             </span>
+            <!-- <br/> -->
             <div class="w3-medium w3-right w3-padding" style="margin-top:10px;">
-                <input id="dateSelector" class="date w3-hide _-small w3-hide-medium" type="date"
-                    onchange="clickDate(this.value)"></input>
+                <!-- <input id="dateSelector" class="date w3-hide _-small w3-hide-medium" type="date"
+                    onchange="clickDate(this.value)"></input> -->
                 <!-- <br /> -->
                 <!-- <span id="datetime" class="w3-xlarge"></span>
                 <span class="w3-xlarge" style="margin-left: 5px;cursor:pointer;"
                     onclick="window.location=window.location">&#x27F3;
                 </span> -->
             </div>
+            <div class="w3-container w3-text-black" style="color:black;_background-color:#00b90a;">
+                <h3 class="w3-xxxlarge"><b id="total-positions-banner">&nbsp;</b></h3>
+            </div>
+
             <!-- <div id="current_conditions" class="w3-medium"></div> -->
         </h2>
     </div>
 
-    <div id="tabs" class="w3-bar w3-black">
+    <div id="tabs" class="w3-bar w3-black" style="display:none;">
     </div>
 
     <div id="content-ytd" class="_w3-margin" style="_display:none;">
-        <div class="w3-container w3-text-black" style="background-color:#00b90a;">
-            <h1 class="w3-xxxlarge"><b id="total-positions-banner">&nbsp;</b></h1>
-        </div>
+        <!-- <div class="w3-container w3-text-black" style="background-color:#00b90a;">
+            <h3 class="w3-xxxlarge"><b id="total-positions-banner">&nbsp;</b></h3>
+        </div> -->
 
-        <div class="w3-content">
+        <div class="_w3-content">
 
             <div class="w3-row w3-margin w3-black" style="border-bottom: 1px solid white;">
 
                 <div class="_w3-twothird _w3-third w3-padding w3-center w3-large">
-                    <span id="">OPEN POSITIONS</span>
+                    <span id="open-postions-banner-title">OPEN POSITIONS</span>
                     <div id="chart-positions"></div>
                 </div>
                 <!-- <div class="w3-twothird w3-container">
@@ -103,7 +108,7 @@
                 </div>
 
             </div>
-            <div class="w3-row w3-margin w3-black" style="display:none;border-bottom: 1px solid white;">
+            <div class="w3-row w3-margin w3-black" style="_display:none;border-bottom: 1px solid white;">
 
                 <div class="w3-third w3-padding">
                     <!-- <span id="">STOCKS</span> -->
@@ -115,9 +120,10 @@
                         <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
                             style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
                         <div id="title-symbols-group-1"></div>
+                        <div id="chart-symbols-group-1-tree"></div>
                         <!-- </div> -->
                     </h2>
-                    <div id="chart-symbols-breakdown-1"></div>
+                    <!-- <div id="chart-symbols-breakdown-1"></div> -->
                     <!-- <p>
                         
                     </p> -->
@@ -281,6 +287,7 @@
     </div>
 
     <div id="content-weeks" class="w3-margin" style="display:none;">
+        Weeks
     </div>
 
     <div id="content-day" class="w3-margin w3-center" style="display:none;">
@@ -332,11 +339,11 @@
             <!-- --------------------------------------------------------- -->
 
             <br />
-            <div class="w3-col s9 l2 w3-padding w3-hide-small w3-hide-medium"
+            <!-- <div class="w3-col s9 l2 w3-padding w3-hide-small w3-hide-medium"
                 style="border:1px solid rgb(92, 92, 92);_min-height:300px;;">
                 <div id="chart-bollinger-1"></div>
-            </div>
-            <div class="w3-col s12 m8 l7 w3-padding _w3-hide-small _w3-hide-medium"
+            </div> -->
+            <div class="w3-col s12 m8 l9 w3-padding _w3-hide-small _w3-hide-medium"
                 style="border:1px solid rgb(92, 92, 92); _min-height:500px;;">
                 <div id="chart-bollinger-0"></div>
             </div>
@@ -357,7 +364,17 @@
         </div>
         <br />
         <!-- <div id="chart-symbols-treemap"></div> -->
-        <div id="symbol-buttons-bollinger" class="_w3-col s12 w3-padding w3-center"
+        <p class="w3-center w3-xlarge">
+            <input class="w3-radio" type="radio" name="gender" value="stocks" onclick="toggle_groups(this.value)">
+            <label>STOCKS</label>
+
+            <input class="w3-radio" type="radio" name="gender" value="favs" onclick="toggle_groups(this.value)" checked>
+            <label>R&D</label>
+
+            <input class="w3-radio" type="radio" name="gender" value="crypto" onclick="toggle_groups(this.value)">
+            <label>CRYPTO</label>
+        </p>
+        <div id="symbol-buttons-bollinger-stocks" class="_w3-col s12 w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
         </div>
         <div id="symbol-buttons-bollinger-favs" class="_w3-col s12 w3-padding w3-center"
@@ -576,16 +593,17 @@
     let chart_symbols_group_3 = null;
     let chart_symbols_group_4 = null;
     let chart_symbols_months = {};
+    let chart_symbols_group_1_tree = null;
     let chart_symbols_group_2_tree = null;
 
 
     const isCrypto = localStorage.getItem('m3-trader-v5-crypto') === 'true' ? true : false;
     let selected_symbol = localStorage.getItem(`m3-trader-v5-selected-symbol`) || 'GE';
 
-    let selected_date = getTodayLocal();
-    let elem = document.getElementById('dateSelector');
-    elem.value = selected_date;
-    elem.max = selected_date;
+    // let selected_date = getTodayLocal();
+    // let elem = document.getElementById('dateSelector');
+    // elem.value = selected_date;
+    // elem.max = selected_date;
 
     // =================================================\
     // ACTIVE TAB
@@ -604,6 +622,17 @@
         });
         activeTab = name;
         localStorage.setItem('m3-trader-v5-activeTab', name);
+    }
+
+    // =================================================
+    // TOGGLE GROUPS
+    // =================================================
+    function toggle_groups(name) {
+        ['stocks', 'favs', 'crypto'].forEach((k) => {
+            const elem = document.getElementById(`symbol-buttons-bollinger-${k}`);
+            elem.style.display = name === k ? 'block' : 'none';
+            elem.checked = name == k ? true : false;
+        });
     }
 
     // =================================================
@@ -660,7 +689,7 @@
     // =================================================
     // PROCESS CONFIGURATION
     // =================================================
-    const tabs = ['Bollinger'];
+    const tabs = ['Bollinger', 'Weeks'];
     function processConfiguration() {
         // /** create tab buttons and load the first page */
         let html_tabs = ``;
@@ -699,6 +728,7 @@
     // =================================================
     processConfiguration();
     openTab(activeTab);
+    toggle_groups('favs');
     test4('COIN');
 
     setInterval(async () => {

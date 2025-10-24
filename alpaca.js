@@ -163,6 +163,7 @@ class AlpacaData {
                         e2: bars[i2].e,
                         t1: getYMD(bars[i1].tl),
                         t2: getYMD(bars[i2].tl),
+                        active: i2 === bars.length - 1 && own_at >= 0 ? true : false,
                     });
                 }
                 const reset = CONFIG.algo.get_reset_window ? true : false;
@@ -267,9 +268,9 @@ class AlpacaData {
     }
     async score(res) {
         return new Promise(async (resolve) => {
-            const avg_positive = res.summary.total / Object.values(res.summary.weeks).length;
+            const avg_positive = Object.values(res.summary.weeks).reduce((p,c)=>p+c) / Object.values(res.summary.weeks).length;
             let score = Object.values(res.summary.weeks).reduce((p, c) => p + (c > 0 ? 1 : 0), 0);
-            score = round(score * avg_positive / 100);
+            score = round(score * avg_positive / 10);
             res.score = score;
             resolve(res);
         });
@@ -418,9 +419,10 @@ const symbol_groups = {
             // /* renmoved */ 'EFAS', 'FLN', 'SLVO', 'VXUS', 
             // 'RING', 'FGM', 'IXUS', 
             'FLUX',
-            'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH', 
-            'PLUG', 'NBTX', 'NTLA','MU','CAMT',
-            'BLNK','AXTI','BTDR','BTSG',
+            'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH',
+            'PLUG', 'NBTX', 'NTLA', 'MU', 'CAMT',
+            'BLNK', 'AXTI', 'BTDR', 'BTSG','CVRX',//'CTXR',
+            'GLUE',//'FTRE',
             // 'NAUT','NEUP', 
         ].sort()
         // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
@@ -561,10 +563,10 @@ async function test4(symbol = 'OKLO', log = true) {
             // ].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
 
             html += `<div 
-            class="w3-col s4 m2 l1 _w3-margin w3-padding"
+            class="w3-col s4 m2 l2 _w3-margin w3-padding"
             style="cursor:pointer;font-size:20px;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
             onclick="test4('${s}')">
-            ${s.split('/')[0]} | ${status.score}
+            ${s.split('/')[0]}
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
             <br/>
             <span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> ${status.position ? '$' + round(status.position.gain) : '-'}</span>
@@ -681,7 +683,7 @@ async function test4(symbol = 'OKLO', log = true) {
         //! --------------------------------------------------------------------
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
         if (all.length > 0) {
-            const group_name = index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
+            const group_name = index === 0 ? 'R&D' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
             let message = `%c${group_name} SUMMARY`;
             console.log(message, 'color:yellow;');
             const t = all.map((v) => v.summary.total).reduce((p, c) => p + c);
@@ -981,6 +983,9 @@ async function test4(symbol = 'OKLO', log = true) {
     chart_positions = new ApexCharts(document.querySelector("#chart-positions"), o);
     chart_positions.render();
     o = undefined;
+
+    document.getElementById('open-postions-banner-title').innerHTML = `OPEN POSITIONS | ${open_positions.length} SYMBOLS`;
+    //  | $${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()}`;
     //#endregion
 
     //#region TOTAL SUMMARY
@@ -1004,8 +1009,8 @@ async function test4(symbol = 'OKLO', log = true) {
     elem.parentElement.parentElement.style.backgroundColor = '';
     elem.parentElement.parentElement.style.borderBottom = '1px solid white';
     elem.parentElement.parentElement.style.borderTop = '1px solid white';
-    elem.style.fontSize = '72px';
-    elem.style.color = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : colors.red);
+    elem.style.fontSize = '48px';
+    elem.style.color = total === 0 ? 'black' : (total > 0 ? 'black' : colors.red); // '#00b90a'
     elem.innerHTML = `$${round(total).toLocaleString()} | ${round2(total / total_invested * 100)}%`;
     //#endregion
 
@@ -1021,7 +1026,7 @@ async function test4(symbol = 'OKLO', log = true) {
     // for await (const a of [symbol_groups.favs, symbol_groups.research, symbol_groups.crypto, { seed_dollars: symbol_groups.favs.seed_dollars + symbol_groups.research.seed_dollars + symbol_groups.crypto.seed_dollars, symbols: all_symbols_names }]) {
     for await (const a of [symbol_groups.ETF, symbol_groups.STOCKS, symbol_groups.CRYPTO]) {
 
-        const group_name = index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
+        const group_name = index === 0 ? 'R&D' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
         let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0)
 
         // const day_results = all;
@@ -1030,9 +1035,9 @@ async function test4(symbol = 'OKLO', log = true) {
         if (index < 3) {
             add_buttons(
                 a.symbols,
-                index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger' : 'symbol-buttons-bollinger-crypto'),
+                index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-stocks' : 'symbol-buttons-bollinger-crypto'),
                 group_name,
-                index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'))
+                index === 0 ? 'R&D' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'))
             );
         }
 
@@ -1125,20 +1130,20 @@ async function test4(symbol = 'OKLO', log = true) {
                 y: round(cumulative)
             }
         });
-        // o.series.push({name:'75K Seed', type:'line', color: colors.yellow, data: []});
-        // o.series[2].data = Object.keys(groups[group_name]).map((k) => {
-        //     return {
-        //         x: k,
-        //         y: round(groups[group_name][k]*2.5)
-        //     }
-        // });
+        o.series.push({name:'75K Seed', type:'bar', color: colors.yellow+'50', data: []});
+        o.series[2].data = Object.keys(groups[group_name]).map((k) => {
+            return {
+                x: k,
+                y: round(groups[group_name][k] / 29 * 75)
+            }
+        });
         o.yaxis.labels.formatter = function (x) {
             return `$${x.toLocaleString()}`;
         }
         // o.yaxis = [{},{},{opposite: true}];
         o.annotations.points = [];
         o.dataLabels = {
-            enabled: true,
+            enabled: o.series[0].data.length < 20,
             offsetY: -24,
             enabledOnSeries: [0],
             style: {
@@ -1164,35 +1169,29 @@ async function test4(symbol = 'OKLO', log = true) {
         // const pct = round(g / (num * 1000) * 100);
         // const last = round2(all.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c));
         // --------------------
-        const num = o.series[0].data.length;
+        const num_symbols = all.length;
+        const num_data = o.series[0].data.length;
         const g = o.series[0].data.map((v) => v.y).reduce((p, c) => p + c);
-        const avg = round(g / num);
-        const pct = round(g / (all.length * 1000) * 100);
-        const last = round2(o.series[0].data[o.series[0].data.length - 1].y);
-        const last_trades = round2(all.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c));
+        const avg = round(g / num_data);
+        const pct = round(g / (num_symbols * 1000) * 100);
+        const last = round2(o.series[0].data[num_data - 1].y);
 
-        // const avg2 = round((temp.reduce((p, c) => p + c)) / (temp.length));
+        // TODO: FIX LAST TRADES CALCULATION
+        const active_trades = all.filter((v) => v.trades[v.trades.length - 1].active);
+        const last_trades = round2(active_trades.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c));
+
         let elem = document.getElementById(`title-symbols-group-${index + 1}`)
-        elem.style.fontSize = '18px';
+        elem.style.fontSize = '20px';
         elem.style.color = '#fff';
-        // elem.innerHTML = `<div class="w3-xxlarge">`;
-        elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${all.length}K SEED</span></span>`;
-        // elem.innerHTML = `</div>`;
-        // elem.innerHTML += `<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span> | <span style="color:lime;">${pct.toLocaleString()}%</span> @ <span style="color:lime;">$${num}K</span>`;
+        elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${all.length}K</span></span>`;
         elem.innerHTML += `<hr/>`;
-        elem.innerHTML += `AVG: <span style="color:lime;">$${avg.toLocaleString()}</span>`;
-        // elem.innerHTML += `<span class="w3-right">$10K SEED: <span style="color:lime;">$${(round1(g / num * 10 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<span class="w3-right">$60K SEED: <span style="color:lime;">$${(round1(g / all.length * 60 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<br/>LAST: <b><span style="color:${last >= 0 ? 'lime' : 'red'};">$${round(last).toLocaleString()}</span></b>`;
-        elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / all.length * 75 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:36px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
-        // elem.innerHTML += `<br/><span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / num * 75 / 1000)).toLocaleString()}K</span></span>`;
-        // elem.innerHTML += `<br/><span class="w3-right">$100K SEED: <span style="color:lime;">$${(round1(g / num * 100 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `10K AVG: <span style="color:lime;">$${round(avg * 10 / num_symbols).toLocaleString()}</span>`;
+        elem.innerHTML += `<span class="w3-right">$30K SEED: <span style="color:lime;">$${(round1(g / num_symbols * 30 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<br/>75K AVG: <span style="color:lime;font-size:24px;"><b>$${round(avg * 75 / num_symbols).toLocaleString()}</b></span>`;
+        elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / num_symbols * 75 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:56px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
 
-        // elem.innerHTML += `<hr/>`;
-        // document.getElementById(`title-symbols-stacked-${index + 5}`).innerHTML += ` | ${a.seed_dollars / 1000}K`;
         o.annotations.yaxis.push({ y: avg, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
-        // o.annotations.yaxis.push({ y: avg2, borderColor: '#fff', strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
         let c = index === 0 ? chart_symbols_group_1 : (index === 1 ? chart_symbols_group_2 : (index === 2 ? chart_symbols_group_3 : chart_symbols_group_4))
         if (c) {
             // c.destroy();
@@ -1208,12 +1207,13 @@ async function test4(symbol = 'OKLO', log = true) {
         }
 
         //# group tree
-        if (index === 1) {
+        if (index <= 1) {
             o = deepClone(chart_bar_options);
             o.chart.animations = { enabled: false };
             // unrealized_plpc
-            o.series[0].data = all.map((v) => {
+            o.series[0].data = active_trades.map((v) => {
                 // const last = Object.values(v.summary.weeks)[Object.values(v.summary.weeks).length - 1];                
+                // const last = v.trades[v.trades.length - 1];
                 const last = v.trades[v.trades.length - 1].gain_1K;
                 return {
                     x: [
@@ -1222,6 +1222,9 @@ async function test4(symbol = 'OKLO', log = true) {
                     ],
                     // x: v.symbol.replace('USD', ''),
                     // y: round(v.summary.total)
+                    // y: round(Date.now() >= last.e1 && Date.now() <= last.e2 ? last.gain_1K : null)
+                    // y: round(last.own >= 0 ? last.gain_1K : 0)
+                    // y: round(last.t2 === getYMD(new Date()) ? last.gain_1K : 0)
                     y: round(last)
                 }
             });
@@ -1244,16 +1247,20 @@ async function test4(symbol = 'OKLO', log = true) {
                     return [text, op.value]
                 },
             };
-            if (chart_symbols_group_2_tree) {
-                chart_symbols_group_2_tree.destroy();
-                // chart_positions.updateOptions({
-                //     title: o.title,
-                //     series: o.series,
-                //     annotations: o.annotations,
-                // });
+            if (index === 0) {
+                if (chart_symbols_group_1_tree) {
+                    chart_symbols_group_1_tree.destroy();
+                }
+                chart_symbols_group_1_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-1-tree`), o);
+                chart_symbols_group_1_tree.render();
             }
-            chart_symbols_group_2_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-2-tree`), o);
-            chart_symbols_group_2_tree.render();
+            if (index === 1) {
+                if (chart_symbols_group_2_tree) {
+                    chart_symbols_group_2_tree.destroy();
+                }
+                chart_symbols_group_2_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-2-tree`), o);
+                chart_symbols_group_2_tree.render();
+            }
             o = undefined;
         }
 
