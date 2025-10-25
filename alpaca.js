@@ -448,7 +448,7 @@ const symbol_groups = {
                 .filter((v)=>v.score >= 4 && v.pct > 50)
                 .sort((a,b)=>b.pct > a.pct ? 1 : -1)
                 .map((v)=>v.symbol)
-                .slice(0,14)
+                .slice(0,19)
                 .filter((v)=>!['APP','RGTI','EYE','GILT',].includes(v)),
         ].sort()
         // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
@@ -549,13 +549,15 @@ async function test4(symbol = 'OKLO', log = true) {
             //     .map((v) => v.trades[v.trades.length - 1].g_cumulative)
             // ) - (SEED / symbols.length * 1000);
         } catch (e) { console.error(e); }
-        let html = `<div 
+        
+        let html = ``;
+        html = `<div 
             id="title-${title}"
-            class="w3-col s12 m12 l4 _w3-margin w3-padding"
+            class="w3-col s12 m12 l2 _w3-margin w3-padding"
             style="border:1px solid white;font-size:24px;">
             <b>${title}</b>
             <hr style="border-top:1px solid white"/>
-            <b>$${round(sum).toLocaleString()} | $${round(sum_all).toLocaleString()} | ${round1(sum_all / (symbols.length * 1000) * 100).toLocaleString()}%</b>
+            <b>$${round(sum).toLocaleString()}<br/>$${round(sum_all).toLocaleString()}<br/>${round1(sum_all / (symbols.length * 1000) * 100).toLocaleString()}%</b>
             </div>`;
 
         symbols.forEach((s) => {
