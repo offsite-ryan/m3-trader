@@ -268,10 +268,15 @@ class AlpacaData {
     }
     async score(res) {
         return new Promise(async (resolve) => {
-            const avg_positive = Object.values(res.summary.weeks).reduce((p, c) => p + c) / Object.values(res.summary.weeks).length;
-            let score = Object.values(res.summary.weeks).reduce((p, c) => p + (c > 0 ? 1 : 0), 0);
-            score = round(score * avg_positive / 10);
-            res.score = score;
+            const num_positive = Object.values(res.summary.months).reduce((p, c) => p + (c > 0 ? 1 : 0), 0);
+            const num_negative = Object.values(res.summary.months).reduce((p, c) => p + (c <= 0 ? 1 : 0), 0);
+            const avg = Object.values(res.summary.months).reduce((p, c) => p + c, 0) / Object.values(res.summary.months).length;
+            const gain = Object.values(res.summary.months).reduce((p, c) => p + c, 0);
+            const pct = round1(gain / 1000 * 100);
+            // let score = Object.values(res.summary.months).reduce((p, c) => p + (c > 0 ? 1 : 0), 0);
+            // let score = round(num_positive * pct);
+            let score = round((num_positive / (num_positive + num_negative) *10) * (pct > 0 ? 1 : 0));
+            res.score = { score, pct };
             resolve(res);
         });
     }
@@ -416,14 +421,35 @@ const symbol_groups = {
         seed_dollars: 0 * 1000,
         // 'BTQ', 'VXX', 'VIXY', 
         symbols: [
-            // /* renmoved */ 'EFAS', 'FLN', 'SLVO', 'VXUS', 
-            // 'RING', 'FGM', 'IXUS', 
-            'FLUX',
-            'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH',
-            'PLUG', 'NBTX', 'NTLA', 'MU', 'CAMT',
-            'BLNK', 'AXTI', 'BTDR', 'BTSG', 'CVRX',//'CTXR',
-            'GLUE',//'FTRE',
-            // 'NAUT','NEUP', 
+            // // /* renmoved */ 'EFAS', 'FLN', 'SLVO', 'VXUS', 
+            // // 'RING', 'FGM', 'IXUS', 
+            /** SCORE LAST 90 */
+            // 'FLUX',
+            // 'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH',
+            // 'PLUG', 'NBTX', 'NTLA', 'MU', 'CAMT',
+            // 'BLNK', 'AXTI', 'BTDR', 'BTSG', 'CVRX',//'CTXR',
+            // 'GLUE',//'FTRE',
+
+            // // 'ANSC','CUB','IRTC','ABCL','ALF','CYBR','ESLT','FJP','GIG','GILT','GOOG','GOOGL','IIIV','KOPN','LLYVA','LLYVK','NETD','PLTR','RGTI','RIGL','SCZ','XERS','RCKY','AGIO','ALDX','APP','ARGX','ASND','BBIO','BOTZ'
+            // // 'ABCL', 'ALF', 'CYBR', 'ESLT', 'FJP', 'GIG', 'GILT', 'GOOG', 'GOOGL', 'IIIV', 'KOPN', 'LLYVA', 'LLYVK', 'NETD', 'PLTR', 'RGTI', 'RIGL', 'SCZ', 'XERS', 'RCKY',
+            // // 'RZLT',
+            /** SCORE 1 YEAR */
+            // // // 'ABCL','CYBR','ESLT','FJP','GILT','GOOG','GOOGL','IIIV','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
+            // // // 'ABCL','ESLT','GILT','KOPN','PLTR','RGTI','RIGL','XERS'
+            // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FRHC','FUTU','GTX','IDCC','IESC','INDV','LENZ','LGND','LINC','NBIS','NXT','PRCH','RMNI','SANM','SENEA','SOFI','TATT','TTMI','VSEC'
+            // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
+            // // // 'ABCL','CYBR','ESLT','GILT','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FUTU','GTX','IDCC','IESC','INDV','LENZ','LINC','NBIS','NXT','PRCH','RMNI','SANM','SENEA','SOFI','TATT','TTMI'
+            // // // 'ABCL','CYBR','ESLT','GILT','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
+            // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
+            // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FRHC','FUTU','GTX','IDCC','IESC','INDV','LENZ','LGND','LINC','NBIS','NXT','PRCH','RMNI','SANM','SENEA','SOFI','TATT','TTMI','VSEC'
+            // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FRHC','FUTU','GTX','IDCC','IESC','INDV',
+            // 'NVTS',
+            ...scores
+                .filter((v)=>v.score >= 4 && v.pct > 50)
+                .sort((a,b)=>b.pct > a.pct ? 1 : -1)
+                .map((v)=>v.symbol)
+                .slice(0,14)
+                .filter((v)=>!['APP','RGTI','EYE','GILT',].includes(v)),
         ].sort()
         // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
         // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
@@ -458,7 +484,7 @@ const symbol_groups = {
             // 'NEGG', 'BETR', 
             'RING',
             'IREN', 'CIFR', 'HUT', 'TMC',
-            'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
+            'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', /*'PLTR',*/ 'PSIX',
             // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
             // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
             // 'Z', 'T', 'MP', 'CVX', 'PM', 
@@ -566,7 +592,7 @@ async function test4(symbol = 'OKLO', log = true) {
             class="w3-col s4 m2 l2 _w3-margin w3-padding"
             style="cursor:pointer;font-size:20px;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
             onclick="test4('${s}')">
-            ${s.split('/')[0]}
+            ${s.split('/')[0]} | ${status.score.score}<!-- | ${round(status.score.pct / status.score.score)}-->
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
             <br/>
             <span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> ${status.position ? '$' + round(status.position.gain) : '-'}</span>
@@ -1473,40 +1499,61 @@ async function test4(symbol = 'OKLO', log = true) {
     data = undefined;
     bars = undefined;
 }
-async function test_symbols(start_at = 0) {
+async function test_symbols(start_at = null) {
     return new Promise(async (resolve, reject) => {
         // const s = 400;
-        const symbols = stock_symbols_detail
+        let symbols = stock_symbols_detail
             .filter((v) => v.tradable === true)
             .filter((v) => v.fractionable === true)
             .filter((v) => v.status === 'active')
             .map((v) => v.symbol)
             .sort()
-            .slice(start_at, start_at + 100)
+            // .slice(start_at, start_at + 100)
             // .filter((v) => v.indexOf('/') < 0)
             ;
+        if (start_at !== null) {
+            symbols = symbols.slice(start_at, start_at + 100);
+        }
 
-        const tz = new Date().getTimezoneOffset() / 60;
-        const start = new Date(`${getYMD(Date.now() - (45 * 24 * 60 * 60 * 1000))}T23:59:59-0${tz}:00`);
-        const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
-        const promises = symbols.filter((v) => v.indexOf('/') < 0).map((s, i) => {
-            // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
-            return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), [], []);
-        });
-        let results = await Promise.all(promises);
-        results = results.sort((a, b) => {
-            const nameA = a.symbol.toUpperCase(); // Convert to uppercase for case-insensitive sorting
-            const nameB = b.symbol.toUpperCase(); // Convert to uppercase for case-insensitive sorting
+        const get_scores = async (symbol_names) => {
+            const tz = new Date().getTimezoneOffset() / 60;
+            const start = new Date(new Date(`2024-10-01T00:00:00-0${tz}:00`));
+            // const start = new Date(`${getYMD(Date.now() - (301 * 24 * 60 * 60 * 1000))}T23:59:59-0${tz}:00`);
+            const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
 
-            if (nameA < nameB) {
-                return -1; // nameA comes before nameB
+            const promises = symbol_names.filter((v) => v.indexOf('/') < 0).map((s, i) => {
+                // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
+                return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), [], []);
+            });
+            let results = await Promise.all(promises);
+            results = results.sort((a, b) => {
+                const nameA = a.symbol.toUpperCase(); // Convert to uppercase for case-insensitive sorting
+                const nameB = b.symbol.toUpperCase(); // Convert to uppercase for case-insensitive sorting
+
+                if (nameA < nameB) {
+                    return -1; // nameA comes before nameB
+                }
+                if (nameA > nameB) {
+                    return 1; // nameB comes before nameA
+                }
+                return 0; // names are equal
+            });
+            const result = results
+                .map((v, i) => { return { symbol: v.symbol, score: v.score } })
+                .filter((v) => v.score.score > 1.5).sort((a, b) => b.score - a.score);
+            console.table(results);
+            return result;
+        }
+
+        const scores = [];
+        for (let i = 0; i <= symbols.length; i += 100) {
+            console.log(`Processing symbols from ${i}`);
+            const result = await get_scores(symbols.slice(i, i + 100));
+            scores.push(...result);
+            if (start_at === null) {
+                await sleep(1000);
             }
-            if (nameA > nameB) {
-                return 1; // nameB comes before nameA
-            }
-            return 0; // names are equal
-        });
-        console.log(results);
-        console.table(results.map((v, i) => { return { symbol: v.symbol, score: v.score, i }; }).filter((v) => v.score > 0).sort((a, b) => b.score - a.score));
+        };
+        console.log('FINAL RESULTS', scores.sort((a, b) => b.score.score - a.score.score).map((v)=>{ return {symbol: v.symbol, score: v.score.score, pct: v.score.pct} }));
     });
 }
