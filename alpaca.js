@@ -1160,11 +1160,20 @@ async function test4(symbol = 'OKLO', log = true) {
                 y: round(cumulative)
             }
         });
+        // o.series.push({ name: 'Cumulative 75', type: 'area', color: colors.aquamarine + '30', data: [] });
+        // cumulative = 0;
+        // o.series[o.series.length - 1].data = Object.keys(groups[group_name]).map((k) => {
+        //     cumulative += groups[group_name][k] / all.length * 75;
+        //     return {
+        //         x: k,
+        //         y: round(cumulative)
+        //     }
+        // });
         o.series.push({ name: '75K Seed', type: 'bar', color: colors.yellow + '50', data: [] });
-        o.series[2].data = Object.keys(groups[group_name]).map((k) => {
+        o.series[o.series.length - 1].data = Object.keys(groups[group_name]).map((k) => {
             return {
                 x: k,
-                y: round(groups[group_name][k] / 29 * 75)
+                y: round(groups[group_name][k] / all.length * 75)
             }
         });
         o.yaxis.labels.formatter = function (x) {
