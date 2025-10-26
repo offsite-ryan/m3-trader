@@ -64,6 +64,19 @@ function buy_symbols(symbols, spend) {
         resolve(res);
     });
 }
+function sell_symbols(symbols) {
+    return new Promise(async (resolve, reject) => {
+        const obj = {};
+        for await (const symbol of symbols) {
+            const res = await sell(symbol);
+            obj[symbol] = res;
+            console.log(`Sold ${symbol}`, res);
+            await sleep(1000);
+        }
+        console.log(obj);
+        resolve(res);
+    });
+}
 function sell(symbol) {
     return new Promise((resolve, reject) => {
         const options = {

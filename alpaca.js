@@ -521,7 +521,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     // * ------------------------
     // * ADD BUTTONS
     // * ------------------------
-    const add_buttons = (symbols, id, title = 'Title', group = 'research') => {
+    const add_buttons = (symbols, id, title, index) => {
         // const seed = symbol_groups[group].seed_dollars / 1000; //! TODO: change to INVESTMENT_SEED
         const SEED = 1000; //! TODO: change to INVESTMENT_SEED
         let sum = 0;
@@ -554,10 +554,25 @@ async function test4(symbol = 'OKLO', interval = true) {
         html = `<div 
             id="title-${title}"
             class="w3-col s12 m12 l2 _w3-margin w3-padding"
-            style="border:1px solid white;font-size:24px;">
+            style="border:1px solid white;font-size:24px;min-height:208px;">
             <b>${title}</b>
             <hr style="border-top:1px solid white"/>
             <b>$${round(sum).toLocaleString()}<br/>$${round(sum_all).toLocaleString()}<br/>${round1(sum_all / (symbols.length * 1000) * 100).toLocaleString()}%</b>
+            </div>`;
+        // if (i === 0)
+            html += `<div 
+            class="w3-col s12 m12 l2 _w3-margin w3-padding"
+            style="border:1px solid white;font-size:24px;min-height:208px;">
+            <br/>
+            <button id="" class="w3-button w3-round-large w3-large w3-padding"
+                style="background-color:#121212;border:1px solid;"
+                onclick="buy_symbols(${CONFIG.symbol_groups[index].symbols.filter((v) => all_symbols.find((v2) => v2.symbol === v).buy)}, +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">BUY
+                ALL</button>
+            <br/>
+            <button id="" class="w3-button w3-round-large w3-large w3-padding"
+                style="background-color:#121212;border:1px solid;margin-top:20px;"
+                onclick="sell_symbols(${CONFIG.symbol_groups[index].symbols.filter((v) => all_symbols.find((v2) => v2.symbol === v).own >= 0)}, +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">SELL
+                ALL</button>
             </div>`;
 
         symbols.forEach((s) => {
@@ -574,11 +589,10 @@ async function test4(symbol = 'OKLO', interval = true) {
                     status_color = `rgb(255, 0, 0, ${Math.abs(g / 100)})`;
                 }
             }
-            // const last = status.bars[status.bars.length-2];
             const current = status.bars[status.bars.length - 1];
-            // const should_sell = status.own >= 0 && current.c <= last.lb;
-            const should_buy = current.c >= current.lb;
-            const should_sell = current.c <= current.lb;
+            // TODO: GET FROM ALL_SYMBOLS[n].buy
+            const should_buy = current.o >= current.lb;
+            const should_sell = current.c <= current.lb * 0.90;
             // console.log(s, should_sell);
 
             // up carot: &#9650;  &#9651;
@@ -665,7 +679,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         unique_symbols.forEach((s) => {
             buy_sell_pairs.push(all_orders.filter((v) => v.symbol === s));
         })
-        console.log(open_positions, all_orders, buy_sell_pairs);
+        // console.log(open_positions, all_orders, buy_sell_pairs);
     }
 
     let total_groups = 0;
@@ -784,6 +798,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     o.chart.toolbar = { show: false };
     o.chart.sparkline = false;
     o.legend.show = false;
+    o.stroke.width[3] = 0;
     o.xaxis.type = 'datetime';
     o.series = [];
     o.series.push({ name: 'Close', data: [] }); // , type: 'area', color: colors.blue + '10'
@@ -795,6 +810,9 @@ async function test4(symbol = 'OKLO', interval = true) {
 
     const tl = calculateTrendline(o.series[0].data.map((v) => v.y));
     o.series.push({ name: 'Trendline', type: 'line', color: '#89f100ff', data: o.series[0].data.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
+
+    o.series.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
+    o.series[3].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
 
     // o.series.push({ name: 'SMA', hidden: mobile_view, data: [] });
     // o.series[1].data = bars.map((v) => { return { x: v.e, y: v.sma ? round2(v.sma) : null } });
@@ -896,10 +914,11 @@ async function test4(symbol = 'OKLO', interval = true) {
     o.title.text = `${isMobile() ? symbol + ' | ' : ''}20d`;
     o.legend.show = false;
     o.chart.toolbar = { show: false };
-    // o.series.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
+    o.stroke.width[3] = 1.5;
+    // o.erseries.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
     // o.series[2].name = 'Open';
     // o.series[2].color = '#fc03ec';
-    // o.series[2].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
+    // o.sies[2].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
     o.series.forEach((s) => {
         s.data = s.data.slice(-20);
     });
@@ -1061,7 +1080,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     elem.parentElement.parentElement.style.borderTop = '1px solid white';
     elem.style.fontSize = '48px';
     elem.style.color = total === 0 ? 'black' : (total > 0 ? 'black' : colors.red); // '#00b90a'
-    elem.innerHTML = `$${round(total).toLocaleString()} | ${round2(total / total_invested * 100)}%`;
+    elem.innerHTML = `$${round(total).toLocaleString()} | ${round2(total / total_invested * 100) || 0}%`;
     //#endregion
 
     //#region GROUP SUMMARIES CHARTS
@@ -1088,7 +1107,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                 a.symbols,
                 index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-stocks' : 'symbol-buttons-bollinger-crypto'),
                 group_name,
-                a.name,
+                index
             );
         }
 
@@ -1245,14 +1264,14 @@ async function test4(symbol = 'OKLO', interval = true) {
         elem.style.color = '#fff';
         elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${30}K</span></span>`;
         elem.innerHTML += `<hr/>`;
-        elem.innerHTML += `10K AVG: <span style="color:lime;">$${round(avg / 30 * 10).toLocaleString()}</span>`;
-        elem.innerHTML += `<span class="w3-right">$50K SEED: <span style="color:lime;">$${(round1(g/30*50)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `AVG: <b><span style="color:lime;">$${round(avg).toLocaleString()}</span></b>`;
+        elem.innerHTML += `<span class="w3-right">$50K SEED: <span style="color:lime;">$${(round1(g / 30 * 50)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/>75K AVG: <span style="color:lime;font-size:24px;"><b>$${round(avg / 30 * 75).toLocaleString()}</b></span>`;
         elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / 30 * 75 / 1000)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:56px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
 
         o.annotations.yaxis.push({ y: avg, borderColor: colors.lime, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
-        o.annotations.yaxis.push({ y: avg / num_symbols * 75, borderColor: colors.yellow, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
+        o.annotations.yaxis.push({ y: avg / 30 * 75, borderColor: colors.yellow, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
         let c = index === 0 ? chart_symbols_group_1 : (index === 1 ? chart_symbols_group_2 : (index === 2 ? chart_symbols_group_3 : chart_symbols_group_4))
         if (c) {
             // c.destroy();
