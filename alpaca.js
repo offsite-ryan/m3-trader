@@ -1356,7 +1356,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                 o.annotations.yaxis = [];
                 o.dataLabels.enabled = true;
             }
-            o.chart.height = isMobile() ? 250 : (isTablet() ? 200 : 200);
+            o.chart.height = isTablet() ? 160 : (isMobile() ? 250 : 200);
             o.dataLabels = {
                 // offsetY: mobile_view ? 0 :  -24,
                 style: {
