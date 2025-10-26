@@ -80,7 +80,7 @@ const CONFIG = {
             ].sort(),
         },
         {
-            name: 'TOP 90',
+            name: 'TOP 90 d',
             include: true,
             symbols: [
                 'FLUX',

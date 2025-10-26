@@ -683,7 +683,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                     v.gain = v.total - (temp[i + 1] ? temp[i + 1].total : 0);
                     v.spend = temp[i + 1] ? temp[i + 1].spend : 0;
                     v.ymd = getYMD(v.t);
-                    v.tb =  temp[i + 1] ? temp[i + 1].t : '-'
+                    v.tb = temp[i + 1] ? temp[i + 1].t : '-'
                 }
             })
             buy_sell_pairs.push(temp.filter((v) => v.gain));
@@ -699,14 +699,26 @@ async function test4(symbol = 'OKLO', interval = true) {
         let obj = [];
         transaction_days.sort().reverse().forEach((v) => {
             const filtered = all_transactions.filter((v2) => v2.ymd === v);
-            obj.push({ ymd: v, gain: round2(filtered.map((v2)=>v2.gain).reduce((p, c) => p + c)) });
+            obj.push({ ymd: v, gain: round2(filtered.map((v2) => v2.gain).reduce((p, c) => p + c)) });
 
         })
+        const filtered = obj.filter((v) => v.ymd >= '2025-10-23');
+        const template = `<tr>
+                            <td>{0}</td>
+                            <td>{1}</td>
+                            <td>{2}</td>
+                        </tr>`;
         let html = ``;
+        filtered.forEach((v)=>{
+        // obj.forEach((v) => {
+            html += template.replace('{0}', v.ymd).replace('{1}', v.gain.toLocaleString()).replace('{2}', '-')
+        });
+        document.getElementById('order-transactions').innerHTML = html;
 
         // console.log(open_positions, all_orders, buy_sell_pairs, transaction_days, obj);
         console.log('DAY GAINS', obj);
-        console.log('DAY GAINS', obj.filter((v)=>v.ymd >= '2025-10-23'));
+        console.log('DAY GAINS', obj.filter((v) => v.ymd >= '2025-10-23'));
+        console.log('DAY GAINS TOTAL', filtered.map((v) => v.gain).reduce((p, c) => p + c));
     }
 
     let total_groups = 0;
@@ -715,7 +727,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-01T00:00:00-04:00`));
     // ----------------------------------
-    const start = new Date(new Date(`2024-10-01T00:00:00-0${tz}:00`));
+    const start = new Date(new Date(`2024-09-12T00:00:00-0${tz}:00`)); //! 01-Oct-2024
     const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
     // ----------------------------------
     // const start = new Date(`2008-01-01`);
