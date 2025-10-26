@@ -79,7 +79,18 @@ const CONFIG = {
                 'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU',
             ].sort(),
         },
-        { 
+        {
+            name: 'TOP 90',
+            include: true,
+            symbols: [
+                'FLUX',
+                'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH',
+                'PLUG', 'NBTX', 'NTLA', 'MU', 'CAMT',
+                'BLNK', 'AXTI', 'BTDR', 'BTSG', 'CVRX',//'CTXR',
+                'GLUE',//'FTRE',
+            ].sort()
+        },
+        {
             name: 'CRYPTO',
             include: true,
             symbols: ['AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD',].sort()

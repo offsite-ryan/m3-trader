@@ -18,7 +18,9 @@ h6 {
     font-family: Verdana;
     /* font-family: cursive; */
 }
-
+tr {
+    background-color: #121212 !important;
+}
 hr {
     display: block;
     height: 1px;

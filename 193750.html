@@ -32,7 +32,8 @@
 
 <body class="">
 
-    <div class="_w3-container" style="padding: 8px 8px 0px 8px;background-color:#00b90a;position: sticky;top: 0;z-index: 9999;">
+    <div class="_w3-container"
+        style="padding: 8px 8px 0px 8px;background-color:#00b90a;position: sticky;top: 0;z-index: 9999;">
         <h2><img src="./favicon-black.png" style="padding-bottom:16px;width:90px;margin-right:20px;" /><span
                 class="w3-text-black w3-xxlarge"><b>M<sup>3</sup> TRADER</b> | </span>
             <span class="_w3-tiny w3-text-black">
@@ -40,8 +41,9 @@
             </span>
             <!-- <br /> -->
             <!-- <b><span id="" class="w3-text-black" style="font-size:64px;">$1,234 | 12.36%</span></b> -->
-            <span class="_w3-xxxlarge w3-right" style="font-size:40px;margin-left: 5px;cursor:pointer;"
-                onclick="window.location=window.location">&#x27F3;
+            <span class="w3-container _w3-xxxlarge w3-right w3-text-black"
+                style="font-size:40px;margin-left: 5px;cursor:pointer;" onclick="window.location=window.location"><b><i
+                        class="fa fa-refresh" aria-hidden="true"></i></b>
             </span>
             <!-- <br/> -->
             <div class="w3-medium w3-right w3-padding" style="margin-top:10px;">
@@ -54,7 +56,22 @@
                 </span> -->
             </div>
             <div class="w3-container w3-text-black" style="color:black;_background-color:#00b90a;">
-                <h3 class="w3-xxxlarge"><b id="total-positions-banner">&nbsp;</b></h3>
+                <h3 class="w3-xxxlarge"><b id="total-positions-banner">&nbsp;</b>
+                    <span class="w3-right">
+                        <!-- <i class="fa fa-toggle-on" style="cursor:pointer;" onclick="toggleAutoReset(this)"></i>
+                    <span class="w3-medium"
+                        style="padding-right: 5px;top: -7px;display: inline;position: relative;">Auto Refresh </span> -->
+
+                        <!-- <i id="toggle-crypto" class="fa fa-toggle-on" style="cursor:pointer;"
+                        onclick="toggleCryptoStocks(this)"></i>
+                    <span class="w3-medium"
+                        style="padding-right: 5px;top: -7px;display: inline;position: relative;">Crypto </span> -->
+
+                        <i id="open-settings" class="fa fa-gear" style="cursor:pointer;" onclick="open_settings()"></i>
+                        <!-- <span class="w3-medium"
+                        style="padding-right: 5px;top: -7px;display: inline;position: relative;">Settings </span> -->
+                    </span>
+                </h3>
             </div>
 
             <!-- <div id="current_conditions" class="w3-medium"></div> -->
@@ -131,7 +148,7 @@
                 </div>
 
             </div>
-            <div class="w3-row w3-margin w3-black" style="display:none;border-bottom: 1px solid white;">
+            <div class="w3-row w3-margin w3-black" style="_display:none;border-bottom: 1px solid white;">
 
                 <div class="w3-third w3-padding">
                     <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
@@ -142,6 +159,7 @@
                         <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
                             style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
                         <div id="title-symbols-group-3"></div>
+                        <div id="chart-symbols-group-3-tree"></div>
                         <!-- </div> -->
                     </h2>
                     <!-- <p>
@@ -168,7 +186,8 @@
                             <span class="w3-opacity">per month</span>
                         </li>
                         <li class="_w3-light-grey w3-padding-24">
-                            <button class="w3-button w3-text-black w3-padding-large" style="background-color:#00b90a;">Sign Up</button>
+                            <button class="w3-button w3-text-black w3-padding-large"
+                                style="background-color:#00b90a;">Sign Up</button>
                         </li>
                     </ul>
                 </div>
@@ -186,7 +205,8 @@
                             <span class="w3-opacity">per month</span>
                         </li>
                         <li class="_w3-light-grey w3-padding-24">
-                            <button class="w3-button w3-text-black w3-padding-large" style="background-color:#00b90a;">Sign Up</button>
+                            <button class="w3-button w3-text-black w3-padding-large"
+                                style="background-color:#00b90a;">Sign Up</button>
                         </li>
                     </ul>
                 </div>
@@ -203,7 +223,8 @@
                             <span class="w3-opacity">per month</span>
                         </li>
                         <li class="_w3-light-grey w3-padding-24">
-                            <button class="w3-button w3-text-black w3-padding-large" style="background-color:#00b90a;">Sign Up</button>
+                            <button class="w3-button w3-text-black w3-padding-large"
+                                style="background-color:#00b90a;">Sign Up</button>
                         </li>
                     </ul>
                 </div>
@@ -367,15 +388,18 @@
         <!-- <div id="chart-symbols-treemap"></div> -->
         <p class="w3-center w3-xlarge">
             <input class="w3-radio" type="radio" name="gender" value="stocks" onclick="toggle_groups(this.value)">
-            <label>STOCKS</label>
+            <label style="margin-right:20px;">STOCKS</label>
 
             <input class="w3-radio" type="radio" name="gender" value="favs" onclick="toggle_groups(this.value)" checked>
-            <label>R&D</label>
+            <label style="margin-right:20px;">R&D</label>
 
             <input class="w3-radio" type="radio" name="gender" value="crypto" onclick="toggle_groups(this.value)">
-            <label>CRYPTO</label>
+            <label style="margin-right:20px;">TOP 90</label>
+
+            <input class="w3-radio" type="radio" name="gender" value="account" onclick="toggle_groups(this.value)">
+            <label style="margin-right:20px;">ACCOUNT</label>
         </p>
-        <div id="symbol-buttons-bollinger-stocks" class="_w3-col s12 w3-padding w3-center"
+        <div id="symbol-buttons-bollinger-stocks" class="_w3-col s12 w3-margin w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
         </div>
         <div id="symbol-buttons-bollinger-favs" class="_w3-col s12 w3-padding w3-center"
@@ -384,38 +408,75 @@
         <div id="symbol-buttons-bollinger-crypto" class="_w3-col s12 w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
         </div>
+        <div id="symbol-buttons-bollinger-account" class="_w3-col s12 w3-padding w3-center w3-xlarge w3-black"
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
+            Account Transactions
+            <br />
+            <table class="w3-table-all">
+                <thead>
+                    <tr style="background-color: black !important;">
+                        <th>Date</th>
+                        <th>Gain</th>
+                        <th>Spend</th>
+                    </tr>
+                </thead>
+                <tbody id="order-transactions">
+                    <tr>
+                        <td>Jill</td>
+                        <td>Smith</td>
+                        <td>50</td>
+                    </tr>
+                    <tr>
+                        <td>Eve</td>
+                        <td>Jackson</td>
+                        <td>94</td>
+                    </tr>
+                    <tr>
+                        <td>Adam</td>
+                        <td>Johnson</td>
+                        <td>67</td>
+                    </tr>
+                    <tr>
+                        <td>Bo</td>
+                        <td>Nilson</td>
+                        <td>35</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-        <!-- Stacked Chart -->
-        <br />
-        <div class="w3-padding w3-border w3-col s12 m6 l3 w3-hide">
-            <div id="title-symbols-stacked-1"></div>
-            <div id="chart-symbols-stacked-1"></div>
-        </div>
-        <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
-            <div id="title-symbols-stacked-2"></div>
-            <div id="chart-symbols-stacked-2"></div>
-        </div>
-        <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
-            <div id="title-symbols-stacked-3"></div>
-            <div id="chart-symbols-stacked-3"></div>
-        </div>
-        <div class="w3-padding w3-border w3-col s12 m6 l3 w3-hide">
-            <div id="title-symbols-stacked-4"></div>
-            <div id="chart-symbols-stacked-4"></div>
-        </div>
-        <br />
-        <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
-            <div id="title-symbols-stacked-5"></div>
-            <div id="chart-symbols-stacked-5"></div>
-        </div>
-        <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
-            <div id="title-symbols-stacked-7"></div>
-            <div id="chart-symbols-stacked-7"></div>
-        </div>
-        <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
-            <div id="title-symbols-stacked-8"></div>
-            <div id="chart-symbols-stacked-8"></div>
-        </div>
+    <!-- Stacked Chart -->
+    <br />
+    <div class="w3-padding w3-border w3-col s12 m6 l3 w3-hide">
+        <div id="title-symbols-stacked-1"></div>
+        <div id="chart-symbols-stacked-1"></div>
+    </div>
+    <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
+        <div id="title-symbols-stacked-2"></div>
+        <div id="chart-symbols-stacked-2"></div>
+    </div>
+    <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
+        <div id="title-symbols-stacked-3"></div>
+        <div id="chart-symbols-stacked-3"></div>
+    </div>
+    <div class="w3-padding w3-border w3-col s12 m6 l3 w3-hide">
+        <div id="title-symbols-stacked-4"></div>
+        <div id="chart-symbols-stacked-4"></div>
+    </div>
+    <br />
+    <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
+        <div id="title-symbols-stacked-5"></div>
+        <div id="chart-symbols-stacked-5"></div>
+    </div>
+    <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
+        <div id="title-symbols-stacked-7"></div>
+        <div id="chart-symbols-stacked-7"></div>
+    </div>
+    <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
+        <div id="title-symbols-stacked-8"></div>
+        <div id="chart-symbols-stacked-8"></div>
+    </div>
     </div>
     <p id="output"></p>
     &nbsp;
@@ -596,6 +657,7 @@
     let chart_symbols_months = {};
     let chart_symbols_group_1_tree = null;
     let chart_symbols_group_2_tree = null;
+    let chart_symbols_group_3_tree = null;
 
 
     const isCrypto = localStorage.getItem('m3-trader-v5-crypto') === 'true' ? true : false;
@@ -629,7 +691,7 @@
     // TOGGLE GROUPS
     // =================================================
     function toggle_groups(name) {
-        ['stocks', 'favs', 'crypto'].forEach((k) => {
+        ['stocks', 'favs', 'crypto', 'account'].forEach((k) => {
             const elem = document.getElementById(`symbol-buttons-bollinger-${k}`);
             elem.style.display = name === k ? 'block' : 'none';
             elem.checked = name == k ? true : false;

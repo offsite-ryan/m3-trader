@@ -140,7 +140,7 @@ class AlpacaData {
                 H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // buy/sell each day if above lower bound
                 X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => false },
-                Z: { buy: (v, i) => true, sell: (v) => false },
+                Z: { buy: (v, i) => true, sell: (v) => v.c < v.stop },
                 //#endregion
             };
             const isCrypto = symbol.endsWith('USD');
@@ -560,7 +560,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             <b>$${round(sum).toLocaleString()}<br/>$${round(sum_all).toLocaleString()}<br/>${round1(sum_all / (symbols.length * 1000) * 100).toLocaleString()}%</b>
             </div>`;
         // if (i === 0)
-            html += `<div 
+        html += `<div 
             class="w3-col s12 m12 l2 _w3-margin w3-padding"
             style="border:1px solid white;font-size:24px;min-height:208px;">
             <br/>
@@ -605,8 +605,8 @@ async function test4(symbol = 'OKLO', interval = true) {
             // ].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
 
             html += `<div 
-            class="w3-col s4 m2 l2 _w3-margin w3-padding"
-            style="cursor:pointer;font-size:20px;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
+            class="w3-col s4 m3 l2 _w3-margin w3-padding"
+            style="cursor:pointer;font-size:20px;border:${symbol === s ? '2px solid #00ffff' : '1px solid grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
             onclick="test4('${s}', false)">
             ${s.split('/')[0]} | ${status.score.score}<!-- | ${round(status.score.pct / status.score.score)}-->
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
@@ -677,9 +677,36 @@ async function test4(symbol = 'OKLO', interval = true) {
         const unique_symbols = all_orders.map((v) => v.symbol).filter((v, i, a) => a.indexOf(v) === i);
         const buy_sell_pairs = [];
         unique_symbols.forEach((s) => {
-            buy_sell_pairs.push(all_orders.filter((v) => v.symbol === s));
+            const temp = all_orders.filter((v) => v.symbol === s);
+            temp.forEach((v, i) => {
+                if (v.side === 'sell') {
+                    v.gain = v.total - (temp[i + 1] ? temp[i + 1].total : 0);
+                    v.spend = temp[i + 1] ? temp[i + 1].spend : 0;
+                    v.ymd = getYMD(v.t);
+                    v.tb =  temp[i + 1] ? temp[i + 1].t : '-'
+                }
+            })
+            buy_sell_pairs.push(temp.filter((v) => v.gain));
+        });
+        let transaction_days = [];
+        buy_sell_pairs.forEach((v) => {
+            v.forEach((v2) => {
+                transaction_days.push(v2.ymd)
+            })
+        });
+        transaction_days = transaction_days.filter((v, i, a) => a.indexOf(v) === i);
+        const all_transactions = buy_sell_pairs.reduce((p, c) => [...p, ...c]);
+        let obj = [];
+        transaction_days.sort().reverse().forEach((v) => {
+            const filtered = all_transactions.filter((v2) => v2.ymd === v);
+            obj.push({ ymd: v, gain: round2(filtered.map((v2)=>v2.gain).reduce((p, c) => p + c)) });
+
         })
-        // console.log(open_positions, all_orders, buy_sell_pairs);
+        let html = ``;
+
+        // console.log(open_positions, all_orders, buy_sell_pairs, transaction_days, obj);
+        console.log('DAY GAINS', obj);
+        console.log('DAY GAINS', obj.filter((v)=>v.ymd >= '2025-10-23'));
     }
 
     let total_groups = 0;
@@ -1287,7 +1314,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         }
 
         //# group tree
-        if (index <= 1) {
+        if (index <= 2) {
             o = deepClone(chart_bar_options);
             o.chart.animations = { enabled: false };
             // unrealized_plpc
@@ -1340,6 +1367,13 @@ async function test4(symbol = 'OKLO', interval = true) {
                 }
                 chart_symbols_group_2_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-2-tree`), o);
                 chart_symbols_group_2_tree.render();
+            }
+            if (index === 2) {
+                if (chart_symbols_group_3_tree) {
+                    chart_symbols_group_3_tree.destroy();
+                }
+                chart_symbols_group_3_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-3-tree`), o);
+                chart_symbols_group_3_tree.render();
             }
             o = undefined;
         }
