@@ -275,7 +275,7 @@ class AlpacaData {
             const pct = round1(gain / 1000 * 100);
             // let score = Object.values(res.summary.months).reduce((p, c) => p + (c > 0 ? 1 : 0), 0);
             // let score = round(num_positive * pct);
-            let score = round((num_positive / (num_positive + num_negative) *10) * (pct > 0 ? 1 : 0));
+            let score = round((num_positive / (num_positive + num_negative) * 10) * (pct > 0 ? 1 : 0));
             res.score = { score, pct };
             resolve(res);
         });
@@ -404,7 +404,7 @@ setInterval(() => {
     const second = new Date().getSeconds();
     // if (second % 15 === 0 && auto_refresh) {
     if (second === 1 && auto_refresh) {
-        test4(bollinger_selected_symbol, second === 0);
+        test4(bollinger_selected_symbol, true);
     }
 }, 1 * 1000);
 let bollinger_selected_symbol = null;
@@ -445,11 +445,11 @@ const symbol_groups = {
             // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FRHC','FUTU','GTX','IDCC','IESC','INDV',
             // 'NVTS',
             ...scores
-                .filter((v)=>v.score >= 4 && v.pct > 50)
-                .sort((a,b)=>b.pct > a.pct ? 1 : -1)
-                .map((v)=>v.symbol)
-                .slice(0,19)
-                .filter((v)=>!['APP','RGTI','EYE','GILT',].includes(v)),
+                .filter((v) => v.score >= 4 && v.pct > 50)
+                .sort((a, b) => b.pct > a.pct ? 1 : -1)
+                .map((v) => v.symbol)
+                .slice(0, 19)
+                .filter((v) => !['APP', 'RGTI', 'EYE', 'GILT',].includes(v)),
         ].sort()
         // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
         // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
@@ -503,7 +503,7 @@ const symbol_groups = {
 // =================================================
 // TEST 4
 // =================================================
-async function test4(symbol = 'OKLO', log = true) {
+async function test4(symbol = 'OKLO', interval = true) {
 
     //#region VARIABLES
     // * ------------------------
@@ -549,7 +549,7 @@ async function test4(symbol = 'OKLO', log = true) {
             //     .map((v) => v.trades[v.trades.length - 1].g_cumulative)
             // ) - (SEED / symbols.length * 1000);
         } catch (e) { console.error(e); }
-        
+
         let html = ``;
         html = `<div 
             id="title-${title}"
@@ -593,7 +593,7 @@ async function test4(symbol = 'OKLO', log = true) {
             html += `<div 
             class="w3-col s4 m2 l2 _w3-margin w3-padding"
             style="cursor:pointer;font-size:20px;border:1px solid${symbol === s ? ' #02dcff' : ' grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
-            onclick="test4('${s}')">
+            onclick="test4('${s}', false)">
             ${s.split('/')[0]} | ${status.score.score}<!-- | ${round(status.score.pct / status.score.score)}-->
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
             <br/>
@@ -644,21 +644,23 @@ async function test4(symbol = 'OKLO', log = true) {
     // * LOAD DATA
     // * ------------------------
 
-    open_positions = await positions();
-    // .filter((v2)=>new Date(v2.t) >= new Date('2025-08-26'))
-    all_orders = (await orders())
-        .map((v2) => {
-            return {
-                symbol: v2.symbol,
-                side: v2.side,
-                t: new Date(v2.filled_at).toLocaleString(),
-                spend: v2.notional,
-                // id: v2.asset_id, 
-                p: v2.filled_avg_price,
-                q: v2.filled_qty
-            }
-        });
-    //! console.log(open_positions, all_orders);
+    if (interval) {
+        open_positions = await positions();
+        // .filter((v2)=>new Date(v2.t) >= new Date('2025-08-26'))
+        all_orders = (await orders())
+            .map((v2) => {
+                return {
+                    symbol: v2.symbol,
+                    side: v2.side,
+                    t: new Date(v2.filled_at).toLocaleString(),
+                    spend: v2.notional,
+                    // id: v2.asset_id, 
+                    p: v2.filled_avg_price,
+                    q: v2.filled_qty
+                }
+            });
+        //! console.log(open_positions, all_orders);
+    }
 
     let total_groups = 0;
     let total_groups_reinvest = 0;
@@ -678,12 +680,14 @@ async function test4(symbol = 'OKLO', log = true) {
     all_symbols_names = [...symbol_groups.ETF.symbols, ...symbol_groups.CRYPTO.symbols, ...symbol_groups.STOCKS.symbols];
     // const all_symbols_names = ['GE', 'BTC/USD', 'QQQ'];
 
-    const promises = all_symbols_names.map((s, i) => {
-        // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
-        return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), open_positions, all_orders/*, i > 13 ? true : false*/);
-    });
-    all_symbols = await Promise.all(promises);
-    console.log(all_symbols);
+    if (interval) {
+        const promises = all_symbols_names.map((s, i) => {
+            // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
+            return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), open_positions, all_orders/*, i > 13 ? true : false*/);
+        });
+        all_symbols = await Promise.all(promises);
+        console.log(all_symbols);
+    }
 
     // let data = await analyze_days('E', symbol, '1D', start.toISOString(), end.toISOString());
     let data = all_symbols.filter((v) => v.symbol === symbol)[0];
@@ -1565,6 +1569,6 @@ async function test_symbols(start_at = null) {
                 await sleep(1000);
             }
         };
-        console.log('FINAL RESULTS', scores.sort((a, b) => b.score.score - a.score.score).map((v)=>{ return {symbol: v.symbol, score: v.score.score, pct: v.score.pct} }));
+        console.log('FINAL RESULTS', scores.sort((a, b) => b.score.score - a.score.score).map((v) => { return { symbol: v.symbol, score: v.score.score, pct: v.score.pct } }));
     });
 }
