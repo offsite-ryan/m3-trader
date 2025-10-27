@@ -505,6 +505,7 @@ const symbol_groups = {
             // 'ONEQ', 
             'OPEN',
             'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU',
+            'SHOP',
         ].sort()
     }
 };
@@ -882,7 +883,7 @@ async function test4(symbol = 'OKLO', interval = true) {
 
     // TODO: REMOVE FOR REVIEW
     o.series.push({ name: 'Trigger', color: colors.yellow, data: [] });
-    o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: v.lb ? round2(v.lb) : null } });
+    o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: v.lb ? round2(v.lb*0.95) : null } });
 
 
     const tl = calculateTrendline(o.series[0].data.map((v) => v.y));

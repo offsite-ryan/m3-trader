@@ -76,7 +76,7 @@ const CONFIG = {
             symbols: [
                 'RING', 'IREN', 'CIFR', 'HUT', 'TMC', 'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PSIX',
                 'HOOD', 'FGM', 'AMD', 'AVGO', 'COIN', 'LEU', 'NIO', 'OPEN',
-                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU',
+                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU','SHOP',
             ].sort(),
         },
         {

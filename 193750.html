@@ -33,8 +33,8 @@
 <body class="">
 
     <div class="_w3-container"
-        style="padding: 8px 8px 0px 8px;background-color:#00b90a;position: sticky;top: 0;z-index: 9999;">
-        <h2><img src="./favicon-black.png" style="padding-bottom:16px;width:110px;margin-right:20px;" /><span
+        style="padding: 8px 8px 0px 8px;position: sticky;top: 0;z-index: 9999;background-color:black;">
+        <h2 style="background-color:#00b90a;"><img src="./favicon-black.png" style="padding-bottom:16px;width:110px;margin-right:20px;margin-left:10px;margin-top:10px;" /><span
                 class="w3-text-black w3-xxlarge"><b>M<sup>3</sup> TRADER</b> | </span>
             <span class="_w3-tiny w3-text-black">
                 <span id="datetime" class="w3-xxlarge"></span>
@@ -42,8 +42,8 @@
             <!-- <br /> -->
             <!-- <b><span id="" class="w3-text-black" style="font-size:64px;">$1,234 | 12.36%</span></b> -->
             <span class="w3-container _w3-xxxlarge w3-right w3-text-black"
-                style="font-size:40px;margin-left: 5px;cursor:pointer;margin-top:15px;" onclick="window.location=window.location"><b><i
-                        class="fa fa-refresh" aria-hidden="true"></i></b>
+                style="font-size:40px;margin-right: 5px;cursor:pointer;margin-top:15px;"
+                onclick="window.location=window.location"><b><i class="fa fa-refresh" aria-hidden="true"></i></b>
             </span>
             <!-- <br/> -->
             <div class="w3-medium w3-right w3-padding" style="margin-top:10px;">
@@ -55,7 +55,9 @@
                     onclick="window.location=window.location">&#x27F3;
                 </span> -->
             </div>
-            <div class="w3-container w3-text-black" style="color:black;_background-color:#00b90a;">
+        </h2>
+        <h2 style="background-color:black;">
+            <div class="w3-container w3-text-black" style="color:black;_background-color:#000000;">
                 <h3 class="w3-xxxlarge"><b id="total-positions-banner">&nbsp;</b>
                     <span class="w3-right">
                         <!-- <i class="fa fa-toggle-on" style="cursor:pointer;" onclick="toggleAutoReset(this)"></i>
@@ -67,7 +69,7 @@
                     <span class="w3-medium"
                         style="padding-right: 5px;top: -7px;display: inline;position: relative;">Crypto </span> -->
 
-                        <i id="open-settings" class="fa fa-gear" style="cursor:pointer;" onclick="open_settings()"></i>
+                        <i id="open-settings" class="fa fa-gear w3-text-grey" style="cursor:pointer;" onclick="open_settings()"></i>
                         <!-- <span class="w3-medium"
                         style="padding-right: 5px;top: -7px;display: inline;position: relative;">Settings </span> -->
                     </span>
