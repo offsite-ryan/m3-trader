@@ -129,6 +129,16 @@ class AlpacaData {
                 default_gain_1K: (i1, i2) => (1000 / bars[i1].o) * (bars[i2].c - bars[i1].o),
                 //#endregion
 
+                //#region 
+                /** 
+                 * ----- NEW ALGORITHM -----
+                 * buy all at start of day
+                 * at 10:30, sell all losers
+                 * sell any symbol that loses $50 for rest of the day
+                 * liquidate at EOD
+                 */
+                //#endregion
+
                 //#region STOCKS
                 A: { buy: (v, i) => v.o >= v.ub, sell: (v, i) => v.c <= v.ub, },
                 B: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c <= v.ub },
@@ -1304,7 +1314,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${30}K</span></span>`;
         elem.innerHTML += `<hr/>`;
         elem.innerHTML += `AVG: <b><span style="color:lime;">$${round(avg).toLocaleString()}</span></b>`;
-        elem.innerHTML += `<span class="w3-right">$50K SEED: <span style="color:lime;">$${(round1(g / 30 * 50)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<span class="w3-right">$50K SEED: <span style="color:lime;">$${(round1(g / 30 * 50 / 1000)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/>75K AVG: <span style="color:lime;font-size:24px;"><b>$${round(avg / 30 * 75).toLocaleString()}</b></span>`;
         elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / 30 * 75 / 1000)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:56px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
@@ -1356,7 +1366,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                 o.annotations.yaxis = [];
                 o.dataLabels.enabled = true;
             }
-            o.chart.height = isTablet() ? 160 : (isMobile() ? 250 : 200);
+            o.chart.height = isTablet() ? 160 : (isMobile() ? 250 : 160);
             o.dataLabels = {
                 // offsetY: mobile_view ? 0 :  -24,
                 style: {
