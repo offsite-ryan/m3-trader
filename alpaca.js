@@ -1156,7 +1156,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     elem.parentElement.parentElement.style.backgroundColor = '';
     elem.parentElement.parentElement.style.borderBottom = '1px solid white';
     elem.parentElement.parentElement.style.borderTop = '1px solid white';
-    elem.style.fontSize = '48px';
+    elem.style.fontSize = '64px';
     elem.style.color = total === 0 ? 'black' : (total > 0 ? 'black' : colors.red); // '#00b90a'
     elem.innerHTML = `$${round(total).toLocaleString()} | ${round2(total / total_invested * 100) || 0}%`;
     //#endregion
