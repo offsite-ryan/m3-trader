@@ -561,9 +561,10 @@ async function test4(symbol = 'OKLO', interval = true) {
         } catch (e) { console.error(e); }
 
         let html = ``;
+        let html_table = ``;
         html = `<div 
             id="title-${title}"
-            class="w3-col s12 m12 l2 _w3-margin w3-padding"
+            class="w3-col s12 m3 l2 _w3-margin w3-padding"
             style="border:1px solid white;font-size:24px;min-height:208px;">
             <b>${title}</b>
             <hr style="border-top:1px solid white"/>
@@ -571,7 +572,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             </div>`;
         // if (i === 0)
         html += `<div 
-            class="w3-col s12 m12 l2 _w3-margin w3-padding"
+            class="w3-col s12 m3 l2 _w3-margin w3-padding"
             style="border:1px solid white;font-size:24px;min-height:208px;">
             <br/>
             <button id="" class="w3-button w3-round-large w3-large w3-padding"
@@ -626,8 +627,26 @@ async function test4(symbol = 'OKLO', interval = true) {
             <div id="chart-days-${s.replace('/', '')}"></div>
             </div>
             `;
+
+            const template = `<tr>
+                            <td style="{c}">{0}</td>
+                            <td>{1}</td>
+                            <td>{2}</td>
+                            <td>{3}</td>
+                        </tr>`;
+            html_table += template
+                // .replace('{c}', v.gain >= 0 ? 'lime' : 'red')
+                .replace('{c}', `${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}`)
+                .replace('{0}', s.split('/')[0])
+                .replace('{1}', `${status.position ? round(status.position.gain).toLocaleString() : 0}`)
+                .replace('{2}', `${round1(g)}%`)
+            // .replace('{3}', v.spend.toLocaleString());
         });
         document.getElementById(id).innerHTML = html + '<br/>';
+        if (index === 0) {
+            document.getElementById('symbol-table').innerHTML = html_table + '<br/>';
+        }
+
         symbols.forEach((s) => {
             let status = all_symbols.find((v) => v.symbol === s);
             s = s.replace('/', '');
@@ -709,25 +728,33 @@ async function test4(symbol = 'OKLO', interval = true) {
         let obj = [];
         transaction_days.sort().reverse().forEach((v) => {
             const filtered = all_transactions.filter((v2) => v2.ymd === v);
-            obj.push({ ymd: v, gain: round2(filtered.map((v2) => v2.gain).reduce((p, c) => p + c)) });
+            obj.push({ ymd: v, gain: round2(filtered.map((v2) => v2.gain).reduce((p, c) => p + c)), spend: round2(filtered.map((v2) => +(v2.spend)).reduce((p, c) => p + c)) });
 
         })
-        const filtered = obj.filter((v) => v.ymd >= '2025-10-23');
+        const filter_before = '2025-10-01';
+        const filtered = obj.filter((v) => v.ymd >= filter_before);
         const template = `<tr>
                             <td>{0}</td>
-                            <td>{1}</td>
-                            <td>{2}</td>
+                            <td style="color:{c}">{1}</td>
+                            <td style="color:{c}">{2}</td>
+                            <td>{3}</td>
                         </tr>`;
         let html = ``;
-        filtered.forEach((v)=>{
-        // obj.forEach((v) => {
-            html += template.replace('{0}', v.ymd).replace('{1}', v.gain.toLocaleString()).replace('{2}', '-')
+        filtered.forEach((v) => {
+            // obj.forEach((v) => {
+            html += template
+                .replace('{c}', v.gain >= 0 ? 'lime' : 'red')
+                .replace('{c}', v.gain >= 0 ? 'lime' : 'red')
+                .replace('{0}', v.ymd)
+                .replace('{1}', v.gain.toLocaleString())
+                .replace('{2}', round2(v.gain / v.spend * 100).toLocaleString())
+                .replace('{3}', v.spend.toLocaleString());
         });
         document.getElementById('order-transactions').innerHTML = html;
 
         // console.log(open_positions, all_orders, buy_sell_pairs, transaction_days, obj);
         console.log('DAY GAINS', obj);
-        console.log('DAY GAINS', obj.filter((v) => v.ymd >= '2025-10-23'));
+        console.log('DAY GAINS', obj.filter((v) => v.ymd >= filter_before));
         console.log('DAY GAINS TOTAL', filtered.map((v) => v.gain).reduce((p, c) => p + c));
     }
 
@@ -851,17 +878,18 @@ async function test4(symbol = 'OKLO', interval = true) {
     o.xaxis.type = 'datetime';
     o.series = [];
     o.series.push({ name: 'Close', data: [] }); // , type: 'area', color: colors.blue + '10'
-    o.series[0].data = bars.map((v) => { return { x: v.e, y: round2(v.c) } });
+    o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: round2(v.c) } });
+
+    // TODO: REMOVE FOR REVIEW
     o.series.push({ name: 'Trigger', color: colors.yellow, data: [] });
-    // o.series[1].data = bars.map((v) => { return { x: v.e, y: v.sma ? round2(v.sma) : null } });
-    o.series[1].data = bars.map((v) => { return { x: v.e, y: v.lb ? round2(v.lb) : null } });
+    o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: v.lb ? round2(v.lb) : null } });
 
 
     const tl = calculateTrendline(o.series[0].data.map((v) => v.y));
     o.series.push({ name: 'Trendline', type: 'line', color: '#89f100ff', data: o.series[0].data.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
 
     o.series.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
-    o.series[3].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
+    o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
 
     // o.series.push({ name: 'SMA', hidden: mobile_view, data: [] });
     // o.series[1].data = bars.map((v) => { return { x: v.e, y: v.sma ? round2(v.sma) : null } });
@@ -1313,10 +1341,10 @@ async function test4(symbol = 'OKLO', interval = true) {
         elem.style.color = '#fff';
         elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${30}K</span></span>`;
         elem.innerHTML += `<hr/>`;
-        elem.innerHTML += `AVG: <b><span style="color:lime;">$${round(avg).toLocaleString()}</span></b>`;
-        elem.innerHTML += `<span class="w3-right">$50K SEED: <span style="color:lime;">$${(round1(g / 30 * 50 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `AVG: <b><span style="color:lime;font-size:24px;">$${round(avg).toLocaleString()}</span></b>`;
+        elem.innerHTML += `<span class="w3-right">$50K SEED: <span style="color:lime;font-size:24px;">$${(round1(g / 30 * 50 / 1000)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/>75K AVG: <span style="color:lime;font-size:24px;"><b>$${round(avg / 30 * 75).toLocaleString()}</b></span>`;
-        elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;">$${(round1(g / 30 * 75 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;font-size:24px;">$${(round1(g / 30 * 75 / 1000)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:56px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
 
         o.annotations.yaxis.push({ y: avg, borderColor: colors.lime, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });

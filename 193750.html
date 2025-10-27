@@ -100,6 +100,28 @@
                 </div> -->
 
             </div>
+            <div class="w3-row w3-margin w3-black" style="_display:none;border-bottom: 1px solid white;">
+
+                <div class="w3-third w3-padding">
+                    <!-- <span id="">STOCKS</span> -->
+                    <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
+                    <div id="chart-symbols-group-1"></div>
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>
+                        <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
+                            style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
+                        <div id="title-symbols-group-1"></div>
+                        <div id="chart-symbols-group-1-tree"></div>
+                        <!-- </div> -->
+                    </h2>
+                    <!-- <div id="chart-symbols-breakdown-1"></div> -->
+                    <!-- <p>
+                        
+                    </p> -->
+                </div>
+
+            </div>
             <div class="w3-row w3-margin w3-black" style="border-bottom: 1px solid white;">
 
                 <div class="w3-third w3-padding" _class="w3-col s12 m5 w3-padding">
@@ -122,28 +144,6 @@
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
                         labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
                         laboris nisi ut aliquip ex ea commodo consequat.
-                    </p> -->
-                </div>
-
-            </div>
-            <div class="w3-row w3-margin w3-black" style="_display:none;border-bottom: 1px solid white;">
-
-                <div class="w3-third w3-padding">
-                    <!-- <span id="">STOCKS</span> -->
-                    <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
-                    <div id="chart-symbols-group-1"></div>
-                </div>
-                <div class="w3-twothird w3-container">
-                    <h2>
-                        <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
-                            style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
-                        <div id="title-symbols-group-1"></div>
-                        <div id="chart-symbols-group-1-tree"></div>
-                        <!-- </div> -->
-                    </h2>
-                    <!-- <div id="chart-symbols-breakdown-1"></div> -->
-                    <!-- <p>
-                        
                     </p> -->
                 </div>
 
@@ -393,6 +393,9 @@
             <input class="w3-radio" type="radio" name="gender" value="favs" onclick="toggle_groups(this.value)" checked>
             <label style="margin-right:20px;">R&D</label>
 
+            <!-- <input class="w3-radio" type="radio" name="gender" value="table" onclick="toggle_groups(this.value)">
+            <label style="margin-right:20px;">R&D Table</label> -->
+
             <input class="w3-radio" type="radio" name="gender" value="crypto" onclick="toggle_groups(this.value)">
             <label style="margin-right:20px;">TOP 90</label>
 
@@ -408,6 +411,27 @@
         <div id="symbol-buttons-bollinger-crypto" class="_w3-col s12 w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
         </div>
+        <div id="symbol-buttons-bollinger-table" class="_w3-col s12 w3-padding w3-center"
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;"><br />
+            <table class="w3-table-all w3-xlarge">
+                <thead>
+                    <tr style="background-color: black !important;">
+                        <th>Symbol</th>
+                        <th>Position</th>
+                        <th>YTD</th>
+                        <th style="width:33%">CHART</th>
+                    </tr>
+                </thead>
+                <tbody id="symbol-table">
+                    <tr>
+                        <td>Jill</td>
+                        <td>Smith</td>
+                        <td>50</td>
+                        <td>50</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <div id="symbol-buttons-bollinger-account" class="_w3-col s12 w3-padding w3-center w3-xlarge w3-black"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
             Account Transactions
@@ -417,6 +441,7 @@
                     <tr style="background-color: black !important;">
                         <th>Date</th>
                         <th>Gain</th>
+                        <th>Pct</th>
                         <th>Spend</th>
                     </tr>
                 </thead>
@@ -425,21 +450,7 @@
                         <td>Jill</td>
                         <td>Smith</td>
                         <td>50</td>
-                    </tr>
-                    <tr>
-                        <td>Eve</td>
-                        <td>Jackson</td>
-                        <td>94</td>
-                    </tr>
-                    <tr>
-                        <td>Adam</td>
-                        <td>Johnson</td>
-                        <td>67</td>
-                    </tr>
-                    <tr>
-                        <td>Bo</td>
-                        <td>Nilson</td>
-                        <td>35</td>
+                        <td>50</td>
                     </tr>
                 </tbody>
             </table>
@@ -691,7 +702,7 @@
     // TOGGLE GROUPS
     // =================================================
     function toggle_groups(name) {
-        ['stocks', 'favs', 'crypto', 'account'].forEach((k) => {
+        ['stocks', 'favs', 'crypto', 'account', 'table'].forEach((k) => {
             const elem = document.getElementById(`symbol-buttons-bollinger-${k}`);
             elem.style.display = name === k ? 'block' : 'none';
             elem.checked = name == k ? true : false;
@@ -792,7 +803,7 @@
     processConfiguration();
     openTab(activeTab);
     toggle_groups('favs');
-    test4('COIN');
+    test4('KOPN');
 
     setInterval(async () => {
         const d = new Date();
