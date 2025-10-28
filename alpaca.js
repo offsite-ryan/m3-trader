@@ -604,7 +604,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             const current = status.bars[status.bars.length - 1];
             // TODO: GET FROM ALL_SYMBOLS[n].buy
             const should_buy = current.o >= current.lb;
-            const should_sell = current.c <= current.lb * 0.90;
+            const should_sell = current.c <= current.lb * 0.98;
             // console.log(s, should_sell);
 
             // up carot: &#9650;  &#9651;
@@ -767,6 +767,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     // const start = new Date(new Date(`2024-12-01T00:00:00-04:00`));
     // ----------------------------------
     const start = new Date(new Date(`2024-09-12T00:00:00-0${tz}:00`)); //! 01-Oct-2024
+    // const start = new Date(new Date(`2025-08-01T00:00:00-0${tz}:00`));
     const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
     // ----------------------------------
     // const start = new Date(`2008-01-01`);
@@ -884,7 +885,7 @@ async function test4(symbol = 'OKLO', interval = true) {
 
     // TODO: REMOVE FOR REVIEW
     o.series.push({ name: 'Trigger', color: colors.yellow, data: [] });
-    o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: v.lb ? round2(v.lb*0.95) : null } });
+    o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: v.lb ? round2(v.lb * 0.98) : null } });
 
 
     const tl = calculateTrendline(o.series[0].data.map((v) => v.y));
@@ -999,7 +1000,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     // o.series[2].color = '#fc03ec';
     // o.sies[2].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
     o.series.forEach((s) => {
-        s.data = s.data.slice(-20);
+        s.data = s.data.slice(-21);
     });
     // o.annotations.xaxis.forEach((v) => v.label.text = v.label._text);
     if (chart_bollinger_1) {
@@ -1144,7 +1145,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     const total_invested = reduceArray(open_positions.map((v) => +(v.cost_basis)));
     // const total_pct = open_positions.map((v) => +(v.unrealized_plpc) * 100).reduce((p, c) => p + c);
     let elem = document.getElementById('total-positions-2');
-    elem.style.backgroundColor = total === 0 ? 'grey' : (total > 0 ? '#00b90a' : '#cf0000');
+    elem.style.backgroundColor = total === 0 ? 'grey' : (total > 0 ? '#lime' : '#cf0000');
     elem.style.color = colors.black;
     elem.style.padding = '10px';
     elem.style.fontSize = isTablet() ? '7.8vh !important' : (isMobile() ? '55px !important' : '4vh !important');
@@ -1158,7 +1159,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     elem.parentElement.parentElement.style.borderBottom = '1px solid white';
     elem.parentElement.parentElement.style.borderTop = '1px solid white';
     elem.style.fontSize = '64px';
-    elem.style.color = total === 0 ? '#00b90a' : (total > 0 ? 'lime' : colors.red); // '#00b90a'
+    elem.style.color = total === 0 ? 'lime' : (total > 0 ? 'lime' : colors.red); // '#00b90a'
     elem.innerHTML = `$${round(total).toLocaleString()} | ${round2(total / total_invested * 100) || 0}%`;
     //#endregion
 
@@ -1273,7 +1274,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         o.series.push({ name: 'Cumulative', type: 'area', color: colors.green + '60', data: [] });
         let cumulative = 0;
         o.series[1].data = Object.keys(groups[group_name]).map((k) => {
-            cumulative += groups[group_name][k];// / all.length * 30;
+            cumulative += groups[group_name][k] / all.length * 30;
             return {
                 x: k,
                 y: round(cumulative)
