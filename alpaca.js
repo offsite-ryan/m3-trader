@@ -823,7 +823,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         if (all.length > 0) {
             // const group_name = index === 0 ? 'R&D' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
             const group_name = a.name || `GROUP ${index + 1}`;
-            let message = `%c${group_name} SUMMARY`;
+            let message = `%c${group_name}`;
             console.log(message, 'color:yellow;');
             const t = all.map((v) => v.summary.total).reduce((p, c) => p + c);
             console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 10)}K @ 10K`, 'color:orange;');
