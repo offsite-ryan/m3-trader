@@ -138,6 +138,17 @@ function confirmAction(action = () => { }, message = "Are you sure you want to p
     }
 }
 
+// // =================================================
+// // DETERMINE IF LAST FRIDAY OF MONTH
+// // =================================================
+// function isLastWeekday(ymd) {
+//     let d = new Date(ymd);
+//     let e = d.getTime();
+//     while (true) {
+
+//     }
+// }
+
 // =================================================
 // GET HOUR MINUTE AS NUMBER (8:32 -> 832)
 // =================================================

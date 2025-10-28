@@ -609,12 +609,13 @@ async function test4(symbol = 'OKLO', interval = true) {
 
             // up carot: &#9650;  &#9651;
             // down caret: &#9660;  &#9661;
-            const icon = status.position ? (status.position.gain >= 0 ? '&#9650' : '&#9660') : '';
-            const icon_color = status.position ? (status.position.gain >= 0 ? '#00b90a' : 'red') : '';
+            const icon = status.position ? (status.position.gain >= 0 ? '&#9650' : '&#9660') : status.trades[status.trades.length - 1].gain_1K >= 0 ? '&#9650' : '&#9660';
+            let icon_color = icon === '&#9650' ? '#00b90a' : 'red';
             // const icon = [
             //     'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
             //     'LEU', 'MP', 'TPB', 'QUBT'
             // ].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
+            // const last_trade = status.trades[status.trades.length - 1].gain_1K;
 
             html += `<div 
             class="w3-col s4 m3 l2 _w3-margin w3-padding"
@@ -623,7 +624,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             ${s.split('/')[0]} | ${status.score.score}<!-- | ${round(status.score.pct / status.score.score)}-->
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
             <br/>
-            <span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> ${status.position ? '$' + round(status.position.gain) : '-'}</span>
+            <span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> ${status.position ? '$' + round(status.position.gain) : round(status.trades[status.trades.length - 1].gain_1K)}</span>
             ${status ? `<br/><div class="" style="color:white;background-color:${status ? status_color : ''};">` + round1(g) + '%</div>' : ''}
             <div id="chart-days-${s.replace('/', '')}"></div>
             </div>
@@ -1157,7 +1158,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     elem.parentElement.parentElement.style.borderBottom = '1px solid white';
     elem.parentElement.parentElement.style.borderTop = '1px solid white';
     elem.style.fontSize = '64px';
-    elem.style.color = total === 0 ? '#00b90a' : (total > 0 ? '#00b90a' : colors.red); // '#00b90a'
+    elem.style.color = total === 0 ? '#00b90a' : (total > 0 ? 'lime' : colors.red); // '#00b90a'
     elem.innerHTML = `$${round(total).toLocaleString()} | ${round2(total / total_invested * 100) || 0}%`;
     //#endregion
 
@@ -1272,7 +1273,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         o.series.push({ name: 'Cumulative', type: 'area', color: colors.green + '60', data: [] });
         let cumulative = 0;
         o.series[1].data = Object.keys(groups[group_name]).map((k) => {
-            cumulative += groups[group_name][k];
+            cumulative += groups[group_name][k];// / all.length * 30;
             return {
                 x: k,
                 y: round(cumulative)
