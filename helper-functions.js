@@ -160,6 +160,15 @@ function getHMM(date) {
 }
 
 // =================================================
+// GET LOCAL TIME DATE-TIME STRING
+// =================================================
+function getLocatDateTime(date) {
+    const tz = date.getTimezoneOffset() / 60;
+    const ymd = getYMD(date);
+    const start = new Date(new Date(`${ymd}T00:00:00-04:00`));
+}
+
+// =================================================
 // GET YEAR-MONTH-DAY
 // =================================================
 function getYMD(date, includeYear = true) {
@@ -178,7 +187,7 @@ function getYMD(date, includeYear = true) {
 }
 
 // =================================================
-// GET YEAR-MONTH-DAY
+// IS TODAY
 // =================================================
 function isToday(date) {
     return getYMD(new Date()) === getYMD(date);

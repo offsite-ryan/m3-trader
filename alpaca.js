@@ -140,6 +140,21 @@ class AlpacaData {
                 //#endregion
 
                 //#region STOCKS
+                // || (algos.default_gain_1K(own_at, i)) < 50
+                A1: {
+                    buy: (v, i) => v.thm === 930, sell: (v, i) => {
+                        (v.thm >= 1030 && v.thm <= 1530) ? own_at >= 0 && algos.default_gain_1K(own_at, i) < 5000 : false
+                        if (own_at >= 0) {
+                            if (v.thm >= 1030) {
+                                if (v.thm <= 1530) {
+                                    const g = algos.default_gain_1K(own_at, i);
+                                    return g < -50;
+                                } else { return true; }
+                            } else { return false; }
+                        } else { return false; }
+                    }
+                },
+                A2: { buy: (v, i) => v.thm === 930, sell: (v, i) => (own_at >= 0 ? (v.thm >= 1030 && v.thm >= 1530 ? true : algos.default_gain_1K(own_at, i)) < 50 : false), },
                 A: { buy: (v, i) => v.o >= v.ub, sell: (v, i) => v.c <= v.ub, },
                 B: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c <= v.ub },
                 C: { buy: (v, i) => v.sma >= v.lb, sell: (v, i) => false },
@@ -171,8 +186,8 @@ class AlpacaData {
                         i2,
                         e1: bars[i1].e,
                         e2: bars[i2].e,
-                        t1: getYMD(bars[i1].tl),
-                        t2: getYMD(bars[i2].tl),
+                        t1: bars[i1].tl, //getYMD(bars[i1].tl),
+                        t2: bars[i2].tl, //getYMD(bars[i2].tl),
                         active: i2 === bars.length - 1 && own_at >= 0 ? true : false,
                     });
                 }
@@ -766,9 +781,9 @@ async function test4(symbol = 'OKLO', interval = true) {
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-01T00:00:00-04:00`));
     // ----------------------------------
-    const start = new Date(new Date(`2024-09-12T00:00:00-0${tz}:00`)); //! 01-Oct-2024
-    // const start = new Date(new Date(`2025-08-01T00:00:00-0${tz}:00`));
-    const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
+    // const start = new Date(new Date(`2024-09-12T00:00:00-0${tz}:00`)); //! 01-Oct-2024
+    const start = CONFIG[CONFIG.algo_name].start || new Date(new Date(`2025-08-01T00:00:00-0${tz}:00`));
+    const end = CONFIG[CONFIG.algo_name].end || new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
     // ----------------------------------
     // const start = new Date(`2008-01-01`);
     // const end = new Date(`2025-06-01`);
@@ -787,7 +802,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     if (interval) {
         const promises = all_symbols_names.map((s, i) => {
             // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
-            return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), open_positions, all_orders/*, i > 13 ? true : false*/);
+            return alpaca_data.bars(s, CONFIG[CONFIG.algo_name].timeframe || '1D', start.toISOString(), end.toISOString(), open_positions, all_orders/*, i > 13 ? true : false*/);
         });
         all_symbols = await Promise.all(promises);
         console.log(all_symbols);
@@ -1000,7 +1015,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     // o.series[2].color = '#fc03ec';
     // o.sies[2].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
     o.series.forEach((s) => {
-        s.data = s.data.slice(-21);
+        s.data = s.data.slice(-60);
     });
     // o.annotations.xaxis.forEach((v) => v.label.text = v.label._text);
     if (chart_bollinger_1) {
@@ -1337,7 +1352,7 @@ async function test4(symbol = 'OKLO', interval = true) {
 
         // TODO: FIX LAST TRADES CALCULATION
         const active_trades = all.filter((v) => v.trades[v.trades.length - 1].active);
-        const last_trades = round2(active_trades.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c) / num_symbols * 30);
+        const last_trades = round2(reduceArray(active_trades.map((v) => v.trades[v.trades.length - 1].gain_1K)) / num_symbols * 30);
 
         let elem = document.getElementById(`title-symbols-group-${index + 1}`)
         elem.style.fontSize = '20px';

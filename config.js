@@ -8,11 +8,15 @@ const CONFIG = {
     algo: { /* F w/o RESET */
         //# VERY BASIC BUY AND HOLD w/ STOP_LOSS [ 141 % | 165 % ]
         crypto: 'X',
-        stocks: 'X',
-        stop_pct: 0.98,
+        stocks: 'A1',
+        stop_pct: 0.90,
         // get_reset_window: (t) => { return getWeekName(new Date(t)); },
-        get_reset_window: (t) => { return getMonthName(new Date(t)); },
-        summary_window: 'months', // days | weeks | months | quarters
+        // get_reset_window: (t) => { return getMonthName(new Date(t)); },
+        summary_window: 'weeks', // days | weeks | months | quarters
+        start: new Date(`2025-10-01T00:00:00`), //! === 01-Oct-2024
+        // start: new Date(`2025-08-01T00:00:00-0${tz}:00`), //! === 01-Oct-2024
+        // end:  new Date(`${getYMD(new Date())}T00:00:00-0${tz}:00`),
+        timeframe: '30Min',
     },
     algo1: { /* STANDARD */
         crypto: 'X',
@@ -79,7 +83,7 @@ const CONFIG = {
                 'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU','SHOP',
             ].sort(),
         },
-        // { name: 'TECH', symbols: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'FB', 'TSLA', 'NVDA', /*'ADBE',*/ 'INTC', 'CSCO'].sort() },
+        { name: 'TECH', symbols: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'FB', 'TSLA', 'NVDA', /*'ADBE',*/ 'INTC', 'CSCO'].sort() },
         {
             name: 'TOP 90 d',
             include: true,

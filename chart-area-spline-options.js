@@ -47,6 +47,7 @@ var chart_area_spline_options = {
         type: 'numeric',
         labels: {
             rotate: -90,
+            datetimeUTC: false,
             style: {
                 colors: '#fff',
             },
