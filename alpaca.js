@@ -766,11 +766,10 @@ async function test4(symbol = 'OKLO', interval = true) {
     const tz = new Date().getTimezoneOffset() / 60;
     // const start = new Date(new Date(`2024-12-01T00:00:00-04:00`));
     // ----------------------------------
-    const start = new Date(new Date(`2024-09-12T00:00:00-0${tz}:00`)); //! 01-Oct-2024
-    // const start = new Date(new Date(`2025-08-01T00:00:00-0${tz}:00`));
-    const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
+    const start = CONFIG[CONFIG.algo_name].start ?? new Date(new Date(`2024-09-12T00:00:00-0${tz}:00`)); //! 01-Oct-2024
+    const end = CONFIG[CONFIG.algo_name].end ?? new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
     // ----------------------------------
-    // const start = new Date(`2008-01-01`);
+    // const start = CONFIGnew Date(`2008-01-01`);
     // const end = new Date(`2025-06-01`);
     let index = 0;
 
@@ -787,7 +786,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     if (interval) {
         const promises = all_symbols_names.map((s, i) => {
             // return analyze_days(ALGORITHM, s, '1D', 1000, start.toISOString(), end.toISOString(), 100);
-            return alpaca_data.bars(s, '1D', start.toISOString(), end.toISOString(), open_positions, all_orders/*, i > 13 ? true : false*/);
+            return alpaca_data.bars(s, CONFIG[CONFIG.algo_name].timeframe ?? '1D', start.toISOString(), end.toISOString(), open_positions, all_orders/*, i > 13 ? true : false*/);
         });
         all_symbols = await Promise.all(promises);
         console.log(all_symbols);

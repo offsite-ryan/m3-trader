@@ -10,9 +10,12 @@ const CONFIG = {
         crypto: 'X',
         stocks: 'X',
         stop_pct: 0.98,
-        // get_reset_window: (t) => { return getWeekName(new Date(t)); },
-        get_reset_window: (t) => { return getMonthName(new Date(t)); },
+        get_reset_window: (t) => { return getWeekName(new Date(t)); },
+        // get_reset_window: (t) => { return getMonthName(new Date(t)); },
         summary_window: 'months', // days | weeks | months | quarters
+        // start: new Date(`2024-09-12T00:00:00`),
+        // end: new Date(`${getYMD(new Date())}T23:59:59`),
+        // timeframe: '1D',
     },
     algo1: { /* STANDARD */
         crypto: 'X',
@@ -79,7 +82,10 @@ const CONFIG = {
                 'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU','SHOP',
             ].sort(),
         },
-        // { name: 'TECH', symbols: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'FB', 'TSLA', 'NVDA', /*'ADBE',*/ 'INTC', 'CSCO'].sort() },
+        // { name: 'TECH', symbols: [
+        //     'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'FB', 'TSLA', 'NVDA', /*'ADBE',*/ 'INTC', 'CSCO', //# TECH
+        //     'NVDA', 'AMD', 'INTC', /*'TXN',*/ 'QCOM', 'AVGO', 'MU', 'ASML', /*'LRCX',*/ 'KLAC', //# SEMICONDUCTORS
+        // ].sort() },
         {
             name: 'TOP 90 d',
             include: true,
