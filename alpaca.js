@@ -148,6 +148,7 @@ class AlpacaData {
                 G: { buy: (v, i) => v.c >= v.lb && v.p5 >= v.c, sell: (v, i) => v.c < v.lb },
                 H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // buy/sell each day if above lower bound
                 X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
+                // X: { buy: (v, i) => v.o < v.c && v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => false },
                 Z: { buy: (v, i) => true, sell: (v) => v.c < v.stop },
                 //#endregion
@@ -435,90 +436,90 @@ let day_results = [];
 // * ------------------------
 // * SYMBOLS
 // * ------------------------
-const symbol_groups = {
-    ETF: {
-        name: 'ETF',
-        seed_dollars: 0 * 1000,
-        // 'BTQ', 'VXX', 'VIXY', 
-        symbols: [
-            // // /* renmoved */ 'EFAS', 'FLN', 'SLVO', 'VXUS', 
-            // // 'RING', 'FGM', 'IXUS', 
-            /** SCORE LAST 90 */
-            // 'FLUX',
-            // 'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH',
-            // 'PLUG', 'NBTX', 'NTLA', 'MU', 'CAMT',
-            // 'BLNK', 'AXTI', 'BTDR', 'BTSG', 'CVRX',//'CTXR',
-            // 'GLUE',//'FTRE',
+// const symbol_groups = {
+//     ETF: {
+//         name: 'ETF',
+//         seed_dollars: 0 * 1000,
+//         // 'BTQ', 'VXX', 'VIXY', 
+//         symbols: [
+//             // // /* renmoved */ 'EFAS', 'FLN', 'SLVO', 'VXUS', 
+//             // // 'RING', 'FGM', 'IXUS', 
+//             /** SCORE LAST 90 */
+//             // 'FLUX',
+//             // 'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH',
+//             // 'PLUG', 'NBTX', 'NTLA', 'MU', 'CAMT',
+//             // 'BLNK', 'AXTI', 'BTDR', 'BTSG', 'CVRX',//'CTXR',
+//             // 'GLUE',//'FTRE',
 
-            // // 'ANSC','CUB','IRTC','ABCL','ALF','CYBR','ESLT','FJP','GIG','GILT','GOOG','GOOGL','IIIV','KOPN','LLYVA','LLYVK','NETD','PLTR','RGTI','RIGL','SCZ','XERS','RCKY','AGIO','ALDX','APP','ARGX','ASND','BBIO','BOTZ'
-            // // 'ABCL', 'ALF', 'CYBR', 'ESLT', 'FJP', 'GIG', 'GILT', 'GOOG', 'GOOGL', 'IIIV', 'KOPN', 'LLYVA', 'LLYVK', 'NETD', 'PLTR', 'RGTI', 'RIGL', 'SCZ', 'XERS', 'RCKY',
-            // // 'RZLT',
-            /** SCORE 1 YEAR */
-            // // // 'ABCL','CYBR','ESLT','FJP','GILT','GOOG','GOOGL','IIIV','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
-            // // // 'ABCL','ESLT','GILT','KOPN','PLTR','RGTI','RIGL','XERS'
-            // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FRHC','FUTU','GTX','IDCC','IESC','INDV','LENZ','LGND','LINC','NBIS','NXT','PRCH','RMNI','SANM','SENEA','SOFI','TATT','TTMI','VSEC'
-            // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
-            // // // 'ABCL','CYBR','ESLT','GILT','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FUTU','GTX','IDCC','IESC','INDV','LENZ','LINC','NBIS','NXT','PRCH','RMNI','SANM','SENEA','SOFI','TATT','TTMI'
-            // // // 'ABCL','CYBR','ESLT','GILT','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
-            // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
-            // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FRHC','FUTU','GTX','IDCC','IESC','INDV','LENZ','LGND','LINC','NBIS','NXT','PRCH','RMNI','SANM','SENEA','SOFI','TATT','TTMI','VSEC'
-            // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FRHC','FUTU','GTX','IDCC','IESC','INDV',
-            // 'NVTS',
-            ...scores
-                .filter((v) => v.score >= 4 && v.pct > 50)
-                .sort((a, b) => b.pct > a.pct ? 1 : -1)
-                .map((v) => v.symbol)
-                .slice(0, 19)
-                .filter((v) => !['APP', 'RGTI', 'EYE', 'GILT',].includes(v)),
-        ].sort()
-        // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
-        // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
-        // symbols: ['VOO', 'SPY', 'BRK.A', 'BRK.B', 'IWV', 'VTHR',].sort()
-    },
-    // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
-    CRYPTO: {
-        name: 'CRYPTO',
-        seed_dollars: 50 * 1000,
-        symbols: [
-            // 'BAT/USD', 'PEPE/USD', 
-            // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD',  
-            // 'AVAX/USD', 'SUSHI/USD',
-            'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD',
-            // 'GRT/USD', 'SOL/USD', 'UNI/USD',
-        ].sort()
-    },
-    // const research_crypto = {
-    //     seed_dollars: 10 * 1000,
-    //     symbols: [
-    //         // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
-    //         'AVAX/USD', 'BCH/USD', 'BTC/USD', 'CRV/USD', 'DOGE/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD', 'SUSHI/USD',
-    //         'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
-    //     ].sort()
-    // }
-    STOCKS: {
-        name: 'STOCKS',
-        seed_dollars: 50 * 1000,
-        symbols: [
-            // /* renmoved */ 'FOX', 'CVS', 'INTL', 'NVDA', 'WMT', 'ORCL', 'MSFT', 'JPM', 'MDB', 'WMT', 'TSLA', 
-            // 'GM', 'F', 'LULU', 'UBER', 'DKNG', 'VZ', 'WM', 'BP', 'T', 
-            // 'NEGG', 'BETR', 
-            'RING',
-            'IREN', 'CIFR', 'HUT', 'TMC',
-            'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', /*'PLTR',*/ 'PSIX',
-            // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
-            // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
-            // 'Z', 'T', 'MP', 'CVX', 'PM', 
-            // 'BETZ', 'BX', 'IBIT', 
-            'HOOD', 'FGM', //'LAC', 
-            'AMD', 'AVGO', 'COIN',
-            'LEU', 'NIO',
-            // 'ONEQ', 
-            'OPEN',
-            'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU',
-            'SHOP',
-        ].sort()
-    }
-};
+//             // // 'ANSC','CUB','IRTC','ABCL','ALF','CYBR','ESLT','FJP','GIG','GILT','GOOG','GOOGL','IIIV','KOPN','LLYVA','LLYVK','NETD','PLTR','RGTI','RIGL','SCZ','XERS','RCKY','AGIO','ALDX','APP','ARGX','ASND','BBIO','BOTZ'
+//             // // 'ABCL', 'ALF', 'CYBR', 'ESLT', 'FJP', 'GIG', 'GILT', 'GOOG', 'GOOGL', 'IIIV', 'KOPN', 'LLYVA', 'LLYVK', 'NETD', 'PLTR', 'RGTI', 'RIGL', 'SCZ', 'XERS', 'RCKY',
+//             // // 'RZLT',
+//             /** SCORE 1 YEAR */
+//             // // // 'ABCL','CYBR','ESLT','FJP','GILT','GOOG','GOOGL','IIIV','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
+//             // // // 'ABCL','ESLT','GILT','KOPN','PLTR','RGTI','RIGL','XERS'
+//             // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FRHC','FUTU','GTX','IDCC','IESC','INDV','LENZ','LGND','LINC','NBIS','NXT','PRCH','RMNI','SANM','SENEA','SOFI','TATT','TTMI','VSEC'
+//             // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
+//             // // // 'ABCL','CYBR','ESLT','GILT','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FUTU','GTX','IDCC','IESC','INDV','LENZ','LINC','NBIS','NXT','PRCH','RMNI','SANM','SENEA','SOFI','TATT','TTMI'
+//             // // // 'ABCL','CYBR','ESLT','GILT','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
+//             // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS'
+//             // // // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FRHC','FUTU','GTX','IDCC','IESC','INDV','LENZ','LGND','LINC','NBIS','NXT','PRCH','RMNI','SANM','SENEA','SOFI','TATT','TTMI','VSEC'
+//             // 'ABCL','CYBR','ESLT','GILT','GOOGL','KOPN','LLYVA','LLYVK','PLTR','RGTI','RIGL','XERS','ALDX','APP','BBIO','CDZI','CRDO','DXPE','EYE','FRHC','FUTU','GTX','IDCC','IESC','INDV',
+//             // 'NVTS',
+//             ...scores
+//                 .filter((v) => v.score >= 4 && v.pct > 50)
+//                 .sort((a, b) => b.pct > a.pct ? 1 : -1)
+//                 .map((v) => v.symbol)
+//                 .slice(0, 19)
+//                 .filter((v) => !['APP', 'RGTI', 'EYE', 'GILT',].includes(v)),
+//         ].sort()
+//         // symbols: ['ETSY', 'DKNG', 'TAC', 'ARBK', 'QCOM', 'ARM', 'MU', 'APP',].sort()
+//         // symbols: ['AAPL', 'AMZN', 'NVDA', 'GOOGL', 'MSFT',].sort()
+//         // symbols: ['VOO', 'SPY', 'BRK.A', 'BRK.B', 'IWV', 'VTHR',].sort()
+//     },
+//     // const favs = ['DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',].sort();
+//     CRYPTO: {
+//         name: 'CRYPTO',
+//         seed_dollars: 50 * 1000,
+//         symbols: [
+//             // 'BAT/USD', 'PEPE/USD', 
+//             // 'TRUMP/USD', 'SHIB/USD', 'XTC/USD', 'YFI/USD', 'DOT/USD',  
+//             // 'AVAX/USD', 'SUSHI/USD',
+//             'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD',
+//             // 'GRT/USD', 'SOL/USD', 'UNI/USD',
+//         ].sort()
+//     },
+//     // const research_crypto = {
+//     //     seed_dollars: 10 * 1000,
+//     //     symbols: [
+//     //         // 'BAT/USD', 'PEPE/USD', 'TRUMP/USD', 
+//     //         'AVAX/USD', 'BCH/USD', 'BTC/USD', 'CRV/USD', 'DOGE/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD', 'SUSHI/USD',
+//     //         'DOT/USD', 'GRT/USD', 'SHIB/USD', 'SOL/USD', 'UNI/USD', /*'XTC/USD',*/ 'YFI/USD', 'XRP/USD',
+//     //     ].sort()
+//     // }
+//     STOCKS: {
+//         name: 'STOCKS',
+//         seed_dollars: 50 * 1000,
+//         symbols: [
+//             // /* renmoved */ 'FOX', 'CVS', 'INTL', 'NVDA', 'WMT', 'ORCL', 'MSFT', 'JPM', 'MDB', 'WMT', 'TSLA', 
+//             // 'GM', 'F', 'LULU', 'UBER', 'DKNG', 'VZ', 'WM', 'BP', 'T', 
+//             // 'NEGG', 'BETR', 
+//             'RING',
+//             'IREN', 'CIFR', 'HUT', 'TMC',
+//             'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', /*'PLTR',*/ 'PSIX',
+//             // 'SMCI', 'F', 'GM', 'NEGG', 'BETZ', 'IBET', 
+//             // 'DKNG', 'VZ', 'WM', 'LULU', 'UBER', 'BP', 'SPY', 'JPM', 
+//             // 'Z', 'T', 'MP', 'CVX', 'PM', 
+//             // 'BETZ', 'BX', 'IBIT', 
+//             'HOOD', 'FGM', //'LAC', 
+//             'AMD', 'AVGO', 'COIN',
+//             'LEU', 'NIO',
+//             // 'ONEQ', 
+//             'OPEN',
+//             'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU',
+//             'SHOP',
+//         ].sort()
+//     }
+// };
 //#endregion
 
 // =================================================
@@ -613,6 +614,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             }
             const current = status.bars[status.bars.length - 1];
             // TODO: GET FROM ALL_SYMBOLS[n].buy
+            // const should_buy = current.o < current.c && current.o >= current.lb;
             const should_buy = current.o >= current.lb;
             const should_sell = current.c <= current.lb * 0.98;
             // console.log(s, should_sell);
@@ -784,13 +786,12 @@ async function test4(symbol = 'OKLO', interval = true) {
     let index = 0;
 
     console.group('%c----------------------------------------------------', 'color:orange;');
-    // const all_symbols_names = [...favs.symbols, ...crypto.symbols, ...research.symbols];
-    all_symbols_names = [...symbol_groups.ETF.symbols, ...symbol_groups.CRYPTO.symbols, ...symbol_groups.STOCKS.symbols];
+    all_symbols_names = [...CONFIG.symbol_groups[0].symbols, ...CONFIG.symbol_groups[1].symbols, ...CONFIG.symbol_groups[2].symbols];
     all_symbols_names = [
         ...CONFIG.symbol_groups[0].symbols,
         ...CONFIG.symbol_groups[1].symbols,
         ...CONFIG.symbol_groups[2].symbols,
-    ]; // TEMPORARY OVERRIDE
+    ];
     // console.log(`%cLOADING DATA FOR ${all_symbols_names.length} SYMBOLS...`, 'color:orange;');
 
     if (interval) {
@@ -952,7 +953,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                 }
             }
         });
-        seed += g;
+        // seed += g;
     });
     /** current position */
     if (data.position) {
@@ -1353,13 +1354,15 @@ async function test4(symbol = 'OKLO', interval = true) {
         let elem = document.getElementById(`title-symbols-group-${index + 1}`)
         elem.style.fontSize = '20px';
         elem.style.color = '#fff';
-        elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${SEED}K</span></span>`;
+        elem.innerHTML = `<b><div class="w3-right" style="font-size:48px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`
+        elem.innerHTML += `<span class="w3-xlarge"><b>${group_name}<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${SEED}K</span></span>`;
+        // elem.innerHTML += `<span class="w3-right"></span>`;
         elem.innerHTML += `<hr/>`;
         elem.innerHTML += `AVG: <b><span style="color:lime;font-size:24px;">$${round(avg).toLocaleString()}</span></b>`;
         elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 75 / 1000)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/>75K AVG: <span style="color:lime;font-size:24px;"><b>$${round(avg / SEED * 75).toLocaleString()}</b></span>`;
         elem.innerHTML += `<span class="w3-right">$100K SEED: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 100 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:56px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
+        // elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:56px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
 
         o.annotations.yaxis.push({ y: avg, borderColor: colors.lime, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
         o.annotations.yaxis.push({ y: avg / 30 * 75, borderColor: colors.yellow, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
