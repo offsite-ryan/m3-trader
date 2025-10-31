@@ -12,7 +12,6 @@ class AlpacaData {
         this.ALPACA_SECRET = secret;
         this.START_OF_YEAR = start_of_year;
     }
-
     // /** ADD MISSING DATA */
     addMissingData(data, symbol = '-', end = new Date(Date.now() - (1 * 60 * 1000))) {
 
@@ -290,6 +289,16 @@ class AlpacaData {
             resolve(res);
         });
     }
+    async add30Min(res) {
+        return new Promise(async (resolve) => {
+            const d = new Date();
+            const start = `${getYMD(new Date(d.getTime() - (3 * 24 * 60 * 60 * 1000)))}`
+            const end = `${getYMD(d)}T23:59:59-04:00`
+            const data = await this.bars(res.symbol, '30Min', start, end, [], [], false, 100, false);
+            res.recent = data;
+            resolve(res);
+        })
+    }
     async positions(symbol, positions, res) {
         return new Promise(async (resolve) => {
             const p = positions.length > 0 ? positions[0] : null;
@@ -334,7 +343,7 @@ class AlpacaData {
             resolve(res);
         });
     }
-    async bars(symbol, timeframe = '1D', start = this.START_OF_YEAR, end = new Date().toISOString(), open_positions, orders_list, reset = true, delay = 100) {
+    async bars(symbol, timeframe = '1D', start = this.START_OF_YEAR, end = new Date().toISOString(), open_positions, orders_list, reset = true, delay = 100, add30 = true) {
         return new Promise(async (resolve) => {
 
             await sleep(delay);
@@ -394,6 +403,7 @@ class AlpacaData {
                     .then((res) => this.score(res))
                     .then((res) => this.positions(symbol, open_positions, res))
                     .then((res) => this.orders(symbol, orders_list, res))
+                    // .then((res) => add30 ? this.add30Min(res) : res)
                     .then((res) => resolve(res));
             } else {
                 resolve(null);
@@ -968,9 +978,9 @@ async function test4(symbol = 'OKLO', interval = true) {
 
     const pct = round1(reduceArray(chart_annotations.map((v) => v.gain)));
     let g = round2(data.summary.total);
-    const delta = round1((bars[bars.length - 1].c - bars[14].c) / bars[0].c * 100);
+    const delta = round2((bars[bars.length - 1].c - bars[14].o) * (1000 / bars[14].o));
     // o.title.text = `${symbol} | SEED $${seed.toLocaleString()} | 1K $${g.toLocaleString()} | ${pct}% | ${delta}% | ${chart_annotations.length} | $${o.series[0].data[o.series[0].data.length - 1].y}`;
-    o.title.text = `${symbol} | $${g.toLocaleString()} | ${round1(g / 1000 * 100).toLocaleString()}% | 1K`;
+    o.title.text = `${symbol} | $${g.toLocaleString()} | ${round1(g / 1000 * 100).toLocaleString()}% | 1K | T: $${round1(delta / 1000)}K`;
     o.title.style = { fontSize: '28px', color: colors.white };
     if (chart_bollinger) {
         chart_bollinger.destroy();
@@ -1249,6 +1259,8 @@ async function test4(symbol = 'OKLO', interval = true) {
         // * -------------------------------------
         // const temp = Object.keys(groups[group_name]).map((k) => groups[group_name][k]).sort((a, b) => b - a);
         // const t = temp.slice(1, -1);
+        
+        const SEED = 50;
 
         //  TODO: get rid of the high and the low values when calculating the average
         o = deepClone(chart_bar_options);
@@ -1260,7 +1272,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         o.series[0].data = Object.keys(groups[group_name]).map((k) => {
             return {
                 x: k,
-                y: round(groups[group_name][k] / all.length * 30)
+                y: round(groups[group_name][k] / all.length * SEED)
             }
         });
         // o.series.push({ name: '75K Seed', type: 'line', color: colors.orange, data: [] });
@@ -1273,7 +1285,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         o.series.push({ name: 'Cumulative', type: 'area', color: colors.green + '60', data: [] });
         let cumulative = 0;
         o.series[1].data = Object.keys(groups[group_name]).map((k) => {
-            cumulative += groups[group_name][k] / all.length * 30;
+            cumulative += groups[group_name][k] / all.length * SEED;
             return {
                 x: k,
                 y: round(cumulative)
@@ -1331,22 +1343,22 @@ async function test4(symbol = 'OKLO', interval = true) {
         const num_data = o.series[0].data.length;
         const g = o.series[0].data.map((v) => v.y).reduce((p, c) => p + c);
         const avg = round(g / num_data);
-        const pct = round(g / (30 * 1000) * 100);
+        const pct = round(g / (SEED * 1000) * 100);
         const last = round2(o.series[0].data[num_data - 1].y);
 
         // TODO: FIX LAST TRADES CALCULATION
         const active_trades = all.filter((v) => v.trades[v.trades.length - 1].active);
-        const last_trades = round2(active_trades.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c) / num_symbols * 30);
+        const last_trades = round2(active_trades.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c) / num_symbols * SEED);
 
         let elem = document.getElementById(`title-symbols-group-${index + 1}`)
         elem.style.fontSize = '20px';
         elem.style.color = '#fff';
-        elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${30}K</span></span>`;
+        elem.innerHTML = `<span class="w3-xlarge"><b>${group_name} | <span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${SEED}K</span></span>`;
         elem.innerHTML += `<hr/>`;
         elem.innerHTML += `AVG: <b><span style="color:lime;font-size:24px;">$${round(avg).toLocaleString()}</span></b>`;
-        elem.innerHTML += `<span class="w3-right">$50K SEED: <span style="color:lime;font-size:24px;">$${(round1(g / 30 * 50 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<br/>75K AVG: <span style="color:lime;font-size:24px;"><b>$${round(avg / 30 * 75).toLocaleString()}</b></span>`;
-        elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;font-size:24px;">$${(round1(g / 30 * 75 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 75 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<br/>75K AVG: <span style="color:lime;font-size:24px;"><b>$${round(avg / SEED * 75).toLocaleString()}</b></span>`;
+        elem.innerHTML += `<span class="w3-right">$100K SEED: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 100 / 1000)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:56px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
 
         o.annotations.yaxis.push({ y: avg, borderColor: colors.lime, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });

@@ -13,7 +13,8 @@ const CONFIG = {
         get_reset_window: (t) => { return getWeekName(new Date(t)); },
         // get_reset_window: (t) => { return getMonthName(new Date(t)); },
         summary_window: 'months', // days | weeks | months | quarters
-        // start: new Date(`2024-09-12T00:00:00`),
+        // start: new Date(`2024-12-10T00:00:00`),
+        // start: new Date(`2024-09-12T00:00:00`), //! 01-Oct-2024
         // end: new Date(`${getYMD(new Date())}T23:59:59`),
         // timeframe: '1D',
     },
