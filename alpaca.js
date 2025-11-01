@@ -67,6 +67,16 @@ class AlpacaData {
         })
         return data;
     }
+    convertToPercent(symbol, data) {
+        data.forEach((v, i) => {
+            v.c_pct = i < 14 ? 0 : (v.c / data[0].c * 100);
+            // if (symbol === 'VIXY') {
+            //     v.c = -v.c;
+            //     v.o = -v.o;
+            // }
+        })
+        return data;
+    }
     addBollingerBands(key = 'bands_c', data, period = 14, multiplier = 0.7, stop_pct = 0.9) {
         applyBands(data, period, multiplier, stop_pct);
         data.forEach((v) => {
@@ -94,6 +104,7 @@ class AlpacaData {
                 s: symbol,
                 tl: v.tl,
                 thm: v.thm,
+                c_pct: v.c_pct,
                 c: v.c,
                 o: v.o,
                 h: v.h,
@@ -149,7 +160,7 @@ class AlpacaData {
                 H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // buy/sell each day if above lower bound
                 X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 // X: { buy: (v, i) => v.o < v.c && v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
-                Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => false },
+                Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => falsSPYe },
                 Z: { buy: (v, i) => true, sell: (v) => v.c < v.stop },
                 //#endregion
             };
@@ -390,9 +401,10 @@ class AlpacaData {
                     })
                     .then((res) => this.get_next_page(symbol, url, delay, res, options))
                     .then((res) => { res.symbol = symbol; return res; })
-                    .then((res) => { if (!res.bars[symbol]) { throw new Error(res) } return res; })
+                    .then((res) => { if (!res.bars[symbol]) { throw new Error(JSON.stringify(res)); } return res; })
                     .then((res) => res.bars[symbol] || [])
                     .then((res) => this.addMetaData(res))
+                    // .then((res) => this.convertToPercent(symbol, res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
                     // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
                     .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 28 : 14, isCrypto ? 0.7 : 0.7, CONFIG.algo.stop_pct || 0.80))
@@ -598,6 +610,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                 ALL</button>
             </div>`;
 
+        const max = Math.max(...all_symbols.filter((v) => symbols.indexOf(v.symbol) >= 0).map((v) => v.summary.total)) / 1000 * 100;
         symbols.forEach((s) => {
             const has_position = open_positions.findIndex((v) => v.symbol === s.replace('/', ''));
             // console.log(s, has_position);
@@ -607,7 +620,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             let status_color = '';
             if (status) {
                 if (g >= 0) {
-                    status_color = `rgb(0, 128, 0, ${Math.abs(g / 100)})`;
+                    status_color = `rgb(0, 128, 0, ${Math.abs(g / 2 / 100)})`;
                 } else if (g < 0) {
                     status_color = `rgb(255, 0, 0, ${Math.abs(g / 100)})`;
                 }
@@ -621,7 +634,7 @@ async function test4(symbol = 'OKLO', interval = true) {
 
             // up carot: &#9650;  &#9651;
             // down caret: &#9660;  &#9661;
-            const icon = status.position ? (status.position.gain >= 0 ? '&#9650' : '&#9660') : status.trades[status.trades.length - 1].gain_1K >= 0 ? '&#9650' : '&#9660';
+            const icon = status.position ? (status.position.gain >= 0 ? '&#9650' : '&#9660') : '' /*status.trades[status.trades.length - 1].gain_1K*/ >= 0 ? '&#9650' : '&#9660';
             let icon_color = icon === '&#9650' ? '#00b90a' : 'red';
             // const icon = [
             //     'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
@@ -631,13 +644,13 @@ async function test4(symbol = 'OKLO', interval = true) {
 
             html += `<div 
             class="w3-col s4 m3 l2 _w3-margin w3-padding"
-            style="cursor:pointer;font-size:20px;border:${symbol === s ? '2px solid #00ffff' : '1px solid grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
+            style="_background: linear-gradient(to top, green ${status.summary.total}%, transparent 75%);cursor:pointer;font-size:20px;border:${symbol === s ? '2px solid #00ffff' : '1px solid grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
             onclick="test4('${s}', false)">
             ${s.split('/')[0]} | ${status.score.score}<!-- | ${round(status.score.pct / status.score.score)}-->
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
             <br/>
-            <span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> ${status.position ? '$' + round(status.position.gain) : round(status.trades[status.trades.length - 1].gain_1K)}</span>
-            ${status ? `<br/><div class="" style="color:white;background-color:${status ? status_color : ''};">` + round1(g) + '%</div>' : ''}
+            ${status.position ? `<span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> ${status.position ? '$' + round(status.position.gain) : '' /*round(status.trades[status.trades.length - 1].gain_1K)*/}</span>` : '-'}
+            ${status ? `<br/><div class="" style="color:white;background: linear-gradient(to right, ${g > 0 ? 'green' : 'red'} ${g / max * 100}%, #4d4d4d80 ${g / max * 100}%);_background-color:${status ? status_color : ''};">` + round1(g) + '%</div>' : ''}
             <div id="chart-days-${s.replace('/', '')}"></div>
             </div>
             `;
@@ -645,7 +658,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             const template = `<tr>
                             <td style="{c}">{0}</td>
                             <td>{1}</td>
-                            <td>{2}</td>
+                            <td style="background: linear-gradient(to right, green {4}%, #4d4d4d80 {4}%);">{2}</td>
                             <td>{3}</td>
                         </tr>`;
             html_table += template
@@ -654,6 +667,8 @@ async function test4(symbol = 'OKLO', interval = true) {
                 .replace('{0}', s.split('/')[0])
                 .replace('{1}', `${status.position ? round(status.position.gain).toLocaleString() : 0}`)
                 .replace('{2}', `${round1(g)}%`)
+                .replace('{4}', `${round(g / max * 100)}`)
+                .replace('{4}', `${round(g / max * 100)}`)
             // .replace('{3}', v.spend.toLocaleString());
         });
         document.getElementById(id).innerHTML = html + '<br/>';
@@ -892,6 +907,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     o.series = [];
     o.series.push({ name: 'Close', data: [] }); // , type: 'area', color: colors.blue + '10'
     o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: round2(v.c) } });
+    // o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: round2(v.c_pct) } });
 
     // TODO: REMOVE FOR REVIEW
     o.series.push({ name: 'Trigger', color: colors.yellow, data: [] });
@@ -899,7 +915,7 @@ async function test4(symbol = 'OKLO', interval = true) {
 
 
     const tl = calculateTrendline(o.series[0].data.map((v) => v.y));
-    o.series.push({ name: 'Trendline', type: 'line', color: '#89f100ff', data: o.series[0].data.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
+    o.series.push({ name: 'Trendline', type: 'line', color: colors.orange/*'#89f100ff'*/, data: o.series[0].data.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
 
     o.series.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
     o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
@@ -915,6 +931,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     // o.series.push({ name: 'Prediction 5', hidden: mobile_view, data: [] }); // , type: 'area', color: colors.blue + '10'
     // o.series[5].data = bars.map((v) => { return { x: v.e, y: round2(v.p5) } });
 
+    // o.yaxis.max = 1000;
     o.annotations.xaxis = [];
 
     /** month indicators */
@@ -981,7 +998,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     let g = round2(data.summary.total);
     const delta = round2((bars[bars.length - 1].c - bars[14].o) * (1000 / bars[14].o));
     // o.title.text = `${symbol} | SEED $${seed.toLocaleString()} | 1K $${g.toLocaleString()} | ${pct}% | ${delta}% | ${chart_annotations.length} | $${o.series[0].data[o.series[0].data.length - 1].y}`;
-    o.title.text = `${symbol} | $${g.toLocaleString()} | ${round1(g / 1000 * 100).toLocaleString()}% | 1K | T: $${round1(delta / 1000)}K`;
+    o.title.text = `${symbol} | $${round1(g / 1000).toLocaleString()}K | ${round1(g / 1000 * 100).toLocaleString()}% | 1K | T: $${round1(delta / 1000)}K`;
     o.title.style = { fontSize: '28px', color: colors.white };
     if (chart_bollinger) {
         chart_bollinger.destroy();
@@ -1001,16 +1018,17 @@ async function test4(symbol = 'OKLO', interval = true) {
     // ------------------------
     o = deepClone(o);
     o.chart.height = 454;
-    o.title.text = `${isMobile() ? symbol + ' | ' : ''}20d`;
+    o.title.text = `${isMobile() ? symbol + ' | ' : ''}10d`;
     o.legend.show = false;
     o.chart.toolbar = { show: false };
     o.stroke.width[3] = 1.5;
+    delete o.yaxis.max;
     // o.erseries.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
     // o.series[2].name = 'Open';
     // o.series[2].color = '#fc03ec';
     // o.sies[2].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
     o.series.forEach((s) => {
-        s.data = s.data.slice(-21);
+        s.data = s.data.slice(-11);
     });
     // o.annotations.xaxis.forEach((v) => v.label.text = v.label._text);
     if (chart_bollinger_1) {
@@ -1260,8 +1278,8 @@ async function test4(symbol = 'OKLO', interval = true) {
         // * -------------------------------------
         // const temp = Object.keys(groups[group_name]).map((k) => groups[group_name][k]).sort((a, b) => b - a);
         // const t = temp.slice(1, -1);
-        
-        const SEED = 50;
+
+        const SEED = a.seed || (CONFIG[CONFIG.algo_name].seed || 50);
 
         //  TODO: get rid of the high and the low values when calculating the average
         o = deepClone(chart_bar_options);
@@ -1359,9 +1377,9 @@ async function test4(symbol = 'OKLO', interval = true) {
         // elem.innerHTML += `<span class="w3-right"></span>`;
         elem.innerHTML += `<hr/>`;
         elem.innerHTML += `AVG: <b><span style="color:lime;font-size:24px;">$${round(avg).toLocaleString()}</span></b>`;
-        elem.innerHTML += `<span class="w3-right">$75K SEED: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 75 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<span class="w3-right">@ $75K: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 75 / 1000)).toLocaleString()}K</span></span>`;
         elem.innerHTML += `<br/>75K AVG: <span style="color:lime;font-size:24px;"><b>$${round(avg / SEED * 75).toLocaleString()}</b></span>`;
-        elem.innerHTML += `<span class="w3-right">$100K SEED: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 100 / 1000)).toLocaleString()}K</span></span>`;
+        elem.innerHTML += `<span class="w3-right">@ $100K: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 100 / 1000)).toLocaleString()}K</span></span>`;
         // elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:56px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
 
         o.annotations.yaxis.push({ y: avg, borderColor: colors.lime, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
@@ -1442,6 +1460,13 @@ async function test4(symbol = 'OKLO', interval = true) {
                 chart_symbols_group_3_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-3-tree`), o);
                 chart_symbols_group_3_tree.render();
             }
+            // if (index === 3) {
+            //     if (chart_symbols_group_4_tree) {
+            //         chart_symbols_group_4_tree.destroy();
+            //     }
+            //     chart_symbols_group_4_tree = new ApexCharts(document.querySelector(`#chart-symbols-group--tree`), o);
+            //     chart_symbols_group_4_tree.render();
+            // }
             o = undefined;
         }
 

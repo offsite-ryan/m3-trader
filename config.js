@@ -9,13 +9,13 @@ const CONFIG = {
         //# VERY BASIC BUY AND HOLD w/ STOP_LOSS [ 141 % | 165 % ]
         crypto: 'X',
         stocks: 'X',
-        stop_pct: 0.98,
+        // stop_pct: 0.98,
         get_reset_window: (t) => { return getWeekName(new Date(t)); },
         // get_reset_window: (t) => { return getMonthName(new Date(t)); },
-        summary_window: 'months', // days | weeks | months | quarters
+        // get_reset_window: (t) => { return getQuarterName(new Date(t)); },
+        summary_window: 'quarters', // days | weeks | months | quarters
         seed: 50,
-        // start: new Date(`2024-12-10T00:00:00`),
-        // start: new Date(`2024-09-12T00:00:00`), //! 01-Oct-2024
+        // start: new Date(`2025-06-01T00:00:00`),
         // end: new Date(`${getYMD(new Date())}T23:59:59`),
         // timeframe: '1D',
     },
@@ -64,6 +64,7 @@ const CONFIG = {
         {
             //# R & D - TOP SCORES
             name: 'R & D',
+            // seed: 7.5,
             include: true,
             symbols: [
                 ...scores
@@ -71,32 +72,66 @@ const CONFIG = {
                     .sort((a, b) => b.pct > a.pct ? 1 : -1)
                     .map((v) => v.symbol)
                     .slice(0, 19)
-                    .filter((v) => !['APP', 'RGTI', 'EYE', 'GILT',].includes(v)),
+                    .filter((v) => !['RGTI',].includes(v))
+                    // .filter((v) => !['GSIB','KOPN','SHOP', 'RKLB', 'HOOD','GE','PLTR','LEU','OKLO',].includes(v))
+                    // .filter((v) => !['APP', 'RGTI', 'EYE', 'GILT',].includes(v)),
             ].sort()
         },
         {
             //# STOCKS - MANUALLY CURATED
             name: 'STOCKS',
             include: true,
+            // seed: 7.5,
             symbols: [
                 'RING', 'IREN', 'CIFR', 'HUT', 'TMC', 'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PSIX',
-                'HOOD', 'FGM', 'AMD', 'AVGO', 'COIN', 'LEU', 'NIO', 'OPEN',
-                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU','SHOP',
-            ].sort(),
+                'HOOD', 'FGM', 'AMD', 'AVGO', 'COIN', 'LEU', 'OPEN',
+                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU','SHOP', //'VIXY',
+            ]
+            // .filter((v) => !['GSIB','KOPN','SHOP', 'RKLB','HOOD','GE','PLTR','LEU','OKLO',].includes(v))
+            .sort(),
         },
+        // {
+        //     //# STOCKS - MANUALLY CURATED
+        // {
+        //     name: 'TOP',
+        //     include: true,
+        //     seed: 10,
+        //     symbols: [
+        //         // 'HOOD','GE','PLTR','LEU','OKLO',
+        //         'PLTR', 'KOPN', 'RKLB', 'SHOP','GSIB',
+        //     ].sort(),
+        // },
+        // { name: 'TOP_SCORES', include: false, symbols: scores.filter((v) => v.score >= 4).map((v) => v.symbol).sort() },
+        // { name: 'ETF', symbols: ['ONEQ', 'AVDV', 'SPY', 'VOO', 'VTI', /*'IVES', NEEDS START DATE*/ ].sort() },
         // { name: 'TECH', symbols: [
         //     'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'FB', 'TSLA', 'NVDA', /*'ADBE',*/ 'INTC', 'CSCO', //# TECH
         //     'NVDA', 'AMD', 'INTC', /*'TXN',*/ 'QCOM', 'AVGO', 'MU', 'ASML', /*'LRCX',*/ 'KLAC', //# SEMICONDUCTORS
         // ].sort() },
+        // { name: 'FOOD & BEV', symbols: ['KO', 'PEP', 'MCD', 'SBUX', 'CMG', 'YUM', 'MDLZ', 'GIS', 'KHC', 'TSN'].sort() },
         {
             name: 'TOP 90 d',
             include: true,
+            // seed: 15,
             symbols: [
                 'FLUX',
                 'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH',
                 'PLUG', 'NBTX', 'NTLA', 'MU', 'CAMT',
                 'BLNK', 'AXTI', 'BTDR', 'BTSG', 'CVRX',//'CTXR',
                 'GLUE',//'FTRE',
+
+                //# ALL
+                // 'RING', 'IREN', 'CIFR', 'HUT', 'TMC', 'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PSIX',
+                // 'HOOD', 'FGM', 'AMD', 'AVGO', 'COIN', 'LEU', 'NIO', 'OPEN',
+                // 'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU','SHOP', //'VIXY',
+
+                // ...scores
+                //     .filter((v) => v.score >= 4 && v.pct > 50)
+                //     .sort((a, b) => b.pct > a.pct ? 1 : -1)
+                //     .map((v) => v.symbol)
+                //     .slice(0, 19)
+                //     .filter((v) => !['RGTI',].includes(v)),
+
+
             ].sort()
         },
         {
@@ -104,7 +139,6 @@ const CONFIG = {
             include: true,
             symbols: ['AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD',].sort()
         },
-        { name: 'TOP_SCORES', include: false, symbols: scores.filter((v) => v.score >= 4).map((v) => v.symbol).sort() },
         { name: 'AERO', symbols: ['BA', 'LMT', 'NOC', 'RTX', 'GD', 'HII', 'TXT', 'CW', 'AJRD', 'HEI'].sort() },
         { name: 'AIRLINES', symbols: ['AAL', 'DAL', 'UAL', 'LUV', 'ALK', 'JBLU', 'SAVE', 'CPA', 'FFT', 'HA'].sort() },
         { name: 'AUTOS', symbols: ['F', 'GM', 'HMC', 'TM', 'NIO', 'LI', 'RIVN', 'XPEV', 'LCID'].sort() },
