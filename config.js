@@ -10,8 +10,8 @@ const CONFIG = {
         crypto: 'X',
         stocks: 'X',
         // stop_pct: 0.98,
-        get_reset_window: (t) => { return getWeekName(new Date(t)); },
-        // get_reset_window: (t) => { return getMonthName(new Date(t)); },
+        // get_reset_window: (t) => { return getWeekName(new Date(t)); },
+        get_reset_window: (t) => { return getMonthName(new Date(t)); },
         // get_reset_window: (t) => { return getQuarterName(new Date(t)); },
         summary_window: 'quarters', // days | weeks | months | quarters
         seed: 50,
