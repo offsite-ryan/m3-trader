@@ -54,6 +54,7 @@ function buy(symbol, spend) {
 function buy_symbols(symbols, spend) {
     return new Promise(async (resolve, reject) => {
         const obj = {};
+        symbols = symbols.split(',');
         for await (const symbol of symbols) {
             const res = await buy(symbol, spend);
             obj[symbol] = res;
@@ -66,7 +67,7 @@ function buy_symbols(symbols, spend) {
 }
 function sell_symbols(symbols) {
     return new Promise(async (resolve, reject) => {
-        const obj = {};
+        const obj = {};v
         for await (const symbol of symbols) {
             const res = await sell(symbol);
             obj[symbol] = res;

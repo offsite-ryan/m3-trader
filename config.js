@@ -1,3 +1,7 @@
+const FILTER = [
+    'XERS', 'CIFR', 'PLTR', 'PRCH', 'RKLB', 'OKLO', 'SOFI', 'CRDO', 'HOOD', 'ABCL',
+    // TMC', 'LEU',
+];
 const CONFIG = {
     // get_reset_window: (t) => { return getWeekName(new Date(t)); },
     // get_reset_window: (t) => { return getMonthName(new Date(t)); },
@@ -9,13 +13,14 @@ const CONFIG = {
         //# VERY BASIC BUY AND HOLD w/ STOP_LOSS [ 141 % | 165 % ]
         crypto: 'X',
         stocks: 'X',
-        // stop_pct: 0.98,
-        // get_reset_window: (t) => { return getWeekName(new Date(t)); },
-        get_reset_window: (t) => { return getMonthName(new Date(t)); },
+        stop_pct: 0.98,
+        get_reset_window: (t) => { return getWeekName(new Date(t)); },
+        // get_reset_window: (t) => { return getMonthName(new Date(t)); },
         // get_reset_window: (t) => { return getQuarterName(new Date(t)); },
-        summary_window: 'quarters', // days | weeks | months | quarters
+        // get_reset_window: (t) => { return getYMD(new Date(t)); },
+        summary_window: 'months', // days | weeks | months | quarters
         seed: 50,
-        // start: new Date(`2025-06-01T00:00:00`),
+        // start: new Date(`2025-01-01T00:00:00`),
         // end: new Date(`${getYMD(new Date())}T23:59:59`),
         // timeframe: '1D',
     },
@@ -62,6 +67,9 @@ const CONFIG = {
     // initial_seed: 1000, // per symbol
     symbol_groups: [
         {
+            name: 'TOP 10', symbols: FILTER.sort()
+        },
+        {
             //# R & D - TOP SCORES
             name: 'R & D',
             // seed: 7.5,
@@ -73,8 +81,8 @@ const CONFIG = {
                     .map((v) => v.symbol)
                     .slice(0, 19)
                     .filter((v) => !['RGTI',].includes(v))
-                    // .filter((v) => !['GSIB','KOPN','SHOP', 'RKLB', 'HOOD','GE','PLTR','LEU','OKLO',].includes(v))
-                    // .filter((v) => !['APP', 'RGTI', 'EYE', 'GILT',].includes(v)),
+                    .filter((v) => !FILTER.includes(v))
+                // .filter((v) => !['APP', 'RGTI', 'EYE', 'GILT',].includes(v)),
             ].sort()
         },
         {
@@ -85,10 +93,10 @@ const CONFIG = {
             symbols: [
                 'RING', 'IREN', 'CIFR', 'HUT', 'TMC', 'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PSIX',
                 'HOOD', 'FGM', 'AMD', 'AVGO', 'COIN', 'LEU', 'OPEN',
-                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU','SHOP', //'VIXY',
+                'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU', 'SHOP', //'VIXY',
             ]
-            // .filter((v) => !['GSIB','KOPN','SHOP', 'RKLB','HOOD','GE','PLTR','LEU','OKLO',].includes(v))
-            .sort(),
+                .filter((v) => !FILTER.includes(v))
+                .sort(),
         },
         // {
         //     //# STOCKS - MANUALLY CURATED
@@ -108,6 +116,7 @@ const CONFIG = {
         //     'NVDA', 'AMD', 'INTC', /*'TXN',*/ 'QCOM', 'AVGO', 'MU', 'ASML', /*'LRCX',*/ 'KLAC', //# SEMICONDUCTORS
         // ].sort() },
         // { name: 'FOOD & BEV', symbols: ['KO', 'PEP', 'MCD', 'SBUX', 'CMG', 'YUM', 'MDLZ', 'GIS', 'KHC', 'TSN'].sort() },
+        //# TOP 90
         {
             name: 'TOP 90 d',
             include: true,
@@ -137,7 +146,15 @@ const CONFIG = {
         {
             name: 'CRYPTO',
             include: true,
-            symbols: ['AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD',].sort()
+            symbols: [
+                // 'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD',
+
+                // 'BAT/USD', 'PEPE/USD', 'XTC/USD', 'DOT/USD',  
+                // 'TRUMP/USD', /* 'SHIB/USD', */ /* 'YFI/USD', */ 'SUSHI/USD',
+                // 'AVAX/USD', 
+                'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', /* 'XRP/USD', */
+                // 'GRT/USD', 'SOL/USD', 'UNI/USD',
+            ].sort()
         },
         { name: 'AERO', symbols: ['BA', 'LMT', 'NOC', 'RTX', 'GD', 'HII', 'TXT', 'CW', 'AJRD', 'HEI'].sort() },
         { name: 'AIRLINES', symbols: ['AAL', 'DAL', 'UAL', 'LUV', 'ALK', 'JBLU', 'SAVE', 'CPA', 'FFT', 'HA'].sort() },

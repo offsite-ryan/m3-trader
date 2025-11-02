@@ -187,6 +187,8 @@ class AlpacaData {
                         active: i2 === bars.length - 1 && own_at >= 0 ? true : false,
                     });
                 }
+
+                const sell_dates = ['2025-10-01', '2025-10-27', '2025-11-03'];
                 const reset = CONFIG.algo.get_reset_window ? true : false;
                 const get_window = reset ? CONFIG.algo.get_reset_window : (t) => { return null; };
                 let last = get_window(bars[0].t);
@@ -199,6 +201,11 @@ class AlpacaData {
                                 own_at = -1;
                             }
                             last = current;
+                        }
+                        //* SELL DATES
+                        if (sell_dates.includes(getYMD(new Date(v.t))) && own_at >= 0) {
+                            push_trade(v, own_at, i);
+                            own_at = -1;
                         }
                         if (v.c >= v.ub) {
                             was_above = true;
@@ -601,13 +608,12 @@ async function test4(symbol = 'OKLO', interval = true) {
             <br/>
             <button id="" class="w3-button w3-round-large w3-large w3-padding"
                 style="background-color:#121212;border:1px solid;"
-                onclick="buy_symbols(${CONFIG.symbol_groups[index].symbols.filter((v) => all_symbols.find((v2) => v2.symbol === v).buy)}, +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">BUY
+                onclick="buy_symbols('${CONFIG.symbol_groups[index].symbols.filter((v) => all_symbols.find((v2) => v2.symbol === v).buy)}', +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">BUY
                 ALL</button>
             <br/>
             <button id="" class="w3-button w3-round-large w3-large w3-padding"
                 style="background-color:#121212;border:1px solid;margin-top:20px;"
-                onclick="sell_symbols(${CONFIG.symbol_groups[index].symbols.filter((v) => all_symbols.find((v2) => v2.symbol === v).own >= 0)}, +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">SELL
-                ALL</button>
+                onclick="liquidate()">SELL ALL</button>
             </div>`;
 
         const max = Math.max(...all_symbols.filter((v) => symbols.indexOf(v.symbol) >= 0).map((v) => v.summary.total)) / 1000 * 100;
@@ -634,13 +640,13 @@ async function test4(symbol = 'OKLO', interval = true) {
 
             // up carot: &#9650;  &#9651;
             // down caret: &#9660;  &#9661;
-            const icon = status.position ? (status.position.gain >= 0 ? '&#9650' : '&#9660') : '' /*status.trades[status.trades.length - 1].gain_1K*/ >= 0 ? '&#9650' : '&#9660';
+            const last_trade = status.trades[status.trades.length - 1].gain_1K;
+            const icon = status.position ? (status.position.gain >= 0 ? '&#9650' : '&#9660') : (last_trade >= 0 ? '&#9650' : '&#9660');
             let icon_color = icon === '&#9650' ? '#00b90a' : 'red';
             // const icon = [
             //     'DDOG', 'FOX', 'GE', 'GEV', 'IBM', 'JPM', 'NFLX', 'OKLO', 'PLTR', 'PSIX',
             //     'LEU', 'MP', 'TPB', 'QUBT'
             // ].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
-            // const last_trade = status.trades[status.trades.length - 1].gain_1K;
 
             html += `<div 
             class="w3-col s4 m3 l2 _w3-margin w3-padding"
@@ -649,7 +655,12 @@ async function test4(symbol = 'OKLO', interval = true) {
             ${s.split('/')[0]} | ${status.score.score}<!-- | ${round(status.score.pct / status.score.score)}-->
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
             <br/>
-            ${status.position ? `<span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> ${status.position ? '$' + round(status.position.gain) : '' /*round(status.trades[status.trades.length - 1].gain_1K)*/}</span>` : '-'}
+            ${true ?
+                    `<span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${icon}</span> 
+                    ${status.position
+                        ? '$' + round(status.position.gain)
+                        : round(last_trade)}</span>`
+                    : `-`}
             ${status ? `<br/><div class="" style="color:white;background: linear-gradient(to right, ${g > 0 ? 'green' : 'red'} ${g / max * 100}%, #4d4d4d80 ${g / max * 100}%);_background-color:${status ? status_color : ''};">` + round1(g) + '%</div>' : ''}
             <div id="chart-days-${s.replace('/', '')}"></div>
             </div>
@@ -657,15 +668,16 @@ async function test4(symbol = 'OKLO', interval = true) {
 
             const template = `<tr>
                             <td style="{c}">{0}</td>
-                            <td>{1}</td>
+                            <td style="{c}"><b>{1}</b></td>
                             <td style="background: linear-gradient(to right, green {4}%, #4d4d4d80 {4}%);">{2}</td>
                             <td>{3}</td>
                         </tr>`;
             html_table += template
                 // .replace('{c}', v.gain >= 0 ? 'lime' : 'red')
                 .replace('{c}', `${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}`)
+                .replace('{c}', `${last_trade >= 0 ? 'color:#1dcf93;' : 'color:red;'}`)
                 .replace('{0}', s.split('/')[0])
-                .replace('{1}', `${status.position ? round(status.position.gain).toLocaleString() : 0}`)
+                .replace('{1}', `${status.position ? round(status.position.gain).toLocaleString() : round(last_trade)}`)
                 .replace('{2}', `${round1(g)}%`)
                 .replace('{4}', `${round(g / max * 100)}`)
                 .replace('{4}', `${round(g / max * 100)}`)
@@ -1284,7 +1296,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         //  TODO: get rid of the high and the low values when calculating the average
         o = deepClone(chart_bar_options);
         o.chart.animations = { enabled: false };
-        o.chart.height = 375;
+        o.chart.height = 325;
         o.chart.sparkline = { enabled: true };
         o.xaxis.labels.show = false;
         // o.yaxis.min = -200;
@@ -1331,6 +1343,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         }
         // o.yaxis = [{},{},{opposite: true}];
         o.annotations.points = [];
+        o.annotations.xaxis = [];
         o.dataLabels = {
             enabled: o.series[0].data.length < 20,
             offsetY: -24,

@@ -402,9 +402,9 @@
         <br />
         <!-- <div id="chart-symbols-treemap"></div> -->
         <p class="w3-center w3-xlarge" style="display: flex;justify-content: center;flex-wrap: wrap;">
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="favs" onclick="toggle_groups(this.value)" checked>&nbsp;R & D</label>
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="stocks" onclick="toggle_groups(this.value)">&nbsp;STOCKS</label>
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="crypto" onclick="toggle_groups(this.value)">&nbsp;TOP 90</label>
+            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="favs" onclick="toggle_groups(this.value)" checked>&nbsp;TOP 10 PICKS</label>
+            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="stocks" onclick="toggle_groups(this.value)">&nbsp;R & D</label>
+            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="crypto" onclick="toggle_groups(this.value)">&nbsp;STOCKS</label>
             <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="account" onclick="toggle_groups(this.value)">&nbsp;ACCOUNT</label>
             <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="table" onclick="toggle_groups(this.value)">&nbsp;TABLE</label>
             <!-- <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="info" onclick="toggle_groups(this.value)">&nbsp;INFO</label> -->
@@ -870,7 +870,7 @@
     processConfiguration();
     openTab(activeTab);
     toggle_groups('favs');
-    test4('KOPN');
+    test4('PLTR');
 
     setInterval(async () => {
         const d = new Date();
