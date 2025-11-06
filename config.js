@@ -1,6 +1,8 @@
 const FILTER = [
+    // 'AAPL'
+    //# 'XERS', 'PLTR', 'PRCH', 'RKLB', 'OKLO', 'SOFI', 'CRDO', 'HOOD', 'KOPN', 'SHOP',
     'XERS', 'CIFR', 'PLTR', 'PRCH', 'RKLB', 'OKLO', 'SOFI', 'CRDO', 'HOOD', 'ABCL',
-    // TMC', 'LEU',
+    // TMC', 'LEU','ABCL','SNDK','CIFR', 
 ];
 const CONFIG = {
     // get_reset_window: (t) => { return getWeekName(new Date(t)); },
@@ -67,7 +69,9 @@ const CONFIG = {
     // initial_seed: 1000, // per symbol
     symbol_groups: [
         {
-            name: 'TOP 10', symbols: FILTER.sort()
+            name: 'TOP 10',
+            include: true,
+            symbols: FILTER.sort()
         },
         {
             //# R & D - TOP SCORES
@@ -94,6 +98,7 @@ const CONFIG = {
                 'RING', 'IREN', 'CIFR', 'HUT', 'TMC', 'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PSIX',
                 'HOOD', 'FGM', 'AMD', 'AVGO', 'COIN', 'LEU', 'OPEN',
                 'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU', 'SHOP', //'VIXY',
+                'APH', 'VTR', 'LLY',
             ]
                 .filter((v) => !FILTER.includes(v))
                 .sort(),

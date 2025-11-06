@@ -159,6 +159,7 @@ class AlpacaData {
                 G: { buy: (v, i) => v.c >= v.lb && v.p5 >= v.c, sell: (v, i) => v.c < v.lb },
                 H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // buy/sell each day if above lower bound
                 X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
+                // X: { buy: (v, i) => v.c >= v.lb && v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 // X: { buy: (v, i) => v.o < v.c && v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => falsSPYe },
                 Z: { buy: (v, i) => true, sell: (v) => v.c < v.stop },
@@ -188,7 +189,8 @@ class AlpacaData {
                     });
                 }
 
-                const sell_dates = ['2025-10-01', '2025-10-27', '2025-11-03'];
+                // const sell_dates = []; //['2025-10-27', '2025-11-03'];
+                const sell_dates = ['2025-11-03']; //* inject sell/buy dates
                 const reset = CONFIG.algo.get_reset_window ? true : false;
                 const get_window = reset ? CONFIG.algo.get_reset_window : (t) => { return null; };
                 let last = get_window(bars[0].t);
@@ -649,8 +651,8 @@ async function test4(symbol = 'OKLO', interval = true) {
             // ].indexOf(s.split('/')[0]) >= 0 ? '<i class="fa fa-star w3-text-yellow" aria-hidden="true"></i>' : ''; //'<i class="fa fa-star-o w3-text-grey" aria-hidden="true"></i>';
 
             html += `<div 
-            class="w3-col s4 m3 l2 _w3-margin w3-padding"
-            style="_background: linear-gradient(to top, green ${status.summary.total}%, transparent 75%);cursor:pointer;font-size:20px;border:${symbol === s ? '2px solid #00ffff' : '1px solid grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
+            class="w3-col s6 m3 l2 _w3-margin w3-padding"
+            style="_background: linear-gradient(to top, green ${status.summary.total}%, transparent 75%);cursor:pointer;font-size:20px;border:${symbol === s ? '2px solid #00ffff' : '2px solid grey'};${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}"
             onclick="test4('${s}', false)">
             ${s.split('/')[0]} | ${status.score.score}<!-- | ${round(status.score.pct / status.score.score)}-->
             ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
@@ -857,45 +859,48 @@ async function test4(symbol = 'OKLO', interval = true) {
         // { symbols: ['DOGE/USD'] },
         // { symbols: ['PLTR'] },
     ]) {
-        //! --------------------------------------------------------------------
-        let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
-        if (all.length > 0) {
-            // const group_name = index === 0 ? 'R&D' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
-            const group_name = a.name || `GROUP ${index + 1}`;
-            let message = `%c${group_name}`;
-            console.log(message, 'color:yellow;');
-            const t = all.map((v) => v.summary.total).reduce((p, c) => p + c);
-            console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 10)}K @ 10K`, 'color:orange;');
+        if (a.include) {
+            //! --------------------------------------------------------------------
+            let all = all_symbols.filter((v) => a.symbols.indexOf(v.symbol) >= 0);
+            if (all.length > 0) {
+                // const group_name = index === 0 ? 'R&D' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
+                const group_name = a.name || `GROUP ${index + 1}`;
+                let message = `%c${group_name}`;
+                console.log(message, 'color:yellow;');
+                const t = all.map((v) => v.summary.total).reduce((p, c) => p + c);
+                console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 10)}K @ 10K`, 'color:orange;');
 
-            //! --------------------------------------------------------------------
-            const field_name = CONFIG.algo.summary_window || 'months';
-            let data = {};
-            let temp_data = {};
-            let count = 0;
-            let investment = all.length * 1000;
-            const keys = all.map((v) => Object.keys(v.summary[field_name])).reduce((p, c) => [...p, ...c]).filter((v, i, a) => a.indexOf(v) === i).sort();
-            // console.log(keys);
-            keys.forEach((k) => {
-                let sum = 0;
-                all.forEach((s) => {
-                    count++;
-                    if (s.summary[field_name][k]) {
-                        sum += (s.summary[field_name][k]);
-                    }
+                //! --------------------------------------------------------------------
+                const field_name = CONFIG.algo.summary_window || 'months';
+                let data = {};
+                let temp_data = {};
+                let count = 0;
+                let investment = all.length * 1000;
+                const keys = all.map((v) => Object.keys(v.summary[field_name])).reduce((p, c) => [...p, ...c]).filter((v, i, a) => a.indexOf(v) === i).sort();
+                // console.log(keys);
+                keys.forEach((k) => {
+                    let sum = 0;
+                    all.forEach((s) => {
+                        count++;
+                        if (s.summary[field_name][k]) {
+                            sum += (s.summary[field_name][k]);
+                        }
+                    });
+                    data[k] = round1(sum);
                 });
-                data[k] = round1(sum);
-            });
-            const num = Object.keys(data).length;
-            const sum = round2(Object.values(data).reduce((p, c) => p + c))
-            const avg = round2(sum / num);
-            const pct = round(sum / (all.length * 1000) * 100);
-            console.log(sum, avg, pct, num, data);
-            //! console.chart(Object.values(data), `${group_name} | ${pct}%<br/>$${round(sum).toLocaleString()} | $${round(sum / Object.keys(data).length).toLocaleString()}`);
-            //! --------------------------------------------------------------------
-            // data['_TOTAL_'] = round2(Object.values(data).reduce((p, c) => p + c));
-            groups[group_name] = data;
+                const num = Object.keys(data).length;
+                const sum = round2(Object.values(data).reduce((p, c) => p + c))
+                const avg = round2(sum / num);
+                const pct = round(sum / (all.length * 1000) * 100);
+                console.log(sum, avg, pct, num, data);
+                //! console.chart(Object.values(data), `${group_name} | ${pct}%<br/>$${round(sum).toLocaleString()} | $${round(sum / Object.keys(data).length).toLocaleString()}`);
+                //! --------------------------------------------------------------------
+                // data['_TOTAL_'] = round2(Object.values(data).reduce((p, c) => p + c));
+                groups[group_name] = data;
+                document.getElementById(`radio-group-${index + 1}`).innerText = group_name;
+            }
+            index++;
         }
-        index++;
     }
     if (open_positions.length > 0) {
         console.log(`%cOPEN POSITIONS | $${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()} | $${round2(open_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c)).toLocaleString()}`, 'color:yellow;');
@@ -1190,7 +1195,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     elem.style.padding = '10px';
     elem.style.fontSize = isTablet() ? '7.8vh !important' : (isMobile() ? '55px !important' : '4vh !important');
     // <br/><span class="w3-small">${new Date().toLocaleString()}</span>
-    elem.innerHTML = `$${round(total).toLocaleString()}<hr/>${round2(total / total_invested * 100)}%`;
+    elem.innerHTML = `$${round(total).toLocaleString()}<hr/>${round1(total / total_invested * 100)}%`;
     document.title = `M#-TRADER | $${round(total).toLocaleString()}`;
 
     elem = document.getElementById('total-positions-banner');
@@ -1200,7 +1205,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     elem.parentElement.parentElement.style.borderTop = '1px solid white';
     elem.style.fontSize = '64px';
     elem.style.color = total === 0 ? 'lime' : (total > 0 ? 'lime' : colors.red); // '#00b90a'
-    elem.innerHTML = `$${round(total).toLocaleString()} | ${round2(total / total_invested * 100) || 0}%`;
+    elem.innerHTML = `$${round(total).toLocaleString()} | ${round1(total / total_invested * 100) || 0}%`;
     //#endregion
 
     //#region GROUP SUMMARIES CHARTS
@@ -1283,204 +1288,257 @@ async function test4(symbol = 'OKLO', interval = true) {
         //     group_results.push(summary_months);
         // }
         //#endregion
+        if (a.include) {
+            //#region MONTHLY BAR CHART WITH CUMULATIVE
+            // * -------------------------------------
+            // * MONTHLY BAR CHART WITH CUMULATIVE
+            // * -------------------------------------
+            // const temp = Object.keys(groups[group_name]).map((k) => groups[group_name][k]).sort((a, b) => b - a);
+            // const t = temp.slice(1, -1);
 
-        //#region MONTHLY BAR CHART WITH CUMULATIVE
-        // * -------------------------------------
-        // * MONTHLY BAR CHART WITH CUMULATIVE
-        // * -------------------------------------
-        // const temp = Object.keys(groups[group_name]).map((k) => groups[group_name][k]).sort((a, b) => b - a);
-        // const t = temp.slice(1, -1);
+            const SEED = a.seed || (CONFIG[CONFIG.algo_name].seed || 50);
 
-        const SEED = a.seed || (CONFIG[CONFIG.algo_name].seed || 50);
-
-        //  TODO: get rid of the high and the low values when calculating the average
-        o = deepClone(chart_bar_options);
-        o.chart.animations = { enabled: false };
-        o.chart.height = 325;
-        o.chart.sparkline = { enabled: true };
-        o.xaxis.labels.show = false;
-        // o.yaxis.min = -200;
-        o.series[0].data = Object.keys(groups[group_name]).map((k) => {
-            return {
-                x: k,
-                y: round(groups[group_name][k] / all.length * SEED)
-            }
-        });
-        // o.series.push({ name: '75K Seed', type: 'line', color: colors.orange, data: [] });
-        // o.series[1].data = Object.keys(groups[group_name]).map((k) => {
-        //     return {
-        //         x: k,
-        //         y: round(groups[group_name][k] / 29 * 60)
-        //     }
-        // });
-        o.series.push({ name: 'Cumulative', type: 'area', color: colors.green + '60', data: [] });
-        let cumulative = 0;
-        o.series[1].data = Object.keys(groups[group_name]).map((k) => {
-            cumulative += groups[group_name][k] / all.length * SEED;
-            return {
-                x: k,
-                y: round(cumulative)
-            }
-        });
-        // o.series.push({ name: 'Cumulative 75', type: 'area', color: colors.aquamarine + '30', data: [] });
-        // cumulative = 0;
-        // o.series[o.series.length - 1].data = Object.keys(groups[group_name]).map((k) => {
-        //     cumulative += groups[group_name][k] / all.length * 75;
-        //     return {
-        //         x: k,
-        //         y: round(cumulative)
-        //     }
-        // });
-        o.series.push({ name: '75K Seed', type: 'bar', color: colors.yellow + '50', data: [] });
-        o.series[o.series.length - 1].data = Object.keys(groups[group_name]).map((k) => {
-            return {
-                x: k,
-                y: round(groups[group_name][k] / all.length * 75)
-            }
-        });
-        o.yaxis.labels.formatter = function (x) {
-            return `$${x.toLocaleString()}`;
-        }
-        // o.yaxis = [{},{},{opposite: true}];
-        o.annotations.points = [];
-        o.annotations.xaxis = [];
-        o.dataLabels = {
-            enabled: o.series[0].data.length < 20,
-            offsetY: -24,
-            enabledOnSeries: [0],
-            style: {
-                fontSize: '16px',
-            },
-            formatter: function (text, op) {
-                let v = +(text);
-                return Math.abs(v) > 1000 ? round(v / 1000) + 'K' : round1(v);
-                // v = v >= 1000 ? v /1000 : v;
-                // return round1(v / 1000) + 'K';
-            },
-        };
-        // --------------------
-        // const num = symbol_groups[index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : 'CRYPTO')].symbols.length;
-        // const g = round(Object.values(groups[group_name]).reduce((p, c) => p + c));
-        // const avg = round(g / Object.values(groups[group_name]).length);
-        // const pct = round(g / (num * 1000) * 100);
-        // const last = round2(Object.values(groups[group_name])[Object.values(groups[group_name]).length - 1]);
-        // --------------------
-        // const num = all.length;
-        // const g = all.map((v) => v.trades.map((v2) => v2.gain_1K).reduce((p, c) => p + c)).reduce((p, c) => p + c);
-        // const avg = round(g / num);
-        // const pct = round(g / (num * 1000) * 100);
-        // const last = round2(all.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c));
-        // --------------------
-        const num_symbols = all.length;
-        const num_data = o.series[0].data.length;
-        const g = o.series[0].data.map((v) => v.y).reduce((p, c) => p + c);
-        const avg = round(g / num_data);
-        const pct = round(g / (SEED * 1000) * 100);
-        const last = round2(o.series[0].data[num_data - 1].y);
-
-        // TODO: FIX LAST TRADES CALCULATION
-        const active_trades = all.filter((v) => v.trades[v.trades.length - 1].active);
-        const last_trades = round2(active_trades.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c) / num_symbols * SEED);
-
-        let elem = document.getElementById(`title-symbols-group-${index + 1}`)
-        elem.style.fontSize = '20px';
-        elem.style.color = '#fff';
-        elem.innerHTML = `<b><div class="w3-right" style="font-size:48px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`
-        elem.innerHTML += `<span class="w3-xlarge"><b>${group_name}<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${SEED}K</span></span>`;
-        // elem.innerHTML += `<span class="w3-right"></span>`;
-        elem.innerHTML += `<hr/>`;
-        elem.innerHTML += `AVG: <b><span style="color:lime;font-size:24px;">$${round(avg).toLocaleString()}</span></b>`;
-        elem.innerHTML += `<span class="w3-right">@ $75K: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 75 / 1000)).toLocaleString()}K</span></span>`;
-        elem.innerHTML += `<br/>75K AVG: <span style="color:lime;font-size:24px;"><b>$${round(avg / SEED * 75).toLocaleString()}</b></span>`;
-        elem.innerHTML += `<span class="w3-right">@ $100K: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 100 / 1000)).toLocaleString()}K</span></span>`;
-        // elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:56px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
-
-        o.annotations.yaxis.push({ y: avg, borderColor: colors.lime, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
-        o.annotations.yaxis.push({ y: avg / 30 * 75, borderColor: colors.yellow, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
-        let c = index === 0 ? chart_symbols_group_1 : (index === 1 ? chart_symbols_group_2 : (index === 2 ? chart_symbols_group_3 : chart_symbols_group_4))
-        if (c) {
-            // c.destroy();
-            c.updateOptions({
-                //     title: o.title,
-                series: o.series,
-                annotations: o.annotations,
-            })
-        } else {
-            c = new ApexCharts(document.querySelector("#chart-symbols-group-" + (index + 1)), o);
-            c.render();
-            index === 0 ? chart_symbols_group_1 = c : (index === 1 ? chart_symbols_group_2 = c : (index === 2 ? chart_symbols_group_3 = c : chart_symbols_group_4 = c))
-        }
-
-        //# group tree
-        if (index <= 2) {
+            //  TODO: get rid of the high and the low values when calculating the average
             o = deepClone(chart_bar_options);
             o.chart.animations = { enabled: false };
-            // unrealized_plpc
-            o.series[0].data = active_trades.map((v) => {
-                // const last = Object.values(v.summary.weeks)[Object.values(v.summary.weeks).length - 1];                
-                // const last = v.trades[v.trades.length - 1];
-                const last = v.trades[v.trades.length - 1].gain_1K;
+            o.chart.height = 250;
+            o.chart.sparkline = { enabled: true };
+            o.xaxis.labels.show = false;
+            // o.yaxis.min = -200;
+            o.series[0].data = Object.keys(groups[group_name]).map((k) => {
                 return {
-                    x: [
-                        v.symbol.replace('USD', ''),
-                        // isMobile() ? '' : `${round1(v.unrealized_plpc * 100)}%`
-                    ],
-                    // x: v.symbol.replace('USD', ''),
-                    // y: round(v.summary.total)
-                    // y: round(Date.now() >= last.e1 && Date.now() <= last.e2 ? last.gain_1K : null)
-                    // y: round(last.own >= 0 ? last.gain_1K : 0)
-                    // y: round(last.t2 === getYMD(new Date()) ? last.gain_1K : 0)
-                    y: round(last)
+                    x: k,
+                    y: round(groups[group_name][k] / all.length * SEED)
                 }
             });
+            // o.series.push({ name: '75K Seed', type: 'line', color: colors.orange, data: [] });
+            // o.series[1].data = Object.keys(groups[group_name]).map((k) => {
+            //     return {
+            //         x: k,
+            //         y: round(groups[group_name][k] / 29 * 60)
+            //     }
+            // });
+            o.series.push({ name: 'Cumulative', type: 'area', color: colors.lime + '30', data: [] });
+            let cumulative = 0;
+            o.series[1].data = Object.keys(groups[group_name]).map((k) => {
+                cumulative += groups[group_name][k] / all.length * SEED;
+                return {
+                    x: k,
+                    y: round(cumulative)
+                }
+            });
+            // o.series.push({ name: 'Cumulative 75', type: 'area', color: colors.aquamarine + '30', data: [] });
+            // cumulative = 0;
+            // o.series[o.series.length - 1].data = Object.keys(groups[group_name]).map((k) => {
+            //     cumulative += groups[group_name][k] / all.length * 75;
+            //     return {
+            //         x: k,
+            //         y: round(cumulative)
+            //     }
+            // });
+
+            //# 75K SEED
+            // o.series.push({ name: '75K Seed', type: 'bar', color: colors.yellow + '50', data: [] });
+            // o.series[o.series.length - 1].data = Object.keys(groups[group_name]).map((k) => {
+            //     return {
+            //         x: k,
+            //         y: round(groups[group_name][k] / all.length * 75)
+            //     }
+            // });
+
             o.yaxis.labels.formatter = function (x) {
                 return `$${x.toLocaleString()}`;
             }
+            // o.yaxis = [{},{opposite: true}];
+            // o.yaxis[1].min = Math.min(o.series[0].data.map((v)=>v.y));
+            // o.yaxis.max = 125 * 1000; // TODO: make sure the number is high enough
             o.annotations.points = [];
-            if (true || mobile_view) {
-                o.chart.type = 'treemap';
-                o.annotations.yaxis = [];
-                o.dataLabels.enabled = true;
-            }
-            o.chart.height = isTablet() ? 160 : (isMobile() ? 250 : 160);
+            o.annotations.xaxis = [];
             o.dataLabels = {
-                // offsetY: mobile_view ? 0 :  -24,
+                enabled: o.series[0].data.length < 20,
+                offsetY: -24,
+                enabledOnSeries: [0],
                 style: {
-                    fontSize: '14px',
+                    fontSize: '16px',
                 },
                 formatter: function (text, op) {
-                    return [text, op.value]
+                    let v = +(text);
+                    return Math.abs(v) > 1000 ? round(v / 1000) : round1(v);
+                    // v = v >= 1000 ? v /1000 : v;
+                    // return round1(v / 1000) + 'K';
                 },
             };
-            if (index === 0) {
-                if (chart_symbols_group_1_tree) {
-                    chart_symbols_group_1_tree.destroy();
-                }
-                chart_symbols_group_1_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-1-tree`), o);
-                chart_symbols_group_1_tree.render();
+            // --------------------
+            // const num = symbol_groups[index === 0 ? 'ETF' : (index === 1 ? 'STOCKS' : 'CRYPTO')].symbols.length;
+            // const g = round(Object.values(groups[group_name]).reduce((p, c) => p + c));
+            // const avg = round(g / Object.values(groups[group_name]).length);
+            // const pct = round(g / (num * 1000) * 100);
+            // const last = round2(Object.values(groups[group_name])[Object.values(groups[group_name]).length - 1]);
+            // --------------------
+            // const num = all.length;
+            // const g = all.map((v) => v.trades.map((v2) => v2.gain_1K).reduce((p, c) => p + c)).reduce((p, c) => p + c);
+            // const avg = round(g / num);
+            // const pct = round(g / (num * 1000) * 100);
+            // const last = round2(all.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c));
+            // --------------------
+            const num_symbols = all.length;
+            const num_data = o.series[0].data.length;
+            const num_positions = all.filter((v) => v.position).length;
+            const g_positions = all.map((v) => v.position?.gain || 0).reduce((p, c) => p + c);
+            const g = o.series[0].data.map((v) => v.y).reduce((p, c) => p + c);
+            const avg = round(g / num_data);
+            const pct = round(g / (SEED * 1000) * 100);
+            const last = round2(o.series[0].data[num_data - 1].y);
+
+            // TODO: FIX LAST TRADES CALCULATION
+            const active_trades = all.filter((v) => v.trades[v.trades.length - 1].active);
+            const last_trades = round2(active_trades.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c) / num_symbols * SEED);
+
+            //# CREATE INFO PANEL
+            // let template = (name, i) => { return `
+            //     <div class="w3-third w3-margin-bottom">
+            //         <ul class="w3-ul w3-border w3-center w3-hover-shadow">
+            //             <li id="group-name-${i}" class="w3-black w3-xlarge w3-padding-32">${name}</li>
+            //             <li class="w3-padding-16">
+            //                 <div id="chart-symbols-group-${i}"></div>
+            //             </li>
+            //             <li class="w3-padding-16">
+            //                 <div id="chart-symbols-group-${i}-tree"></div>
+            //             </li>
+            //             <li class="w3-padding-16">APY<br /><b id="group-total-${i}" class="w3-xxlarge"
+            //                     style="color:#00b90a;">$88.3K</b>
+            //                     <br />
+            //                     <b id="group-total-detail-${i}" class="w3-large"
+            //                     style="color:#00b90a;">$6,791 | 177% @ 50K</b></li>
+            //             <li class="w3-padding-16">Current Trades<br /><b id="group-current-trades-${i}" class="w3-xxlarge"
+            //                     style="color:#00b90a;">$17,884</b></li>
+            //             <li class="w3-padding-16">Current Positions<br /><b id="group-current-positions-${i}"
+            //                     class="w3-xxlarge" style="color:#00b90a;">$---</b></li>
+            //         </ul>
+            //     </div>`; }
+            //#
+
+            //# TRADES FOR EACH SYMBOL
+            // const template = (name) => { return `<div>${name}</div>`; }
+            //#
+
+            //# INFO PANELS
+            let elem = document.getElementById(`group-name-${index + 1}`).innerHTML = group_name;
+            elem = document.getElementById(`group-current-trades-${index + 1}`);
+            elem.innerHTML = `$${round(last_trades).toLocaleString()}`;
+            elem.style.color = last_trades > 0 ? 'lime' : 'red';
+            elem = document.getElementById(`group-current-positions-${index + 1}`);
+            elem.innerHTML = `$${round(g_positions).toLocaleString()}`; // | ${g_positions !== 0 ? round1(g_positions / (num_positions * 1000) * 100) : 0}%`;
+            elem.style.color = g_positions !== 0 ? (g_positions > 0 ? 'lime' : 'red') : 'gray';
+            elem = document.getElementById(`group-total-${index + 1}`)
+            elem.innerHTML = `$${round1(g / 1000).toLocaleString()}K`;
+            elem.style.color = g !== 0 ? (g > 0 ? 'lime' : 'red') : 'gray';
+            elem = document.getElementById(`group-total-detail-${index + 1}`).innerHTML = `${round(pct).toLocaleString()} % | $${round(avg).toLocaleString()}`;
+            //#
+
+            //# SIDE BY SIDE PANELS
+            elem = document.getElementById(`title-symbols-group-${index + 1}`)
+            elem.style.fontSize = '20px';
+            elem.style.color = '#fff';
+            elem.innerHTML = `<b><div class="w3-right" style="font-size:48px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`
+            elem.innerHTML += `<span class="w3-xlarge"><b>${group_name}<br/><span style="color:lime;">$${round1(g / 1000).toLocaleString()}K</span></b> | <span style="color:lime;">${round(pct).toLocaleString()}%</span> @ <span style="color:lime;">$${SEED}K</span> | ${num_symbols}</span>`;
+            // elem.innerHTML += `<span class="w3-right"></span>`;
+            elem.innerHTML += `<hr/>`;
+            elem.innerHTML += `AVG: <b><span style="color:lime;font-size:24px;">$${round(avg).toLocaleString()}</span></b>`;
+            elem.innerHTML += `<span class="w3-right">@ $75K: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 75 / 1000)).toLocaleString()}K</span></span>`;
+            elem.innerHTML += `<br/>75K AVG: <span style="color:lime;font-size:24px;"><b>$${round(avg / SEED * 75).toLocaleString()}</b></span>`;
+            elem.innerHTML += `<span class="w3-right">@ $100K: <span style="color:lime;font-size:24px;">$${(round1(g / SEED * 100 / 1000)).toLocaleString()}K</span></span>`;
+            // elem.innerHTML += `<br/><b><div class="w3-center" style="font-size:56px;color:${last_trades >= 0 ? 'lime' : 'red'};">$${round(last_trades).toLocaleString()}</div></b>`;
+            //#
+
+            o.annotations.yaxis.push({ y: avg, borderColor: colors.lime, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
+            o.annotations.yaxis.push({ y: avg / 30 * 75, borderColor: colors.yellow, strokeDashArray: 0, label: { _text: '$' + avg.toLocaleString(), offsetY: -100, style: { background: '#000', color: '#fff', fontSize: '20px' } } });
+            let c = index === 0 ? chart_symbols_group_1 : (index === 1 ? chart_symbols_group_2 : (index === 2 ? chart_symbols_group_3 : chart_symbols_group_4))
+            if (c) {
+                // c.destroy();
+                c.updateOptions({
+                    //     title: o.title,
+                    series: o.series,
+                    annotations: o.annotations,
+                })
+            } else {
+                c = new ApexCharts(document.querySelector("#chart-symbols-group-" + (index + 1)), o);
+                c.render();
+                index === 0 ? chart_symbols_group_1 = c : (index === 1 ? chart_symbols_group_2 = c : (index === 2 ? chart_symbols_group_3 = c : chart_symbols_group_4 = c))
             }
-            if (index === 1) {
-                if (chart_symbols_group_2_tree) {
-                    chart_symbols_group_2_tree.destroy();
+
+            //# group tree
+            if (index <= 2) {
+                o = deepClone(chart_bar_options);
+                o.chart.animations = { enabled: false };
+                // unrealized_plpc
+                o.series[0].data = active_trades.map((v) => {
+                    // const last = Object.values(v.summary.weeks)[Object.values(v.summary.weeks).length - 1];                
+                    // const last = v.trades[v.trades.length - 1];
+                    const last = v.trades[v.trades.length - 1].gain_1K;
+                    return {
+                        x: [
+                            v.symbol.replace('USD', ''),
+                            // isMobile() ? '' : `${round1(v.unrealized_plpc * 100)}%`
+                        ],
+                        // x: v.symbol.replace('USD', ''),
+                        // y: round(v.summary.total)
+                        // y: round(Date.now() >= last.e1 && Date.now() <= last.e2 ? last.gain_1K : null)
+                        // y: round(last.own >= 0 ? last.gain_1K : 0)
+                        // y: round(last.t2 === getYMD(new Date()) ? last.gain_1K : 0)
+                        y: round(last)
+                    }
+                });
+                o.yaxis.labels.formatter = function (x) {
+                    return `$${x.toLocaleString()}`;
                 }
-                chart_symbols_group_2_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-2-tree`), o);
-                chart_symbols_group_2_tree.render();
-            }
-            if (index === 2) {
-                if (chart_symbols_group_3_tree) {
-                    chart_symbols_group_3_tree.destroy();
+                o.annotations.points = [];
+                if (true || mobile_view) {
+                    o.chart.type = 'treemap';
+                    o.annotations.yaxis = [];
+                    o.dataLabels.enabled = true;
                 }
-                chart_symbols_group_3_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-3-tree`), o);
-                chart_symbols_group_3_tree.render();
+                o.chart.height = 200;
+                // o.chart.height = isTablet() ? 160 : (isMobile() ? 250 : 160);
+                o.dataLabels = {
+                    // offsetY: mobile_view ? 0 :  -24,
+                    style: {
+                        fontSize: '14px',
+                    },
+                    formatter: function (text, op) {
+                        return [text, op.value]
+                    },
+                };
+                if (index === 0) {
+                    if (chart_symbols_group_1_tree) {
+                        chart_symbols_group_1_tree.destroy();
+                    }
+                    chart_symbols_group_1_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-1-tree`), o);
+                    chart_symbols_group_1_tree.render();
+                }
+                if (index === 1) {
+                    if (chart_symbols_group_2_tree) {
+                        chart_symbols_group_2_tree.destroy();
+                    }
+                    chart_symbols_group_2_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-2-tree`), o);
+                    chart_symbols_group_2_tree.render();
+                }
+                if (index === 2) {
+                    if (chart_symbols_group_3_tree) {
+                        chart_symbols_group_3_tree.destroy();
+                    }
+                    chart_symbols_group_3_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-3-tree`), o);
+                    chart_symbols_group_3_tree.render();
+                }
+                // if (index === 3) {
+                //     if (chart_symbols_group_4_tree) {
+                //         chart_symbols_group_4_tree.destroy();
+                //     }
+                //     chart_symbols_group_4_tree = new ApexCharts(document.querySelector(`#chart-symbols-group--tree`), o);
+                //     chart_symbols_group_4_tree.render();
+                // }
+                o = undefined;
             }
-            // if (index === 3) {
-            //     if (chart_symbols_group_4_tree) {
-            //         chart_symbols_group_4_tree.destroy();
-            //     }
-            //     chart_symbols_group_4_tree = new ApexCharts(document.querySelector(`#chart-symbols-group--tree`), o);
-            //     chart_symbols_group_4_tree.render();
-            // }
-            o = undefined;
         }
 
         //#endregion

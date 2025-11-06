@@ -34,7 +34,8 @@
 
     <div class="_w3-container"
         style="padding: 8px 8px 0px 8px;position: sticky;top: 0;z-index: 9999;background-color:black;">
-        <h2 style="background-color:#00b90a;"><img src="./favicon-black.png" style="padding-bottom:16px;width:110px;margin-right:23px;margin-left:10px;margin-top:15px;" /><span
+        <h2 style="background-color:#00b90a;"><img src="./favicon-black.png"
+                style="padding-bottom:16px;width:110px;margin-right:23px;margin-left:10px;margin-top:15px;" /><span
                 class="w3-text-black w3-xxlarge"><b>M<sup>3</sup> TRADER</b> | </span>
             <span class="_w3-tiny w3-text-black">
                 <span id="datetime" class="w3-xxlarge"></span>
@@ -56,7 +57,7 @@
                 </span> -->
             </div>
         </h2>
-        <h2 style="background-color:black;">
+        <h2 class="w3-hide-small" style="background-color:black;">
             <div class="w3-container w3-text-black" style="color:black;_background-color:#000000;">
                 <h3 class="w3-xxxlarge"><b id="total-positions-banner">&nbsp;</b>
                     <span class="w3-right">
@@ -69,7 +70,8 @@
                     <span class="w3-medium"
                         style="padding-right: 5px;top: -7px;display: inline;position: relative;">Crypto </span> -->
 
-                        <i id="open-settings" class="fa fa-gear w3-text-grey" style="cursor:pointer;padding-top:25px;" onclick="open_settings()"></i>
+                        <i id="open-settings" class="fa fa-gear w3-text-grey" style="cursor:pointer;padding-top:25px;"
+                            onclick="open_settings()"></i>
                         <!-- <span class="w3-medium"
                         style="padding-right: 5px;top: -7px;display: inline;position: relative;">Settings </span> -->
                     </span>
@@ -102,19 +104,17 @@
                 </div> -->
 
             </div>
-            <div class="w3-row w3-margin w3-black" style="_display:none;border-bottom: 1px solid white;">
+            <div class="w3-row w3-margin w3-black" style="display:none;border-bottom: 1px solid white;">
 
                 <div class="w3-third w3-padding">
-                    <!-- <span id="">STOCKS</span> -->
-                    <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
-                    <div id="chart-symbols-group-1"></div>
+                    <!-- <div id="chart-symbols-group-1"></div> -->
                 </div>
                 <div class="w3-twothird w3-container">
                     <h2>
                         <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
                             style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
                         <div id="title-symbols-group-1"></div>
-                        <div id="chart-symbols-group-1-tree"></div>
+                        <!-- <div id="chart-symbols-group-1-tree"></div> -->
                         <!-- </div> -->
                     </h2>
                     <!-- <div id="chart-symbols-breakdown-1"></div> -->
@@ -124,15 +124,15 @@
                 </div>
 
             </div>
-            <div class="w3-row w3-margin w3-black" style="border-bottom: 1px solid white;">
+            <div class="w3-row w3-margin w3-black" style="display:none;border-bottom: 1px solid white;">
 
                 <div class="w3-third w3-padding" _class="w3-col s12 m5 w3-padding">
-                    <div id="chart-symbols-group-2"></div>
+                    <!-- <div id="chart-symbols-group-2"></div> -->
                 </div>
                 <div class="w3-twothird w3-container" _class="w3-col s12 m7 w3-container">
                     <h2>
                         <div id="title-symbols-group-2"></div>
-                        <div id="chart-symbols-group-2-tree"></div>
+                        <!-- <div id="chart-symbols-group-2-tree"></div> -->
                     </h2>
                     <!-- <br /> -->
                     <!-- <button id="buy_symbol" class="w3-button _w3-right w3-round-large w3-large w3-padding w3-half"
@@ -150,18 +150,18 @@
                 </div>
 
             </div>
-            <div class="w3-row w3-margin w3-black" style="_display:none;border-bottom: 1px solid white;">
+            <div class="w3-row w3-margin w3-black" style="display:none;border-bottom: 1px solid white;">
 
                 <div class="w3-third w3-padding">
                     <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
-                    <div id="chart-symbols-group-3"></div>
+                    <!-- <div id="chart-symbols-group-3"></div> -->
                 </div>
                 <div class="w3-twothird w3-container">
                     <h2>
                         <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
                             style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
                         <div id="title-symbols-group-3"></div>
-                        <div id="chart-symbols-group-3-tree"></div>
+                        <!-- <div id="chart-symbols-group-3-tree"></div> -->
                         <!-- </div> -->
                     </h2>
                     <!-- <p>
@@ -333,6 +333,7 @@
     <div id="content-account" class="" style="display:none;">
     </div>
 
+
     <!-- Bollinger -->
     <div id="content-bollinger" class="_w3-margin" style="display:none;">
         <br />
@@ -353,11 +354,11 @@
                 <div id="chart-symbols-stacked-6"></div>
             </div>
             <!-- --------------------------------------------------------- -->
-            <div class="w3-padding w3-col s12 m4 l3 w3-center"
+            <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
                 style="display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
                 <div id="title-symbols-group-1"></div>
                 <div id="chart-symbols-group-1"></div>
-            </div>
+            </div> -->
             <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
                 style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
                 <div id="title-symbols-group-2"></div>
@@ -368,11 +369,11 @@
                 <div id="title-symbols-group-3"></div>
                 <div id="chart-symbols-group-3"></div>
             </div> -->
-            <div class="w3-padding w3-col s12 m4 l3 w3-center"
+            <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
                 style="display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;">
                 <div id="title-symbols-group-4"></div>
                 <div id="chart-symbols-group-4"></div>
-            </div>
+            </div> -->
             <!-- --------------------------------------------------------- -->
 
             <br />
@@ -402,12 +403,18 @@
         <br />
         <!-- <div id="chart-symbols-treemap"></div> -->
         <p class="w3-center w3-xlarge" style="display: flex;justify-content: center;flex-wrap: wrap;">
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="favs" onclick="toggle_groups(this.value)" checked>&nbsp;TOP 10 PICKS</label>
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="stocks" onclick="toggle_groups(this.value)">&nbsp;R & D</label>
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="crypto" onclick="toggle_groups(this.value)">&nbsp;STOCKS</label>
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="account" onclick="toggle_groups(this.value)">&nbsp;ACCOUNT</label>
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="table" onclick="toggle_groups(this.value)">&nbsp;TABLE</label>
-            <!-- <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender" value="info" onclick="toggle_groups(this.value)">&nbsp;INFO</label> -->
+            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                    value="favs" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-1"></span></label>
+            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                    value="stocks" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-2"></span></label>
+            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                    value="crypto" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-3"></span></label>
+            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                    value="account" onclick="toggle_groups(this.value)">&nbsp;ACCOUNT</label>
+            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                    value="table" onclick="toggle_groups(this.value)">&nbsp;TABLE</label>
+            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                    value="info" onclick="toggle_groups(this.value)" checked>&nbsp;INFO</label>
         </p>
         <div id="symbol-buttons-bollinger-stocks" class="_w3-col s12 w3-margin w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
@@ -462,64 +469,77 @@
                 </tbody>
             </table>
         </div>
+        <!--# INFO PANELS  -->
         <div id="symbol-buttons-bollinger-info" class="_w3-col s12 w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
-            <div class="w3-row-padding" style="_display: none;_font-family: monospace;">
-
+            <div class="_w3-row-padding" style="_display: none;_font-family: monospace;">
+                <br />
                 <div class="w3-third w3-margin-bottom">
                     <ul class="w3-ul w3-border w3-center w3-hover-shadow">
-                        <li class="w3-black w3-xlarge w3-padding-32">STOCKS</li>
-                        <li class="w3-padding-16"><b>10GB</b> Storage</li>
-                        <li class="w3-padding-16"><b>10</b> Emails</li>
-                        <li class="w3-padding-16"><b>10</b> Domains</li>
-                        <li class="w3-padding-16"><b>Endless</b> Support</li>
+                        <li id="group-name-1" class="w3-black w3-xlarge w3-padding-32">STOCKS</li>
                         <li class="w3-padding-16">
-                            <h2 class="w3-wide">$ 1.5K</h2>
-                            <span class="w3-opacity">per month</span>
+                            <div id="chart-symbols-group-1"></div>
                         </li>
-                        <li class="_w3-light-grey w3-padding-24">
-                            <button class="w3-button w3-text-black w3-padding-large"
-                                style="background-color:#00b90a;">Sign Up</button>
+                        <li class="w3-padding-16">
+                            <div id="chart-symbols-group-1-tree"></div>
                         </li>
+                        <li class="w3-padding-16">APY<br /><b id="group-total-1" class="w3-xxlarge"
+                                style="color:#00b90a;">$88.3K</b><br /><b id="group-total-detail-1" class="w3-large"
+                                style="color:#00b90a;">$6,791 | 177% @ 50K</b></li>
+                        <li class="w3-padding-16">Current Trades<br /><b id="group-current-trades-1" class="w3-xxlarge"
+                                style="color:#00b90a;">$17,884</b></li>
+                        <li class="w3-padding-16">Current Positions<br /><b id="group-current-positions-1"
+                                class="w3-xxlarge" style="color:#00b90a;">$17,884</b></li>
+                        <!-- <li class="w3-padding-16"><b id="group-current-positions-1" class="w3-large"
+                                style="color:#00b90a;">
+                                <div style="display:flex;flex-wrap:wrap;justify-content: space-between;">
+                                    <div>&#9650;&nbsp;RKLB&nbsp;$-80</div>
+                                    <div style="color:red;">&#9660;&nbsp;RKLB&nbsp;$-80</div>
+                                    <div>&#9650;&nbsp;RKLB&nbsp;$-80</div>
+                                    <div>&#9650;&nbsp;XERS&nbsp;$64</div>
+                                </div>
+                            </b>
+                        </li> -->
                     </ul>
                 </div>
-
-                <div class="w3-third w3-margin-bottom">
-
-                    <ul class="w3-ul w3-border w3-center w3-hover-shadow">
-                        <li class="w3-text-black w3-xlarge w3-padding-32" style="background-color:#00b90a;">R & D</li>
-                        <li class="w3-padding-16"><b>25GB</b> Storage</li>
-                        <li class="w3-padding-16"><b>25</b> Emails</li>
-                        <li class="w3-padding-16"><b>25</b> Domains</li>
-                        <li class="w3-padding-16"><b>Endless</b> Support</li>
-                        <li class="w3-padding-16">
-                            <h2 class="w3-wide">50 %</h2>
-                            <span class="w3-opacity">per month</span>
-                        </li>
-                        <li class="_w3-light-grey w3-padding-24">
-                            <button class="w3-button w3-text-black w3-padding-large"
-                                style="background-color:#00b90a;">Sign Up</button>
-                        </li>
-                    </ul>
-                </div>
-
                 <div class="w3-third w3-margin-bottom">
                     <ul class="w3-ul w3-border w3-center w3-hover-shadow">
-                        <li class="w3-black w3-xlarge w3-padding-32">CRYPTO</li>
-                        <li class="w3-padding-16"><b>50GB</b> Storage</li>
-                        <li class="w3-padding-16"><b>50</b> Emails</li>
-                        <li class="w3-padding-16"><b>50</b> Domains</li>
-                        <li class="w3-padding-16"><b>Endless</b> Support</li>
+                        <li id="group-name-2" class="w3-black w3-xlarge w3-padding-32">STOCKS</li>
                         <li class="w3-padding-16">
-                            <h2 class="w3-wide">$ 50</h2>
-                            <span class="w3-opacity">per month</span>
+                            <div id="chart-symbols-group-2"></div>
                         </li>
-                        <li class="_w3-light-grey w3-padding-24">
-                            <button class="w3-button w3-text-black w3-padding-large"
-                                style="background-color:#00b90a;">Sign Up</button>
+                        <li class="w3-padding-16">
+                            <div id="chart-symbols-group-2-tree"></div>
                         </li>
+                        <li class="w3-padding-16">APY<br /><b id="group-total-2" class="w3-xxlarge"
+                                style="color:#00b90a;">$88.3K</b><br /><b id="group-total-detail-2" class="w3-large"
+                                style="color:#00b90a;">$6,791 | 177% @ 50K</b></li>
+                        <li class="w3-padding-16">Current Trades<br /><b id="group-current-trades-2" class="w3-xxlarge"
+                                style="color:#00b90a;">$17,884</b></li>
+                        <li class="w3-padding-16">Current Positions<br /><b id="group-current-positions-2"
+                                class="w3-xxlarge" style="color:#00b90a;">$17,884</b></li>
                     </ul>
                 </div>
+                <div class="w3-third w3-margin-bottom">
+                    <ul class="w3-ul w3-border w3-center w3-hover-shadow">
+                        <li id="group-name-3" class="w3-black w3-xlarge w3-padding-32">STOCKS</li>
+                        <li class="w3-padding-16">
+                            <div id="chart-symbols-group-3"></div>
+                        </li>
+                        <li class="w3-padding-16">
+                            <div id="chart-symbols-group-3-tree"></div>
+                        </li>
+                        <li class="w3-padding-16">APY<br /><b id="group-total-3" class="w3-xxlarge"
+                                style="color:#00b90a;">$88.3K</b><br /><b id="group-total-detail-3" class="w3-large"
+                                style="color:#00b90a;">$6,791 | 177% @ 50K</b></li>
+                        <li class="w3-padding-16">Current Trades<br /><b id="group-current-trades-3" class="w3-xxlarge"
+                                style="color:#00b90a;">$17,884</b></li>
+                        <li class="w3-padding-16">Current Positions<br /><b id="group-current-positions-3"
+                                class="w3-xxlarge" style="color:#00b90a;">$17,884</b></li>
+                    </ul>
+                </div>
+                &nbsp;
+                <br />
             </div>
         </div>
     </div>
@@ -869,7 +889,7 @@
     // =================================================
     processConfiguration();
     openTab(activeTab);
-    toggle_groups('favs');
+    toggle_groups('info');
     test4('PLTR');
 
     setInterval(async () => {
