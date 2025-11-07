@@ -158,10 +158,10 @@ class AlpacaData {
                 F: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c < v.lb, }, //# GOOD ONE */
                 G: { buy: (v, i) => v.c >= v.lb && v.p5 >= v.c, sell: (v, i) => v.c < v.lb },
                 H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // buy/sell each day if above lower bound
-                X: { buy: (v, i) => v.o >= v.lb, sell: (v) =>v.c < v.stop }, //! stop loss
+                X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 // X: { buy: (v, i) => v.c >= v.lb && v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 // X: { buy: (v, i) => v.o < v.c && v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
-                Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => falsSPYe },
+                Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => false },
                 Z: { buy: (v, i) => true, sell: (v) => v.c < v.stop },
                 //#endregion
             };
@@ -169,6 +169,11 @@ class AlpacaData {
             const algo = isCrypto ? CONFIG.algo.crypto : CONFIG.algo.stocks;
 
             if (bars) {
+                // const exceeds = (v, i1, i2) => {
+                //     if (own_at > 0) {
+
+                //     }
+                // };
                 /** ADD TRADE @param {*} v - bar object, @param {*} i1 - buy index @param {*} i2 - sell index*/
                 const push_trade = (v, i1, i2) => {
                     trades.push({
@@ -190,7 +195,7 @@ class AlpacaData {
                 }
 
                 // const sell_dates = []; //['2025-10-27', '2025-11-03'];
-                const sell_dates = ['2025-11-03']; //* inject sell/buy dates
+                const sell_dates = ['2025-10-31']; //* inject sell/buy dates
                 const reset = CONFIG.algo.get_reset_window ? true : false;
                 const get_window = reset ? CONFIG.algo.get_reset_window : (t) => { return null; };
                 let last = get_window(bars[0].t);
@@ -205,34 +210,30 @@ class AlpacaData {
                             last = current;
                         }
                         //* SELL DATES
-                        if (sell_dates.includes(getYMD(new Date(v.t))) && own_at >= 0) {
+                        if (own_at >= 0 && sell_dates.includes(getYMD(new Date(v.t)))) {
                             push_trade(v, own_at, i);
                             own_at = -1;
                         }
-                        if (v.c >= v.ub) {
-                            was_above = true;
-                        }
-                        if (v.c <= v.lb) {
-                            was_below = true;
-                        }
+                        // if (v.c >= v.ub) {
+                        //     was_above = true;
+                        // }
+                        // if (v.c <= v.lb) {
+                        //     was_below = true;
+                        // }
                         // * BUY * //
-                        if (algos[algo].buy(v, i)) {
-                            if (/*was_below === true &&*/ own_at === -1) {
-                                // if (TRADE) {
-                                //     buy(symbol, 5000); // TODO: change to INVVESTMENT_SEED
-                                // }
-                                own_at = i;
-                            }
+                        else if (own_at === -1 && algos[algo].buy(v, i)) {
+                            // if (TRADE) {
+                            //     buy(symbol, 5000); // TODO: change to INVVESTMENT_SEED
+                            // }
+                            own_at = i;
                         }
                         // * SELL * //
-                        else if (algos[algo].sell(v, i)) {
-                            if (own_at >= 0) {
-                                // if (TRADE) {
-                                //     sell(symbol);
-                                // }
-                                push_trade(v, own_at, i);
-                                own_at = -1;
-                            }
+                        if (own_at >= 0 && algos[algo].sell(v, i)) {
+                            // if (TRADE) {
+                            //     sell(symbol);
+                            // }
+                            push_trade(v, own_at, i);
+                            own_at = -1;
                         }
                     }
                     if (i === bars.length - 1) {
@@ -637,7 +638,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             // TODO: GET FROM ALL_SYMBOLS[n].buy
             // const should_buy = current.o < current.c && current.o >= current.lb;
             const should_buy = current.o >= current.lb;
-            const should_sell = current.c <= current.lb * 0.98;
+            const should_sell = current.c <= (current.lb * 1.0);
             // console.log(s, should_sell);
 
             // up carot: &#9650;  &#9651;
@@ -932,7 +933,7 @@ async function test4(symbol = 'OKLO', interval = true) {
 
 
     const tl = calculateTrendline(o.series[0].data.map((v) => v.y));
-    o.series.push({ name: 'Trendline', type: 'line', color: colors.orange/*'#89f100ff'*/, data: o.series[0].data.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
+    o.series.push({ name: 'Trendline', type: 'line', color: '#fc03ec', data: o.series[0].data.map((v, i) => { return { x: v.x, y: round1(tl.calculateY(i)) } }) });
 
     o.series.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
     o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
@@ -952,7 +953,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     o.annotations.xaxis = [];
 
     /** month indicators */
-    let e = new Date(start).getTime();
+    let e = new Date(getYMD(start) + 'T00:00:00').getTime();
     while (e <= bars[bars.length - 1].e) {
         if (new Date(e).getDate() === 1) {
             o.annotations.xaxis.push({
@@ -1301,7 +1302,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             //  TODO: get rid of the high and the low values when calculating the average
             o = deepClone(chart_bar_options);
             o.chart.animations = { enabled: false };
-            o.chart.height = 250;
+            o.chart.height = 210;
             o.chart.sparkline = { enabled: true };
             o.xaxis.labels.show = false;
             // o.yaxis.min = -200;
@@ -1423,15 +1424,16 @@ async function test4(symbol = 'OKLO', interval = true) {
             //#
 
             //# INFO PANELS
+            const get_indicator = (v) => { return v > 0 ? '▲' : (v < 0 ? '▼' : '') };
             let elem = document.getElementById(`group-name-${index + 1}`).innerHTML = group_name;
             elem = document.getElementById(`group-current-trades-${index + 1}`);
-            elem.innerHTML = `$${round(last_trades).toLocaleString()}`;
+            elem.innerHTML = `${get_indicator(last_trades)}  $${round(Math.abs(last_trades)).toLocaleString()}`;
             elem.style.color = last_trades > 0 ? 'lime' : 'red';
             elem = document.getElementById(`group-current-positions-${index + 1}`);
-            elem.innerHTML = `$${round(g_positions).toLocaleString()}`; // | ${g_positions !== 0 ? round1(g_positions / (num_positions * 1000) * 100) : 0}%`;
+            elem.innerHTML = `${get_indicator(g_positions)}  $${round(g_positions).toLocaleString()}`; // | ${g_positions !== 0 ? round1(g_positions / (num_positions * 1000) * 100) : 0}%`;
             elem.style.color = g_positions !== 0 ? (g_positions > 0 ? 'lime' : 'red') : 'gray';
-            elem = document.getElementById(`group-total-${index + 1}`)
-            elem.innerHTML = `$${round1(g / 1000).toLocaleString()}K`;
+            elem = document.getElementById(`group-total-${index + 1}`);
+            elem.innerHTML = `${get_indicator(g)}  $${round1(g / 1000).toLocaleString()}K`;
             elem.style.color = g !== 0 ? (g > 0 ? 'lime' : 'red') : 'gray';
             elem = document.getElementById(`group-total-detail-${index + 1}`).innerHTML = `${round(pct).toLocaleString()} % | $${round(avg).toLocaleString()}`;
             //#
@@ -1498,7 +1500,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                     o.annotations.yaxis = [];
                     o.dataLabels.enabled = true;
                 }
-                o.chart.height = 200;
+                o.chart.height = 150;
                 // o.chart.height = isTablet() ? 160 : (isMobile() ? 250 : 160);
                 o.dataLabels = {
                     // offsetY: mobile_view ? 0 :  -24,

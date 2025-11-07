@@ -15,7 +15,7 @@ const CONFIG = {
         //# VERY BASIC BUY AND HOLD w/ STOP_LOSS [ 141 % | 165 % ]
         crypto: 'X',
         stocks: 'X',
-        stop_pct: 0.98,
+        stop_pct: 1,
         get_reset_window: (t) => { return getWeekName(new Date(t)); },
         // get_reset_window: (t) => { return getMonthName(new Date(t)); },
         // get_reset_window: (t) => { return getQuarterName(new Date(t)); },
