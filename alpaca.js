@@ -158,7 +158,7 @@ class AlpacaData {
                 F: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c < v.lb, }, //# GOOD ONE */
                 G: { buy: (v, i) => v.c >= v.lb && v.p5 >= v.c, sell: (v, i) => v.c < v.lb },
                 H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // buy/sell each day if above lower bound
-                X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
+                X: { buy: (v, i) => v.o >= v.lb, sell: (v) =>v.c < v.stop }, //! stop loss
                 // X: { buy: (v, i) => v.c >= v.lb && v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 // X: { buy: (v, i) => v.o < v.c && v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 Y: { buy: (v, i) => v.o >= v.lb, sell: (v) => falsSPYe },
@@ -416,7 +416,7 @@ class AlpacaData {
                     // .then((res) => this.convertToPercent(symbol, res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
                     // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
-                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 28 : 14, isCrypto ? 0.7 : 0.7, CONFIG.algo.stop_pct || 0.80))
+                    .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 28 : 14, isCrypto ? 0.7 : 0.7, CONFIG.algo.stop_pct || 1.0))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
                     .then((res) => this.analyze(symbol, res))
@@ -1392,7 +1392,7 @@ async function test4(symbol = 'OKLO', interval = true) {
 
             // TODO: FIX LAST TRADES CALCULATION
             const active_trades = all.filter((v) => v.trades[v.trades.length - 1].active);
-            const last_trades = round2(active_trades.map((v) => v.trades[v.trades.length - 1].gain_1K).reduce((p, c) => p + c) / num_symbols * SEED);
+            const last_trades = round2(reduceArray(active_trades.map((v) => v.trades[v.trades.length - 1].gain_1K)) / num_symbols * SEED);
 
             //# CREATE INFO PANEL
             // let template = (name, i) => { return `

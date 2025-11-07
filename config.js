@@ -22,7 +22,8 @@ const CONFIG = {
         // get_reset_window: (t) => { return getYMD(new Date(t)); },
         summary_window: 'months', // days | weeks | months | quarters
         seed: 50,
-        // start: new Date(`2025-01-01T00:00:00`),
+        // start: new Date(`2024-01-01T00:00:00`),
+        // end: new Date(`2025-10-10T23:59:59`),
         // end: new Date(`${getYMD(new Date())}T23:59:59`),
         // timeframe: '1D',
     },
@@ -122,32 +123,32 @@ const CONFIG = {
         // ].sort() },
         // { name: 'FOOD & BEV', symbols: ['KO', 'PEP', 'MCD', 'SBUX', 'CMG', 'YUM', 'MDLZ', 'GIS', 'KHC', 'TSN'].sort() },
         //# TOP 90
-        {
-            name: 'TOP 90 d',
-            include: true,
-            // seed: 15,
-            symbols: [
-                'FLUX',
-                'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH',
-                'PLUG', 'NBTX', 'NTLA', 'MU', 'CAMT',
-                'BLNK', 'AXTI', 'BTDR', 'BTSG', 'CVRX',//'CTXR',
-                'GLUE',//'FTRE',
+        // {
+        //     name: 'TOP 90 d',
+        //     include: true,
+        //     // seed: 15,
+        //     symbols: [
+        //         'FLUX',
+        //         'TNYA', 'FOSL', 'GEOS', 'GSIB', 'IBG', 'MFH',
+        //         'PLUG', 'NBTX', 'NTLA', 'MU', 'CAMT',
+        //         'BLNK', 'AXTI', 'BTDR', 'BTSG', 'CVRX',//'CTXR',
+        //         'GLUE',//'FTRE',
 
-                //# ALL
-                // 'RING', 'IREN', 'CIFR', 'HUT', 'TMC', 'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PSIX',
-                // 'HOOD', 'FGM', 'AMD', 'AVGO', 'COIN', 'LEU', 'NIO', 'OPEN',
-                // 'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU','SHOP', //'VIXY',
+        //         //# ALL
+        //         // 'RING', 'IREN', 'CIFR', 'HUT', 'TMC', 'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PSIX',
+        //         // 'HOOD', 'FGM', 'AMD', 'AVGO', 'COIN', 'LEU', 'NIO', 'OPEN',
+        //         // 'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU','SHOP', //'VIXY',
 
-                // ...scores
-                //     .filter((v) => v.score >= 4 && v.pct > 50)
-                //     .sort((a, b) => b.pct > a.pct ? 1 : -1)
-                //     .map((v) => v.symbol)
-                //     .slice(0, 19)
-                //     .filter((v) => !['RGTI',].includes(v)),
+        //         // ...scores
+        //         //     .filter((v) => v.score >= 4 && v.pct > 50)
+        //         //     .sort((a, b) => b.pct > a.pct ? 1 : -1)
+        //         //     .map((v) => v.symbol)
+        //         //     .slice(0, 19)
+        //         //     .filter((v) => !['RGTI',].includes(v)),
 
 
-            ].sort()
-        },
+        //     ].sort()
+        // },
         {
             name: 'CRYPTO',
             include: true,
