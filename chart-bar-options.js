@@ -171,22 +171,22 @@ const chart_bar_options = {
         }
         ],
         points: [
-            {
-                x: 0,
-                y: 40,
-                // borderColor: '#f5f242',
-                // seriesIndex: 1,
-                // fillColor: '#f5f242',
-                // opacity: 0.5,
-                label: {
-                    text: '123',
-                    style: {
-                        fontSize: '18px',
-                        color: '#fff',
-                        background: '#00b90a'
-                    }
-                }
-            }
+            // {
+            //     x: 0,
+            //     y: 40,
+            //     // borderColor: '#f5f242',
+            //     // seriesIndex: 1,
+            //     // fillColor: '#f5f242',
+            //     // opacity: 0.5,
+            //     label: {
+            //         text: '123',
+            //         style: {
+            //             fontSize: '18px',
+            //             color: '#fff',
+            //             background: '#00b90a'
+            //         }
+            //     }
+            // }
         ]
     }
 };

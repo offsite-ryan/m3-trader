@@ -100,6 +100,7 @@ const CONFIG = {
                 'HOOD', 'FGM', 'AMD', 'AVGO', 'COIN', 'LEU', 'OPEN',
                 'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU', 'SHOP', //'VIXY',
                 'APH', 'VTR', 'LLY',
+                // 'SNDK' //# testing
             ]
                 .filter((v) => !FILTER.includes(v))
                 .sort(),

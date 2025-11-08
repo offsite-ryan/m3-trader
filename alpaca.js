@@ -195,7 +195,14 @@ class AlpacaData {
                 }
 
                 // const sell_dates = []; //['2025-10-27', '2025-11-03'];
-                const sell_dates = ['2025-10-31']; //* inject sell/buy dates
+                const sell_dates = []; //['2025-10-31']; //* inject sell/buy dates
+                // const sell_dates = [];
+                // let e = new Date('2024-09-13T12:00:00').getTime();
+                // const end_at = new Date('2026-01-01T00:00:00').getTime()
+                // while (e < end_at) {
+                //     sell_dates.push(getYMD(new Date(e)));
+                //     e += (7 * 24 * 60 * 60 * 1000);
+                // }
                 const reset = CONFIG.algo.get_reset_window ? true : false;
                 const get_window = reset ? CONFIG.algo.get_reset_window : (t) => { return null; };
                 let last = get_window(bars[0].t);
@@ -262,7 +269,7 @@ class AlpacaData {
             let summary_months = {};
             let summary_weeks = {};
             let summary_quarters = {};
-            let summary_month_total = 0;
+            let total = 0;
             res.trades.forEach((v, i) => {
                 const d = new Date(v.t2);
                 let month = getMonthName(d);
@@ -270,7 +277,7 @@ class AlpacaData {
                 let quarter = getQuarterName(d);
 
                 const gain = v.gain_1K;
-                summary_month_total += gain;
+                total += gain;
                 if (!summary_months[month]) {
                     summary_months[month] = gain;
                 } else {
@@ -287,7 +294,13 @@ class AlpacaData {
                     summary_quarters[quarter] += gain;
                 }
             });
-            res.summary = { months: summary_months, total: summary_month_total, weeks: summary_weeks, quarters: summary_quarters };
+            res.summary = {
+                total,
+                // total: Object.values(summary_months).reduce((p, c) => p + c),
+                months: summary_months,
+                weeks: summary_weeks,
+                quarters: summary_quarters
+            };
             resolve(res);
             summary_months = undefined;
         });
@@ -877,8 +890,14 @@ async function test4(symbol = 'OKLO', interval = true) {
                 let temp_data = {};
                 let count = 0;
                 let investment = all.length * 1000;
-                const keys = all.map((v) => Object.keys(v.summary[field_name])).reduce((p, c) => [...p, ...c]).filter((v, i, a) => a.indexOf(v) === i).sort();
+                const keys = all
+                    .map((v) => Object.keys(v.summary[field_name]))
+                    .reduce((p, c) => [...p, ...c])
+                    .filter((v, i, a) => a.indexOf(v) === i)
+                    .sort();
                 // console.log(keys);
+
+                //# CALCULATE TOTAL
                 keys.forEach((k) => {
                     let sum = 0;
                     all.forEach((s) => {
