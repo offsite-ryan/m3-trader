@@ -1365,7 +1365,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             //  TODO: get rid of the high and the low values when calculating the average
             o = deepClone(chart_bar_options);
             o.chart.animations = { enabled: false };
-            o.chart.height = 210;
+            o.chart.height = 150;
             o.chart.sparkline = { enabled: true };
             o.xaxis.labels.show = false;
             // o.yaxis.min = -200;
@@ -1491,7 +1491,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             let elem = document.getElementById(`group-name-${index + 1}`).innerHTML = `
                 ${group_name}
                 <br/>
-                <b><span class="w3-xxlarge" style="color:${last !== 0 ? (last > 0 ? 'lime' : 'red') : 'gray'};">${get_indicator(last)} $${round1(Math.abs(last/1000))}K</span></b><span class="w3-text-grey"> | #${num_symbols}</span>
+                <b><span class="w3-xxlarge" style="color:${last !== 0 ? (last > 0 ? 'lime' : 'red') : 'gray'};">${get_indicator(last)} $${round1(Math.abs(last/1000))}K</span></b><span class="w3-medium w3-text-grey"> (${num_symbols})</span>
                 `;
             elem = document.getElementById(`group-current-trades-${index + 1}`);
             elem.innerHTML = `${get_indicator(last_trades)}  $${round(Math.abs(last_trades)).toLocaleString()}`;
