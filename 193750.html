@@ -172,6 +172,28 @@
                 </div>
 
             </div>
+            <div class="w3-row w3-margin w3-black" style="display:none;border-bottom: 1px solid white;">
+
+                <div class="w3-third w3-padding">
+                    <!-- <img src="./favicon-white.png" style="width:100%;min-height:200px"> -->
+                    <!-- <div id="chart-symbols-group-3"></div> -->
+                </div>
+                <div class="w3-twothird w3-container">
+                    <h2>
+                        <!-- <div class="w3-padding w3-col s12 m4 l3 w3-center"
+                            style="_display:none;border:1px solid rgb(92, 92, 92);_min-height:457px;"> -->
+                        <div id="title-symbols-group-4"></div>
+                        <!-- <div id="chart-symbols-group-3-tree"></div> -->
+                        <!-- </div> -->
+                    </h2>
+                    <!-- <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+                        labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                        laboris nisi ut aliquip ex ea commodo consequat.
+                    </p> -->
+                </div>
+
+            </div>
             <!-- <div class="w3-row w3-margin w3-black" style="_display:none;border-bottom: 1px solid white;">
 
                 <div class="w3-third w3-padding">
@@ -400,7 +422,7 @@
                     onclick="buy(bollinger_selected_symbol, +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">Buy</button>
             </div>
         </div>
-        <br />
+        <!-- <br /> -->
         <!-- <div id="chart-symbols-treemap"></div> -->
         <p class="w3-center w3-xlarge" style="display: flex;justify-content: center;flex-wrap: wrap;">
             <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
@@ -408,7 +430,9 @@
             <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
                     value="stocks" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-2"></span></label>
             <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
-                    value="crypto" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-3"></span></label>
+                    value="rd" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-3"></span></label>
+            <!-- <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                    value="crypto" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-4"></span></label> -->
             <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
                     value="account" onclick="toggle_groups(this.value)">&nbsp;ACCOUNT</label>
             <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
@@ -420,6 +444,9 @@
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
         </div>
         <div id="symbol-buttons-bollinger-favs" class="_w3-col s12 w3-padding w3-center"
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
+        </div>
+        <div id="symbol-buttons-bollinger-rd" class="_w3-col s12 w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
         </div>
         <div id="symbol-buttons-bollinger-crypto" class="_w3-col s12 w3-padding w3-center"
@@ -538,15 +565,33 @@
                                 class="w3-xxlarge" style="color:#00b90a;">$-</b></li>
                     </ul>
                 </div>
-                &nbsp;
-                <br />
+                &nbsp;<br />
+
+                <div class="w3-third w3-margin-bottom" style="display:none;">
+                    <ul class="w3-ul w3-border w3-center w3-hover-shadow">
+                        <li id="group-name-4" class="w3-black w3-xlarge w3-padding-32">STOCKS</li>
+                        <li class="w3-padding-16">
+                            <div id="chart-symbols-group-4"></div>
+                        </li>
+                        <li class="w3-padding-16">
+                            <div id="chart-symbols-group-4-tree"></div>
+                        </li>
+                        <li class="w3-padding-16">APY<br /><b id="group-total-4" class="w3-xxlarge"
+                                style="color:#00b90a;">$-K</b><br /><b id="group-total-detail-4" class="w3-large"
+                                style="color:#00b90a;">$- | -% @ -K</b></li>
+                        <li class="w3-padding-16">Current Trades<br /><b id="group-current-trades-4" class="w3-xxlarge"
+                                style="color:#00b90a;">$-</b></li>
+                        <li class="w3-padding-16">Current Positions<br /><b id="group-current-positions-4"
+                                class="w3-xxlarge" style="color:#00b90a;">$-</b></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Stacked Chart -->
-    <br />
-    <div class="w3-padding w3-border w3-col s12 m6 l3 w3-hide">
+    <!-- <br /> -->
+    <!-- <div class="w3-padding w3-border w3-col s12 m6 l3 w3-hide">
         <div id="title-symbols-stacked-1"></div>
         <div id="chart-symbols-stacked-1"></div>
     </div>
@@ -574,11 +619,10 @@
     <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
         <div id="title-symbols-stacked-8"></div>
         <div id="chart-symbols-stacked-8"></div>
-    </div>
-    </div>
+    </div> -->
     <p id="output"></p>
-    &nbsp;
-    <br />
+    <!-- &nbsp; -->
+    <!-- <br /> -->
 
     <!-- MODAL BUY / SELL DIALOG -->
     <!-- <div id="modal-account" class="w3-modal" style="z-index:99999;_display:block;background-color:#000;">
@@ -756,6 +800,7 @@
     let chart_symbols_group_1_tree = null;
     let chart_symbols_group_2_tree = null;
     let chart_symbols_group_3_tree = null;
+    let chart_symbols_group_4_tree = null;
 
 
     const isCrypto = localStorage.getItem('m3-trader-v5-crypto') === 'true' ? true : false;
@@ -789,7 +834,7 @@
     // TOGGLE GROUPS
     // =================================================
     function toggle_groups(name) {
-        ['stocks', 'favs', 'crypto', 'account', 'table', 'info'].forEach((k) => {
+        ['stocks', 'favs', 'rd', 'crypto', 'account', 'table', 'info'].forEach((k) => {
             document.getElementById(`chart-bars`).style.display = (['account', 'table', 'info'].includes(name) ? 'none' : '');
             const elem = document.getElementById(`symbol-buttons-bollinger-${k}`);
             elem.style.display = name === k ? 'block' : 'none';

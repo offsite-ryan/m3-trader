@@ -86,6 +86,22 @@ class AlpacaData {
         })
         return data;
     }
+    // /** INTRADAY MOMENTUM INDEX */
+    addIMI(data, period = 14) {
+        const key = 'mom';
+        data.forEach((v, i) => {
+            if (i > period) {
+                const window = data.slice(i - period, i);
+                const sumOfGains = reduceArray(window.map((v) => v.c - v.o > 0 ? v.c - v.o : 0));
+                const sumOfLosses = reduceArray(window.map((v) => v.c - v.o));
+                const imiitradayMomentumIndex = (sumOfGains / (sumOfGains + Math.abs(sumOfLosses))) * 100;
+                v[key] = imiitradayMomentumIndex;
+            } else {
+                v[key] = null;
+            }
+        })
+        return data;
+    }
     addTrendlines(data) {
         data.forEach((v, i) => {
             if (i > 5) {
@@ -114,6 +130,7 @@ class AlpacaData {
                 n: v.n,
                 v: v.v,
                 vw: v.vw,
+                mom: v.mom,
                 sma: v.bands_c.sma,
                 stop: v.bands_c.stop,
                 lb: v.bands_c.lowerBand,
@@ -153,11 +170,16 @@ class AlpacaData {
                 A: { buy: (v, i) => v.o >= v.ub, sell: (v, i) => v.c <= v.ub, },
                 B: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c <= v.ub },
                 C: { buy: (v, i) => v.sma >= v.lb, sell: (v, i) => false },
-                D: { buy: (v, i) => v.c >= v.sma, sell: (v, i) => v.c <= v.lb },
+                D: { buy: (v, i) => v.o >= v.sma, sell: (v, i) => v.c <= v.lb },
+                // D: { buy: (v, i) => v.c >= v.sma, sell: (v, i) => v.o <= v.lb },
                 E: { buy: (v, i) => v.o >= v.sma, sell: (v, i) => v.c < v.sma },
                 F: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => v.c < v.lb, }, //# GOOD ONE */
                 G: { buy: (v, i) => v.c >= v.lb && v.p5 >= v.c, sell: (v, i) => v.c < v.lb },
                 H: { buy: (v, i) => v.o >= v.lb, sell: (v, i) => true }, // buy/sell each day if above lower bound
+
+                //# MOMENTUM - NOT VERY GOOD
+                M: { buy: (v, i) => v.mom <= 45, sell: (v, i) => v.mom >= 80 },
+
                 X: { buy: (v, i) => v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 // X: { buy: (v, i) => v.c >= v.lb && v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
                 // X: { buy: (v, i) => v.o < v.c && v.o >= v.lb, sell: (v) => v.c < v.stop }, //! stop loss
@@ -194,9 +216,10 @@ class AlpacaData {
                     });
                 }
 
-                // const sell_dates = []; //['2025-10-27', '2025-11-03'];
-                const sell_dates = []; //['2025-10-31']; //* inject sell/buy dates
-                // const sell_dates = [];
+                // const sell_dates = ['2025-11-03'];
+                // const sell_dates = []; //['2025-10-31']; //* inject sell/buy dates
+                const sell_dates = CONFIG.algo.sell_dates || [];
+                //* inject sell dates - used if wanted on fridays */
                 // let e = new Date('2024-09-13T12:00:00').getTime();
                 // const end_at = new Date('2026-01-01T00:00:00').getTime()
                 // while (e < end_at) {
@@ -208,6 +231,7 @@ class AlpacaData {
                 let last = get_window(bars[0].t);
                 bars.forEach((v, i) => {
                     if (v.sma) {
+                        //* BUY / SELL WINDOW
                         const current = get_window(v.t);
                         if (current !== last && own_at >= 0) {
                             if (reset) {
@@ -221,23 +245,17 @@ class AlpacaData {
                             push_trade(v, own_at, i);
                             own_at = -1;
                         }
-                        // if (v.c >= v.ub) {
-                        //     was_above = true;
-                        // }
-                        // if (v.c <= v.lb) {
-                        //     was_below = true;
-                        // }
                         // * BUY * //
-                        else if (own_at === -1 && algos[algo].buy(v, i)) {
+                        if (own_at === -1 && algos[algo].buy(v, i)) {
                             // if (TRADE) {
-                            //     buy(symbol, 5000); // TODO: change to INVVESTMENT_SEED
+                            //     buy(symbol, 5000); // TODO
                             // }
                             own_at = i;
                         }
                         // * SELL * //
                         if (own_at >= 0 && algos[algo].sell(v, i)) {
                             // if (TRADE) {
-                            //     sell(symbol);
+                            //     sell(symbol); // TODO
                             // }
                             push_trade(v, own_at, i);
                             own_at = -1;
@@ -430,6 +448,7 @@ class AlpacaData {
                     // .then((res) => this.convertToPercent(symbol, res))
                     .then((res) => timeframe === '1Min' ? this.addMissingData(res, s, end) : res)
                     // .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 50 : 28, isCrypto ? 1.0 : 0.7))
+                    .then((res) => this.addIMI(res, 10))
                     .then((res) => this.addBollingerBands('bands_c', res, isCrypto ? 28 : 14, isCrypto ? 0.7 : 0.7, CONFIG.algo.stop_pct || 1.0))
                     .then((res) => this.addTrendlines(res))
                     .then((res) => this.refactor(symbol, res))
@@ -650,8 +669,10 @@ async function test4(symbol = 'OKLO', interval = true) {
             const current = status.bars[status.bars.length - 1];
             // TODO: GET FROM ALL_SYMBOLS[n].buy
             // const should_buy = current.o < current.c && current.o >= current.lb;
-            const should_buy = current.o >= current.lb;
-            const should_sell = current.c <= (current.lb * 1.0);
+            // const should_buy = current.o >= current.lb;
+            // const should_sell = current.c <= (current.lb * 1.0);
+            const should_buy = current.c >= current.lb;
+            const should_sell = current.c <= current.lb;
             // console.log(s, should_sell);
 
             // up carot: &#9650;  &#9651;
@@ -829,11 +850,17 @@ async function test4(symbol = 'OKLO', interval = true) {
     let index = 0;
 
     console.group('%c----------------------------------------------------', 'color:orange;');
-    all_symbols_names = [...CONFIG.symbol_groups[0].symbols, ...CONFIG.symbol_groups[1].symbols, ...CONFIG.symbol_groups[2].symbols];
     all_symbols_names = [
         ...CONFIG.symbol_groups[0].symbols,
         ...CONFIG.symbol_groups[1].symbols,
         ...CONFIG.symbol_groups[2].symbols,
+        ...CONFIG.symbol_groups[3].symbols
+    ];
+    all_symbols_names = [
+        ...CONFIG.symbol_groups[0].symbols,
+        ...CONFIG.symbol_groups[1].symbols,
+        ...CONFIG.symbol_groups[2].symbols,
+        ...CONFIG.symbol_groups[3].symbols,
     ];
     // console.log(`%cLOADING DATA FOR ${all_symbols_names.length} SYMBOLS...`, 'color:orange;');
 
@@ -864,6 +891,7 @@ async function test4(symbol = 'OKLO', interval = true) {
         CONFIG.symbol_groups[0],
         CONFIG.symbol_groups[1],
         CONFIG.symbol_groups[2],
+        CONFIG.symbol_groups[3],
         // OLD
         // symbol_groups.ETF,
         // symbol_groups.STOCKS,
@@ -939,7 +967,8 @@ async function test4(symbol = 'OKLO', interval = true) {
     o.chart.toolbar = { show: false };
     o.chart.sparkline = false;
     o.legend.show = false;
-    o.stroke.width[3] = 0;
+    o.stroke.width[3] = 0; // open
+    o.stroke.width[4] = 0; // momentum
     o.xaxis.type = 'datetime';
     o.series = [];
     o.series.push({ name: 'Close', data: [] }); // , type: 'area', color: colors.blue + '10'
@@ -957,6 +986,16 @@ async function test4(symbol = 'OKLO', interval = true) {
     o.series.push({ name: 'Open', data: [] }); // , type: 'area', color: colors.blue + '10'
     o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: round2(v.o) } });
 
+    o.series.push({ name: 'Momentum', type: 'line', color: '#05e2ff', data: [] }); // , type: 'area', color: colors.blue + '10'
+    o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: round2(v.c * (v.mom / 100)) } });
+
+    o.tooltip.y = {
+        formatter: function (value, { series, seriesIndex, dataPointIndex, w }) {
+            // console.log(value, series);
+            const v = round(value / series[0][dataPointIndex] * 100);
+            return seriesIndex === 4 ? v : round1(value);
+        }
+    };
     // o.series.push({ name: 'SMA', hidden: mobile_view, data: [] });
     // o.series[1].data = bars.map((v) => { return { x: v.e, y: v.sma ? round2(v.sma) : null } });
     // o.series.push({ name: 'Lower', data: [] });
@@ -1238,7 +1277,12 @@ async function test4(symbol = 'OKLO', interval = true) {
     // for await (const a of (init ? [favs, research, crypto, { seed_dollars: favs.seed_dollars + research.seed_dollars + crypto.seed_dollars, symbols: all_symbols_names }] : [favs, research/*, crypto.symbols*/])) {
     // for await (const a of [favs, research, crypto, { seed_dollars: favs.seed_dollars + research.seed_dollars + crypto.seed_dollars, symbols: all_symbols_names }]) {
     // for await (const a of [symbol_groups.favs, symbol_groups.research, symbol_groups.crypto, { seed_dollars: symbol_groups.favs.seed_dollars + symbol_groups.research.seed_dollars + symbol_groups.crypto.seed_dollars, symbols: all_symbols_names }]) {
-    for await (const a of [CONFIG.symbol_groups[0], CONFIG.symbol_groups[1], CONFIG.symbol_groups[2]]) {
+    for await (const a of [
+        CONFIG.symbol_groups[0],
+        CONFIG.symbol_groups[1],
+        CONFIG.symbol_groups[2],
+        CONFIG.symbol_groups[3]
+    ]) {
 
         // const group_name = index === 0 ? 'R&D' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
         const group_name = a.name || `GROUP ${index + 1}`;
@@ -1247,10 +1291,10 @@ async function test4(symbol = 'OKLO', interval = true) {
         // const day_results = all;
         // const gain_pct = all.map((v) => v.gain_pct).reduce((p, c) => p + c) / all.length;
 
-        if (index < 3) {
+        if (index < 4) {
             add_buttons(
                 a.symbols,
-                index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-stocks' : 'symbol-buttons-bollinger-crypto'),
+                index === 0 ? 'symbol-buttons-bollinger-favs' : (index === 1 ? 'symbol-buttons-bollinger-stocks' : (index === 2 ? 'symbol-buttons-bollinger-rd' : 'symbol-buttons-bollinger-crypto')),
                 group_name,
                 index
             );
@@ -1444,7 +1488,11 @@ async function test4(symbol = 'OKLO', interval = true) {
 
             //# INFO PANELS
             const get_indicator = (v) => { return v > 0 ? '▲' : (v < 0 ? '▼' : '') };
-            let elem = document.getElementById(`group-name-${index + 1}`).innerHTML = group_name;
+            let elem = document.getElementById(`group-name-${index + 1}`).innerHTML = `
+                ${group_name}
+                <br/>
+                <b><span class="w3-xxlarge" style="color:${last !== 0 ? (last > 0 ? 'lime' : 'red') : 'gray'};">${get_indicator(last)} $${round1(Math.abs(last/1000))}K</span></b><span class="w3-text-grey"> | #${num_symbols}</span>
+                `;
             elem = document.getElementById(`group-current-trades-${index + 1}`);
             elem.innerHTML = `${get_indicator(last_trades)}  $${round(Math.abs(last_trades)).toLocaleString()}`;
             elem.style.color = last_trades > 0 ? 'lime' : 'red';
@@ -1489,7 +1537,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             }
 
             //# group tree
-            if (index <= 2) {
+            if (index <= 3) {
                 o = deepClone(chart_bar_options);
                 o.chart.animations = { enabled: false };
                 // unrealized_plpc
@@ -1550,6 +1598,13 @@ async function test4(symbol = 'OKLO', interval = true) {
                     }
                     chart_symbols_group_3_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-3-tree`), o);
                     chart_symbols_group_3_tree.render();
+                }
+                if (index === 3) {
+                    if (chart_symbols_group_4_tree) {
+                        chart_symbols_group_4_tree.destroy();
+                    }
+                    chart_symbols_group_4_tree = new ApexCharts(document.querySelector(`#chart-symbols-group-4-tree`), o);
+                    chart_symbols_group_4_tree.render();
                 }
                 // if (index === 3) {
                 //     if (chart_symbols_group_4_tree) {
@@ -1649,6 +1704,10 @@ async function test4(symbol = 'OKLO', interval = true) {
         // days = undefined;
         // day_gains = undefined;
         // day_gains_cumulative = undefined;
+
+        if (interval) {
+            window.scrollTo(0, document.body.scrollHeight);
+        }
     };
 
     //#region MONTHLY GROUP CHARTS

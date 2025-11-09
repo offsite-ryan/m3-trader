@@ -22,7 +22,8 @@ const CONFIG = {
         // get_reset_window: (t) => { return getYMD(new Date(t)); },
         summary_window: 'months', // days | weeks | months | quarters
         seed: 50,
-        // start: new Date(`2024-01-01T00:00:00`),
+        // sell_dates: ['2025-11-03', '2025-11-10'], //# NEEDS TO BE ON A FRIDAY, BUY WILL OCCUR ON MONDAY
+        // start: new Date(`2025-01-01T00:00:00`),
         // end: new Date(`2025-10-10T23:59:59`),
         // end: new Date(`${getYMD(new Date())}T23:59:59`),
         // timeframe: '1D',
@@ -152,14 +153,16 @@ const CONFIG = {
         // },
         {
             name: 'CRYPTO',
-            include: true,
+            include: false,
             symbols: [
-                // 'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD',
+                'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD', 'SUSHI/USD',
 
                 // 'BAT/USD', 'PEPE/USD', 'XTC/USD', 'DOT/USD',  
                 // 'TRUMP/USD', /* 'SHIB/USD', */ /* 'YFI/USD', */ 'SUSHI/USD',
                 // 'AVAX/USD', 
-                'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', /* 'XRP/USD', */
+
+                // 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', /* 'XRP/USD', */
+                
                 // 'GRT/USD', 'SOL/USD', 'UNI/USD',
             ].sort()
         },
