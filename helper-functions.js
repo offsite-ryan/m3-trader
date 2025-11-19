@@ -56,7 +56,10 @@ function table(...args) {
         console.table(...args);
     }
 }
-
+function get_indicator(v, outline = false, color = '') { 
+    const char =  v > 0 ? (outline ? '△' : '▲') : (v < 0 ? (outline ? '▽' : '▼') : '');
+    return `<span style="color:${color}">${char}</span>`;
+};
 function reduceArray(arr, defaultValue = 0) {
     if (arr.length === 0) return defaultValue;
     return arr.reduce((p, c) => p + c, 0);
@@ -174,7 +177,7 @@ function getYMD(date, includeYear = true) {
         day = '0' + day;
 
     // return '2025-06-04'
-    return (includeYear ? [year, month, day] : [month, day]).join('-');
+    return (includeYear ? [year, month, day] : [year, month]).join('-');
 }
 
 // =================================================
@@ -244,6 +247,7 @@ function deepClone(obj) {
     return clonedObj;
 }
 
+
 // =================================================
 // DAY HOUR AS NUMBER
 // =================================================
@@ -253,6 +257,14 @@ function dayHour(date) {
     const m = d.getMinutes();
 
     return `${(h * 100) + m}`;
+}
+
+// =================================================
+// IS MARKET HOORS
+// =================================================
+function isMarketHours(date) {
+    const hmm = dayHour();
+    return hmm > 930 && hmm < 1600;
 }
 
 const round = (v) => { return Math.round(v * 1) / 1; }
@@ -294,8 +306,8 @@ function reduceArray(arr, defaultValue = 0) {
     return arr.reduce((p, c) => p + c, 0);
 }
 function getMonthName(d) {
-    const getMonthName = (month) => {
-        return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month];
+    const getMonthName = (m) => {
+        return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m];
     }
     return d.getFullYear() + '_' + (d.getMonth() + 1).toString().padStart(2, '0') + '_' + getMonthName(d.getMonth());
 }

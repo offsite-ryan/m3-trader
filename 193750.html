@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
     <link rel="stylesheet" href="./style.css">
     <link rel="apple-touch-icon" sizes="128x128" href="./favicon-2.png">
     <link rel="manifest" href="./manifest.json">
@@ -30,7 +31,7 @@
 <style>
 </style>
 
-<body class="">
+<body class="" style="_font-family:Raleway;">
 
     <div class="_w3-container"
         style="padding: 8px 8px 0px 8px;position: sticky;top: 0;z-index: 9999;background-color:black;">
@@ -355,10 +356,26 @@
     <div id="content-account" class="" style="display:none;">
     </div>
 
+    <p class="w3-center w3-xlarge" style="display: flex;justify-content: center;flex-wrap: wrap;">
+        <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                value="favs" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-1"></span></label>
+        <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                value="stocks" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-2"></span></label>
+        <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                value="rd" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-3"></span></label>
+        <!-- <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                    value="crypto" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-4"></span></label> -->
+        <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                value="account" onclick="toggle_groups(this.value)">&nbsp;ACCOUNT</label>
+        <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                value="table" onclick="toggle_groups(this.value)">&nbsp;TABLE</label>
+        <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                value="info" onclick="toggle_groups(this.value)" checked>&nbsp;INFO</label>
+    </p>
 
     <!-- Bollinger -->
     <div id="content-bollinger" class="_w3-margin" style="display:none;">
-        <br />
+        <!-- <br /> -->
         <div id="chart-bars" class="w3-row" style="_display:none;_border:1px solid; _min-height:600px;">
             <div class="w3-col s12 m6 l3 w3-padding" style="display:none;border:1px solid rgb(92, 92, 92);">
                 <div id="total-positions-2" class="w3-center w3-xxlarge"
@@ -403,6 +420,7 @@
                 style="border:1px solid rgb(92, 92, 92);_min-height:300px;;">
                 <div id="chart-bollinger-1"></div>
             </div> -->
+
             <div class="w3-col s12 m8 l9 w3-padding _w3-hide-small _w3-hide-medium"
                 style="border:1px solid rgb(92, 92, 92); _min-height:500px;;">
                 <div id="chart-bollinger-0"></div>
@@ -410,7 +428,7 @@
             <div class="w3-col s12 m4 l3 w3-padding" style="border:1px solid rgb(92, 92, 92);_min-height:500px;">
                 <div id="chart-bollinger-2"></div>
                 <!-- <input class="w3-col s6" type="number" value="1000"/> -->
-                <input type="range" min="0" max="5" value="1" step="0.5" style="accent-color:#00b90a;width:80%;"
+                <input type="range" min="0" max="5" value="0.25" step="0.25" style="accent-color:#00b90a;width:80%;"
                     oninput="document.getElementById('slider-value').innerHTML = `$${this.value}K`">
                 <span id="slider-value">$1K</span>
                 <br />
@@ -424,33 +442,17 @@
         </div>
         <!-- <br /> -->
         <!-- <div id="chart-symbols-treemap"></div> -->
-        <p class="w3-center w3-xlarge" style="display: flex;justify-content: center;flex-wrap: wrap;">
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
-                    value="favs" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-1"></span></label>
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
-                    value="stocks" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-2"></span></label>
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
-                    value="rd" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-3"></span></label>
-            <!-- <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
-                    value="crypto" onclick="toggle_groups(this.value)">&nbsp;<span id="radio-group-4"></span></label> -->
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
-                    value="account" onclick="toggle_groups(this.value)">&nbsp;ACCOUNT</label>
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
-                    value="table" onclick="toggle_groups(this.value)">&nbsp;TABLE</label>
-            <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
-                    value="info" onclick="toggle_groups(this.value)" checked>&nbsp;INFO</label>
-        </p>
         <div id="symbol-buttons-bollinger-stocks" class="_w3-col s12 w3-margin w3-padding w3-center"
-            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;overflow-y:scroll;max-height:400px;scrollbar-color: #000000 #373737;">
         </div>
         <div id="symbol-buttons-bollinger-favs" class="_w3-col s12 w3-padding w3-center"
-            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;overflow-y:scroll;max-height:400px;scrollbar-color: #000000 #373737;">
         </div>
         <div id="symbol-buttons-bollinger-rd" class="_w3-col s12 w3-padding w3-center"
-            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;overflow-y:scroll;max-height:400px;scrollbar-color: #000000 #373737;">
         </div>
         <div id="symbol-buttons-bollinger-crypto" class="_w3-col s12 w3-padding w3-center"
-            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;overflow-y:scroll;max-height:400px;scrollbar-color: #000000 #373737;">
         </div>
         <div id="symbol-buttons-bollinger-table" class="_w3-col s12 w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;"><br />
@@ -476,7 +478,6 @@
         <div id="symbol-buttons-bollinger-account" class="_w3-col s12 w3-padding w3-center w3-xlarge w3-black"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
             Account Transactions
-            <br />
             <table class="w3-table-all">
                 <thead>
                     <tr style="background-color: black !important;">
@@ -500,7 +501,6 @@
         <div id="symbol-buttons-bollinger-info" class="_w3-col s12 w3-padding w3-center"
             style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;">
             <div class="_w3-row-padding" style="_display: none;_font-family: monospace;">
-                <br />
                 <div class="w3-third w3-margin-bottom">
                     <ul class="w3-ul w3-border w3-center w3-hover-shadow">
                         <li id="group-name-1" class="w3-black w3-xlarge w3-padding-32">STOCKS</li>
@@ -589,57 +589,7 @@
         </div>
     </div>
 
-    <!-- Stacked Chart -->
-    <!-- <br /> -->
-    <!-- <div class="w3-padding w3-border w3-col s12 m6 l3 w3-hide">
-        <div id="title-symbols-stacked-1"></div>
-        <div id="chart-symbols-stacked-1"></div>
-    </div>
-    <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
-        <div id="title-symbols-stacked-2"></div>
-        <div id="chart-symbols-stacked-2"></div>
-    </div>
-    <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
-        <div id="title-symbols-stacked-3"></div>
-        <div id="chart-symbols-stacked-3"></div>
-    </div>
-    <div class="w3-padding w3-border w3-col s12 m6 l3 w3-hide">
-        <div id="title-symbols-stacked-4"></div>
-        <div id="chart-symbols-stacked-4"></div>
-    </div>
-    <br />
-    <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
-        <div id="title-symbols-stacked-5"></div>
-        <div id="chart-symbols-stacked-5"></div>
-    </div>
-    <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
-        <div id="title-symbols-stacked-7"></div>
-        <div id="chart-symbols-stacked-7"></div>
-    </div>
-    <div class="w3-padding w3-border  w3-col s12 m6 l3 w3-hide">
-        <div id="title-symbols-stacked-8"></div>
-        <div id="chart-symbols-stacked-8"></div>
-    </div> -->
     <p id="output"></p>
-    <!-- &nbsp; -->
-    <!-- <br /> -->
-
-    <!-- MODAL BUY / SELL DIALOG -->
-    <!-- <div id="modal-account" class="w3-modal" style="z-index:99999;_display:block;background-color:#000;">
-        <div class="w3-modal-content">
-            <form class="w3-container w3-center w3-padding"
-                style="background-color: #232323;color:white;border:1px solid;padding-bottom:20px;">
-                <span onclick="document.getElementById('modal-account').style.display='none'"
-                    class="w3-button w3-xlarge w3-right">&times;</span>
-                <img src="./icon.png" style="height:80px;left:5%;margin-top:20px;" />
-                <h3>M<sup>3</sup> TRADER - Buy / Sell</h3>
-                <button id="" class="w3-button w3-right w3-round-large w3-large w3-padding"
-                    style="background-color:#121212;border:1px solid;" onclick="">Buy</button>
-                <button id="" class="w3-button w3-right w3-round-large w3-large w3-padding"
-                    style="background-color:#121212;border:1px solid;" onclick="">Sell</button>
-            </form>
-        </div>
-    </div> -->
 
     <!-- MODAL ACCOUNT DIALOG -->
     <div class="w3-col s12">
@@ -688,7 +638,10 @@
 
 <script>
     /* PRINT THE VERSION */
-    console.log('M3 TRADER v5.0.0');
+    console.log(`%c------------------------------------------------------------------------------------------`, 'color:lime');
+    console.log(`%c  ███      ███  ████\n  ██ ██  ██ ██    ██\n  ██   ██   ██  ████\n  ██        ██    ██\n  ██        ██  ████`, 'color:lime');
+    console.log('%c   M3 TRADER v5.0.0', 'color:lime');
+    console.log(`%c------------------------------------------------------------------------------------------`, 'color:lime');
 
     /* SET THE ALGORITHM CONFIGURATION */
     CONFIG.algo = CONFIG[CONFIG.algo_name];

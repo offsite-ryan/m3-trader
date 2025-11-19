@@ -1,7 +1,7 @@
 const FILTER = [
     // 'AAPL'
     //# 'XERS', 'PLTR', 'PRCH', 'RKLB', 'OKLO', 'SOFI', 'CRDO', 'HOOD', 'KOPN', 'SHOP',
-    'XERS', 'CIFR', 'PLTR', 'PRCH', 'RKLB', 'OKLO', 'SOFI', 'CRDO', 'HOOD', 'ABCL',
+    'XERS', 'CIFR', 'PLTR', /*PRCH',*/ 'RKLB', 'OKLO', 'SOFI', 'CRDO', 'HOOD', 'ABCL',
     // TMC', 'LEU','ABCL','SNDK','CIFR', 
 ];
 const CONFIG = {
@@ -12,18 +12,32 @@ const CONFIG = {
     // stop_pct: 0.80,
     algo_name: 'algo', // algo | algo1 | algo2 | algo3 | algo4
     algo: { /* F w/o RESET */
-        //# VERY BASIC BUY AND HOLD w/ STOP_LOSS [ 141 % | 165 % ]
-        crypto: 'X',
+        crypto: 'X2',
+
         stocks: 'X',
-        stop_pct: 1,
-        get_reset_window: (t) => { return getWeekName(new Date(t)); },
+        stop_pct: 1.0,
+
+        // stocks: 'W',
+        // stop_pct: 0.9,
+
+        // get_reset_window: (t) => { return getWeekName(new Date(t)); },
         // get_reset_window: (t) => { return getMonthName(new Date(t)); },
         // get_reset_window: (t) => { return getQuarterName(new Date(t)); },
         // get_reset_window: (t) => { return getYMD(new Date(t)); },
-        summary_window: 'months', // days | weeks | months | quarters
-        seed: 50,
-        // sell_dates: ['2025-11-03', '2025-11-10'], //# NEEDS TO BE ON A FRIDAY, BUY WILL OCCUR ON MONDAY
-        // start: new Date(`2025-01-01T00:00:00`),
+
+        //* BAR CHART WINDOW SIZE
+        summary_window: 'months', //* days | weeks | months | quarters
+
+        //* USE SETTING TO NORMALIZE INFO PAGE DATA TO THE SAME INVESTMENT
+        seed: 30,
+
+        //* START OF DAY SELL, BUY WILL OCCUR ON SAME DAY BASED ON ALGO LOGIC
+        // sell_dates: [/*'2025-11-11',*/ '2025-11-13', '2025-11-14', '2025-11-17', '2025-11-18'],
+        sell_dates: ['2025-11-18', '2025-11-19'],
+        // start: new Date(`2024-12-15T00:00:00`),
+
+        start: new Date(`2025-03-15T00:00:00`),
+        // start: new Date(`2024-12-15T00:00:00`),
         // end: new Date(`2025-10-10T23:59:59`),
         // end: new Date(`${getYMD(new Date())}T23:59:59`),
         // timeframe: '1D',
@@ -73,23 +87,34 @@ const CONFIG = {
         {
             name: 'TOP 10',
             include: true,
-            symbols: FILTER.sort()
+            symbols: [
+                ...FILTER.sort(),
+
+            ].filter((v) => !['PLTR','SOFI','HOOD','CRDO',].includes(v)).sort(),
         },
         {
-            //# R & D - TOP SCORES
-            name: 'R & D',
+            //# R & D
+            name: 'R & D', //@ TOP SCORES
             // seed: 7.5,
             include: true,
             symbols: [
+                // 'IXUS','TQQQ','VXUS','VUG','VTV','VOO','VTI','SPY','QQQ','DIA',
                 ...scores
                     .filter((v) => v.score >= 4 && v.pct > 50)
                     .sort((a, b) => b.pct > a.pct ? 1 : -1)
                     .map((v) => v.symbol)
                     .slice(0, 19)
-                    .filter((v) => !['RGTI',].includes(v))
+                    .filter((v) => !['RGTI','INDV','TTMI','PRCH',].includes(v))
                     .filter((v) => !FILTER.includes(v))
+                    .sort(),
                 // .filter((v) => !['APP', 'RGTI', 'EYE', 'GILT',].includes(v)),
-            ].sort()
+
+                //* MAG 7
+                // ...['GOOG','AMZN','AAPL','META','MSFT','NVDA','TSLA',].sort(),
+
+                // * CRYPTO
+                // 'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD', 'SUSHI/USD',
+            ]//.sort()
         },
         {
             //# STOCKS - MANUALLY CURATED
@@ -97,14 +122,21 @@ const CONFIG = {
             include: true,
             // seed: 7.5,
             symbols: [
-                'RING', 'IREN', 'CIFR', 'HUT', 'TMC', 'DDOG', 'GE', 'GEV', 'IBM', 'NFLX', 'OKLO', 'PSIX',
-                'HOOD', 'FGM', 'AMD', 'AVGO', 'COIN', 'LEU', 'OPEN',
+                ...['RING', 'IREN', 'CIFR', 'HUT', 'TMC', 'DDOG', 'GE', 'GEV', /*'IBM',*/ /*'NFLX',*/ 'OKLO', 'PSIX',
+                'HOOD', /*'FGM',*/ 'AMD', 'AVGO', 'COIN', 'LEU', 'OPEN',
                 'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU', 'SHOP', //'VIXY',
-                'APH', 'VTR', 'LLY',
+                'APH', /*'VTR',*/ 'LLY', 'GOOGL', ].filter((v) => !FILTER.includes(v)),
+                'PLTR','SOFI','HOOD','CRDO','INDV','TTMI',
+
                 // 'SNDK' //# testing
-            ]
-                .filter((v) => !FILTER.includes(v))
-                .sort(),
+
+                // 'RING', 'IREN', 'CIFR', 'HUT', 'TMC', 'DDOG', 'GE', 'GEV', 'OKLO', 'PSIX',
+                // 'HOOD', 'AMD', 'AVGO', 'COIN', 'LEU', 'OPEN',
+                // 'QUBT', 'RKLB', 'SMCI', 'SNDK', 'SNOW', 'TPB', 'TSEM', 'UUUU', 'SHOP', 'APH', 
+                // // 'VIXY',
+                // // 'VTR', 'LLY', 'FGM', 'NFLX', 'IBM',  //# REMOVED: TOO LITTLE APY
+                // // 'SNDK' //# testing
+            ].sort(),
         },
         // {
         //     //# STOCKS - MANUALLY CURATED
@@ -162,7 +194,7 @@ const CONFIG = {
                 // 'AVAX/USD', 
 
                 // 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', /* 'XRP/USD', */
-                
+
                 // 'GRT/USD', 'SOL/USD', 'UNI/USD',
             ].sort()
         },

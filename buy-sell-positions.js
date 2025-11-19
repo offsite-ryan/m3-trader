@@ -47,7 +47,7 @@ function buy(symbol, spend) {
         fetch(url, options)
             // fetch(url, options('POST', payload))
             .then(res => res.json())
-            .then(res => resolve(res))
+            .then(res => { console.log('BUY', symbol, res); resolve(res) })
             .catch((err) => { console.error('error in buy()', err) });
     });
 }
@@ -59,15 +59,16 @@ function buy_symbols(symbols, spend) {
             const res = await buy(symbol, spend);
             obj[symbol] = res;
             console.log(`Bought ${symbol} for $${spend}`, res);
-            await sleep(1000);
+            await sleep(2000);
         }
         console.log(obj);
-        resolve(res);
+        // resolve(res);
     });
 }
 function sell_symbols(symbols) {
     return new Promise(async (resolve, reject) => {
-        const obj = {};v
+        const obj = {}; v;
+        symbols = symbols.split(',');
         for await (const symbol of symbols) {
             const res = await sell(symbol);
             obj[symbol] = res;
@@ -75,7 +76,7 @@ function sell_symbols(symbols) {
             await sleep(1000);
         }
         console.log(obj);
-        resolve(res);
+        // resolve(res);
     });
 }
 function sell(symbol) {
@@ -91,7 +92,7 @@ function sell(symbol) {
         let url = `${buy_sell_root_url}/v2/positions/${symbol.replace('/', '')}?percentage=100`;
         fetch(url, options)
             .then(res => res.json())
-            .then(res => resolve(res))
+            .then(res => { console.log('SELL', symbol, res); resolve(res); })
             .catch(err => console.error('error in sell()', err));
     });
 }
@@ -109,7 +110,7 @@ function liquidate() {
         let url = `${buy_sell_root_url}/v2/positions`;
         fetch(url, options)
             .then(res => res.json())
-            .then(res => resolve(res))
+            .then(res => { console.log('LIQUIDATE', res); resolve(res); })
             .catch(err => console.error('error in liquidate()', err));
     });
 }
