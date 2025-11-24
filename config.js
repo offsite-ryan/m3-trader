@@ -20,7 +20,7 @@ const CONFIG = {
         // stocks: 'W',
         // stop_pct: 0.9,
 
-        // get_reset_window: (t) => { return getWeekName(new Date(t)); },
+        get_reset_window: (t) => { return getWeekName(new Date(t)); },
         // get_reset_window: (t) => { return getMonthName(new Date(t)); },
         // get_reset_window: (t) => { return getQuarterName(new Date(t)); },
         // get_reset_window: (t) => { return getYMD(new Date(t)); },
@@ -29,12 +29,12 @@ const CONFIG = {
         summary_window: 'months', //* days | weeks | months | quarters
 
         //* USE SETTING TO NORMALIZE INFO PAGE DATA TO THE SAME INVESTMENT
-        seed: 30,
+        // seed: 30,
 
         //* START OF DAY SELL, BUY WILL OCCUR ON SAME DAY BASED ON ALGO LOGIC
-        // sell_dates: [/*'2025-11-11',*/ '2025-11-13', '2025-11-14', '2025-11-17', '2025-11-18'],
-        sell_dates: ['2025-11-18', '2025-11-19'],
-        // start: new Date(`2024-12-15T00:00:00`),
+        sell_dates: ['2025-11-24'],
+        // // sell_dates: [/*'2025-11-11',*/ '2025-11-13', '2025-11-14', '2025-11-17', '2025-11-18'],
+        // // start: new Date(`2024-12-15T00:00:00`),
 
         start: new Date(`2025-03-15T00:00:00`),
         // start: new Date(`2024-12-15T00:00:00`),
@@ -85,13 +85,24 @@ const CONFIG = {
     // initial_seed: 1000, // per symbol
     symbol_groups: [
         {
-            name: 'TOP 10',
+            name: 'WEEK 48',
             include: true,
             symbols: [
-                ...FILTER.sort(),
+                // 'WALD','TYRA','ZJK','NNOX','PACB','INV','ADPT','TNGX','JYD','GRI','PSNL','BCAX','AZTA','FEMY','QDEL','TRDA','NRIX','TXG','TXMD','OLMA','GNLN','TNDM','MYGN','REFR','QTRX',
+                // 'SQQQ','WALD','EXAS','ANNX','TYRA','NRIX','ALGS','NNOX','SGML','KLRS','PSNL','TNGX','ZJK','ALMS','PACB','QTRX','TXMD','GCT','DMAC','BCAX','NAUT','QCLS','TRDA','ADPT','CBLL'
+                'WALD','TYRA','ZJK','NNOX','PACB','INV','ADPT','TNGX','JYD','GRI','PSNL','BCAX','AZTA','FEMY','QDEL','TRDA','NRIX','TXG','TXMD','OLMA','GNLN','TNDM','MYGN','REFR','QTRX'
 
-            ].filter((v) => !['PLTR','SOFI','HOOD','CRDO',].includes(v)).sort(),
+            ]//.sort(),
         },
+        // {
+        //     name: 'TOP 10',
+        //     include: true,
+        //     symbols: [
+        //         ...FILTER.sort(),
+        //         // 'MA',
+
+        //     ].filter((v) => !['PLTR','SOFI','HOOD','CRDO',].includes(v)).sort(),
+        // },
         {
             //# R & D
             name: 'R & D', //@ TOP SCORES
@@ -187,6 +198,7 @@ const CONFIG = {
             name: 'CRYPTO',
             include: false,
             symbols: [
+                // 'AAPL',
                 'AVAX/USD', 'BCH/USD', 'BTC/USD', 'DOGE/USD', 'ETH/USD', 'XRP/USD', 'SUSHI/USD',
 
                 // 'BAT/USD', 'PEPE/USD', 'XTC/USD', 'DOT/USD',  

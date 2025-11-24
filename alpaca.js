@@ -512,7 +512,13 @@ class AlpacaData {
                     })
                     .then((res) => this.get_next_page(symbol, url, delay, res, options))
                     .then((res) => { res.symbol = symbol; return res; })
-                    .then((res) => { if (!res.bars[symbol]) { throw new Error(JSON.stringify(res)); } return res; })
+                    .then((res) => {
+                        if (!res.bars[symbol]) {
+                            console.error(JSON.stringify(res));
+                            res.bars = { [symbol]: [{ o: 0, c: 0 }] };
+                        }
+                        return res;
+                    })
                     .then((res) => res.bars[symbol] || [])
                     .then((res) => this.addMetaData(res))
                     // .then((res) => this.convertToPercent(symbol, res))
@@ -537,37 +543,14 @@ class AlpacaData {
             }
         });
     }
-    addFirst30Min(data) {
-        // const data2 = [
-        //     data[0] || {c: 0, o: 0},
-        //     data[1] || {c: 0, o: 0},
-        //     data[2] || {c: 0, o: 0},
-        //     data[3] || {c: 0, o: 0},
-        //     data[4] || {c: 0, o: 0},
-        //     data[5] || {c: 0, o: 0},
-        //     // data[data.length - 1],
-        // ];
-        const data2 = data.slice(4);
-        const sub = {
-            d30: round2(data2[3].c - data2[0].o),
-            p30: round2((data2[3].c - data2[0].o) / data2[0].o * 100)
-        };
-        const day = {
-            d: round2(data2[data2.length - 1].c - data2[0].o),
-            p: round2((data2[data2.length - 1].c - data2[0].o) / data2[0].o * 100)
-        };
-        data2.push({ d30: sub.d30, p30: sub.p30 });
-        data2.push({ d: day.d, p: day.p });
-        return data2;
-    }
     async bars_2(symbol, ymd = '2025-11-04', timeframe = '5Min', delay = 100) {
         return new Promise(async (resolve) => {
 
             await sleep(delay);
 
             const tz = new Date(ymd).getTimezoneOffset() / 60;
-            const start = `${ymd}T09:30:00-0${tz}:00`;
-            const end = `${ymd}T09:59:59-0${tz}:00`;
+            const start = `${ymd}T09:35:00-0${tz}:00`;
+            const end = `${ymd}T15:59:59-0${tz}:00`;
 
             const s = symbol.replace('/', '%2F');
             const feed = 'sip';
@@ -630,8 +613,22 @@ class AlpacaData {
                     // .then((res) => this.orders(symbol, orders_list, res))
                     // .then((res) => add30 ? this.add30Min(res) : res)
                     // .then((res) => this.addFirst30Min(res))
-                    // .then((res) => { console.log(res); return res;})
-                    .then((res) => { return res[0]; })
+                    .then((res) => {
+                        const g = res.length > 0 ? round2(res[res.length - 1].c - res[0].o) : 0;
+                        const p = res.length > 0 ? round2((res[res.length - 1].c - res[0].o) / res[0].o * 100) : 0;
+                        res = {
+                            tl: res.length > 0 ? res[res.length - 1].tl.split(',')[0] : null,
+                            o: res.length > 0 ? res[0].o : null,
+                            c: res.length > 0 ? res[res.length - 1].c : null,
+                            gain_1k: res.length > 0 ? round2((res[res.length - 1].c - res[0].o) * (1000 / res[0].o)) : null,
+                            gain_30min: g,
+                            pct_30min: p,
+                            bars: res,
+                        };
+                        console.log(res);
+                        return res;
+                    })
+                    // .then((res) => { return res[0]; })
                     .then((res) => resolve(res));
             } else {
                 resolve(null);
@@ -801,14 +798,14 @@ async function test4(symbol = 'OKLO', interval = true) {
 
         let html = ``;
         let html_table = ``;
-        html = `<div 
+        html = `<!--<div 
             id="title-${title}"
             class="w3-col s12 m3 l2 _w3-margin w3-padding"
             style="border:1px solid white;font-size:24px;min-height:208px;">
             <b>${title}</b>
             <hr style="border-top:1px solid white"/>
             <b>$${round(sum).toLocaleString()}<br/>$${round(sum_all).toLocaleString()}<br/>${round1(sum_all / (symbols.length * 1000) * 100).toLocaleString()}%</b>
-            </div>`;
+            </div>-->`;
         // if (i === 0)
 
         // onclick="buy_symbols('${CONFIG.symbol_groups[index].symbols.filter((v) => all_symbols.find((v2) => v2.symbol === v).buy)}', +(document.getElementById('slider-value').innerHTML.replace('$','').replace('K','') * 1000))">BUY ALL</button>
@@ -847,7 +844,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             // const should_buy = current.o >= current.lb;
             // const should_sell = current.c <= (current.lb * 1.0);
             // --------------------------------------------------
-            const should_buy = current.o >= current.lb;
+            const should_buy = current.o >= current.lb; // && current.c >= current.lb;
             const should_sell = current.c <= current.lb * 1.0;
             // --------------------------------------------------
             // const should_buy = true;
@@ -1232,7 +1229,7 @@ async function test4(symbol = 'OKLO', interval = true) {
 
     // TODO: REMOVE FOR REVIEW
     o.series.push({ name: 'Trigger', color: colors.yellow, data: [] });
-    o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: v.lb ? round2(v.lb * 0.98) : null } });
+    o.series[o.series.length - 1].data = bars.map((v) => { return { x: v.e, y: v.lb ? round2(v.lb) : null } });
 
 
     const tl = calculateTrendline(o.series[0].data.map((v) => v.y));
@@ -2104,7 +2101,8 @@ async function test_symbols(start_at = null) {
 
         const get_scores = async (symbol_names) => {
             const tz = new Date().getTimezoneOffset() / 60;
-            const start = new Date(new Date(`2024-10-01T00:00:00-0${tz}:00`));
+            // const start = new Date(new Date(`2025-11-01T00:00:00-0${tz}:00`));
+            const start = new Date(new Date(`2025-10-31T00:00:00-0${tz}:00`));
             // const start = new Date(`${getYMD(Date.now() - (301 * 24 * 60 * 60 * 1000))}T23:59:59-0${tz}:00`);
             const end = new Date(`${getYMD(new Date())}T23:59:59-0${tz}:00`);
 
@@ -2128,7 +2126,7 @@ async function test_symbols(start_at = null) {
             const result = results
                 .map((v, i) => { return { symbol: v.symbol, score: v.score } })
                 .filter((v) => v.score.score > 1.5).sort((a, b) => b.score - a.score);
-            console.table(results);
+            // console.table(results);
             return result;
         }
 
@@ -2141,11 +2139,18 @@ async function test_symbols(start_at = null) {
                 await sleep(1000);
             }
         };
-        console.log('FINAL RESULTS', scores.sort((a, b) => b.score.score - a.score.score).map((v) => { return { symbol: v.symbol, score: v.score.score, pct: v.score.pct } }));
+        const sorted = scores
+            .sort((a, b) => b.score.score - a.score.score)
+            .sort((a, b) => b.score.pct - a.score.pct)
+            .map((v) => { return { symbol: v.symbol, score: v.score.score, pct: v.score.pct } });
+        console.log('FINAL RESULTS', sorted);
+        console.log(`'${sorted.slice(0,25).map((v) => v.symbol).join(`','`)}'`);
     });
 }
-async function test_5(symbol = 'AMD', num_weeks = 1) {
-    const obj = {};
+async function test_5(symbol = 'AMD', num_months = 1) {
+    let obj = {};
+    let obj_days = {};
+    let obj_days_total = {};
     for await (const s of [
         // ...symbol.split(','),
         // ...CONFIG.symbol_groups[0].symbols,
@@ -2154,22 +2159,63 @@ async function test_5(symbol = 'AMD', num_weeks = 1) {
         // ...CONFIG.symbol_groups[3].symbols,
     ]) {
         console.log('-------------------------------------');
-        console.log(`ANALYZING ${s} FOR ${num_weeks} WEEKS`);
+        console.log(`ANALYZING ${s} FOR ${num_months} MONTHS`);
         console.log('-------------------------------------');
         let results = [];
 
-        const start = getYMD(new Date(Date.now() - (num_weeks * 7 * 24 * 60 * 60 * 1000)));
+        //* find the symbol in all symbols */
+        const days = all_symbols.find((v) => v.symbol === s);
+
+        //* get the data for the symbol */
+        const start = getYMD(new Date(Date.now() - (num_months * 30 * 24 * 60 * 60 * 1000)));
         const promises = [];
-        for (let i = 0; i <= num_weeks * 7; i++) {
+        for (let i = 0; i <= num_months * 30; i++) {
             const ymd = getYMD(new Date(new Date(start).getTime() + (i * 24 * 60 * 60 * 1000)));
             promises.push(alpaca_data.bars_2(s, ymd));
         }
         results = await Promise.all(promises)
         console.log(results);
+
+        //* calculate the gains for the symbol */
         let sum = 0;
         const filtered_results = results.filter((v) => v !== null && v !== undefined);
         filtered_results.forEach((v) => {
-            sum += round2((v.c - v.o) * (1000 / v.o));
+            // const g = round2((v.bars[v.bars.length - 1].c - v.bars[0].o) * (1000 / v.bars[0].o));
+
+
+            const ymd = getYMD(v.tl);
+            if (!obj_days[null]) {
+                obj_days[ymd] = 0;
+            }
+            const day = days.bars.find((d) => getYMD(d.t) === ymd);
+            // obj_days[ymd] += round2((day.c - day.o) * (1000 / day.o));
+            if (!day) {
+                console.warn(`MISSING DAY DATA FOR ${s} ON ${ymd}`);
+                return;
+            } else {
+                if (false && day.o < day.lb) {
+                    console.log(`SKIPPING ${s} ON ${ymd} AS OPEN ${day.o} IS < LOWER BAND ${round2(day.lb)}`);
+                    return;
+                } else {
+                    const open = v.bars[0].o;
+                    let close = null; //v.bars[0].c;
+                    v.bars.forEach((b) => {
+                        const pct = (b.c - open) / open * 100;
+                        if (!close && pct <= -2) {
+                            close = b.c;
+                        }
+                    });
+                    close = close || v.bars[v.bars.length - 1].c;
+                    // obj_days[ymd] += round2((day.c - day.o) * (1000 / day.o));
+                    // obj_days[ymd] += round2((v.bars[v.bars.length - 1].c - v.bars[0].o) * (1000 / v.bars[0].o));
+                    obj_days[ymd] += round2((close - open) * (1000 / open));
+                    sum += obj_days[ymd];
+                    if (!obj_days_total[ymd]) {
+                        obj_days_total[ymd] = 0;
+                    }
+                    obj_days_total[ymd] += round2(obj_days[ymd]);
+                }
+            }
         });
         console.log('SUM:', round2(sum));
         obj[s] = { sum: round2(sum) };
@@ -2181,7 +2227,24 @@ async function test_5(symbol = 'AMD', num_weeks = 1) {
     const average = {
         sum: round2(reduceArray(Object.keys(obj).map((k) => obj[k].sum)) / (Object.keys(obj).length)),
     };
-    obj['TOTAL'] = total;
-    obj['AVERAGE'] = average;
+    obj = Object.keys(obj).map((k) => { return { k, sum: obj[k].sum }; }).sort((a, b) => b.sum - a.sum)
     console.table(obj);
+    const percent = { sum: round1(total.sum / (Object.keys(obj).length * 1000) * 100) };
+    const num_symbols = { sum: Object.keys(obj).length };
+    const per_day = { sum: round2(total.sum / Object.keys(obj).length) };
+    obj = {};
+    obj['TOTAL'] = total;
+    obj['PERCENT'] = percent;
+    obj['AVERAGE'] = average;
+    obj['NUM SYMBOLS'] = num_symbols;
+    obj['PER DAY'] = per_day;
+    console.table(obj);
+    obj_days_total = Object.keys(obj_days_total).map((k) => { return { k, v: round2(obj_days_total[k]) }; });
+    const t = reduceArray(obj_days_total.map((d) => d.v));
+    const p = t / (num_symbols.sum * 1000) * 100;
+    const a = round2(reduceArray(obj_days_total.map((d) => round2(d.v))) / obj_days_total.length);
+    obj_days_total.push({ k: 'TOTAL', v: t });
+    obj_days_total.push({ k: 'PERCENT', v: p });
+    obj_days_total.push({ k: 'AVERAGE', v: a });
+    console.table(obj_days_total);
 }
