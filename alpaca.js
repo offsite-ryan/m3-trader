@@ -650,7 +650,7 @@ setInterval(() => {
     // if (isMarketOpen()) {
         // if (second % 15 === 0 && auto_refresh) {
         if (second === 1 && auto_refresh) {
-            test4(bollinger_selected_symbol, second === 0);
+            test4(bollinger_selected_symbol, true);
         }
     // }
 }, 1 * 1000);
@@ -751,7 +751,7 @@ let day_results = [];
 // =================================================
 // TEST 4
 // =================================================
-async function test4(symbol = 'OKLO', interval = true, letter = false) {
+async function test4(symbol = 'OKLO', interval = true) {
 
     //#region VARIABLES
     // * ------------------------
@@ -770,7 +770,7 @@ async function test4(symbol = 'OKLO', interval = true, letter = false) {
     // * ADD BUTTONS
     // * ------------------------
     const add_buttons = (symbols, id, title, index) => {
-        if (letter === false) {
+        // if (letter === false) {
             // const seed = symbol_groups[group].seed_dollars / 1000; //! TODO: change to INVESTMENT_SEED
             const SEED = 1000; //! TODO: change to INVESTMENT_SEED
             let sum = 0;
@@ -957,7 +957,7 @@ async function test4(symbol = 'OKLO', interval = true, letter = false) {
                 chart_symbols_months[s].render();
                 // };
             });
-        }
+        // }
     }
     //#endregion
 
@@ -1051,14 +1051,28 @@ async function test4(symbol = 'OKLO', interval = true, letter = false) {
     let index = 0;
 
     console.group('%c----------------------------------------------------', 'color:orange;');
-    all_symbols_names = letter ? symbol : [
+    // all_symbols_names = letter ? symbol : [
+    //     ...CONFIG.symbol_groups[0].symbols,
+    //     ...CONFIG.symbol_groups[1].symbols,
+    //     ...CONFIG.symbol_groups[2].symbols,
+    //     ...CONFIG.symbol_groups[3].symbols,
+    //     // symbol
+    // ];
+    // all_symbols_names = letter ? [symbol] : [
+    //     ...CONFIG.symbol_groups[0].symbols,
+    //     ...CONFIG.symbol_groups[1].symbols,
+    //     ...CONFIG.symbol_groups[2].symbols,
+    //     ...CONFIG.symbol_groups[3].symbols,
+    //     // ...[symbol]
+    // ];
+    all_symbols_names = [
         ...CONFIG.symbol_groups[0].symbols,
         ...CONFIG.symbol_groups[1].symbols,
         ...CONFIG.symbol_groups[2].symbols,
         ...CONFIG.symbol_groups[3].symbols,
         // symbol
     ];
-    all_symbols_names = letter ? [symbol] : [
+    all_symbols_names = [
         ...CONFIG.symbol_groups[0].symbols,
         ...CONFIG.symbol_groups[1].symbols,
         ...CONFIG.symbol_groups[2].symbols,
@@ -1626,7 +1640,8 @@ async function test4(symbol = 'OKLO', interval = true, letter = false) {
         //     group_results.push(summary_months);
         // }
         //#endregion
-        if (a.include && letter === false) {
+        // if (a.include && letter === false) {
+        if (a.include) {
             //#region MONTHLY BAR CHART WITH CUMULATIVE
             // * -------------------------------------
             // * MONTHLY BAR CHART WITH CUMULATIVE

@@ -948,7 +948,7 @@
                         // btn.innerText = `${v.symbol}`;
                         btn.innerHTML = `<span class="w3-tooltip">${v.symbol} <span style="background-color:black;color:yellow;position:fixed;left:20px;bottom:18px" class="w3-text w3-tag">${v.name}</span></span>`;
                         btn.onclick = () => {
-                            test4(v.symbol, true, true)
+                            test4(v.symbol, true)
                         };
                         document.getElementById('symbols_for_letter').appendChild(btn);
                     });
