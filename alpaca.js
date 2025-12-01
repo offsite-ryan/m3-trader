@@ -647,12 +647,12 @@ let all_orders = null;
 const alpaca_data = new AlpacaData()
 setInterval(() => {
     const second = new Date().getSeconds();
-    if (isMarketOpen()) {
+    // if (isMarketOpen()) {
         // if (second % 15 === 0 && auto_refresh) {
         if (second === 1 && auto_refresh) {
             test4(bollinger_selected_symbol, second === 0);
         }
-    }
+    // }
 }, 1 * 1000);
 let bollinger_selected_symbol = null;
 let treemap_data = [];
@@ -801,6 +801,7 @@ async function test4(symbol = 'OKLO', interval = true, letter = false) {
 
             let html = ``;
             let html_table = ``;
+            let html_table_2 = ``;
             html = `<!--<div 
             id="title-${title}"
             class="w3-col s12 m3 l2 _w3-margin w3-padding"
@@ -827,7 +828,7 @@ async function test4(symbol = 'OKLO', interval = true, letter = false) {
             </div>`;
 
             const max = Math.max(...all_symbols.filter((v) => symbols.indexOf(v.symbol) >= 0).map((v) => v.summary.total)) / 1000 * 100;
-            symbols.forEach((s) => {
+            symbols.forEach((s, i) => {
                 const has_position = open_positions.findIndex((v) => v.symbol === s.replace('/', ''));
                 // console.log(s, has_position);
 
@@ -857,6 +858,7 @@ async function test4(symbol = 'OKLO', interval = true, letter = false) {
                 // up carot: &#9650;  &#9651;
                 // down caret: &#9660;  &#9661;
                 const last_trade = status.trades[status.trades.length - 1].gain_1K;
+                const last_trade_pct = status.trades[status.trades.length - 1].gain_pct;
                 const icon = status.position ? (status.position.gain >= 0 ? '&#9650' : '&#9660') : (last_trade >= 0 ? '&#9650' : '&#9660');
                 let icon_color = icon === '&#9650' ? '#00b90a' : 'red';
 
@@ -868,31 +870,31 @@ async function test4(symbol = 'OKLO', interval = true, letter = false) {
                 //# SYMBOL CARDS
                 const color = current.o >= current.lb ? 'lime' : 'white'
                 html += `<div 
-            class="w3-col s6 m3 l2 _w3-margin w3-padding"
-            style="color:${color};cursor:pointer;font-size:20px;border:${symbol === s ? '2px solid #00ffff' : '2px solid grey'};${should_sell && has_position >= 0 ? '_color:red;' : (should_buy ? '_color:#1dcf93;' : '')}"
-            onclick="test4('${s}', false)">
-            ${get_indicator(current.o >= current.lb ? 1 : -1, true, current.o >= current.lb ? 'lime' : 'white')} ${s.split('/')[0]}<!-- | ${status.slope} | ${round(status.score.pct / status.score.score)}-->
-            ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
-            <br/>
-            ${true ?
-                        `<span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${should_buy ? icon : ''}</span> 
-                    ${status.position
-                            ? '$' + round(status.position.gain)
-                            : round(last_trade)}</span>`
-                        : `-`}
-            ${status ? `<br/><div class="" style="color:white;background: linear-gradient(to right, ${g > 0 ? 'green' : 'red'} ${g / max * 100}%, #4d4d4d80 ${g / max * 100}%);_background-color:${status ? status_color : ''};">` + round1(g) + '%</div>' : ''}
-            <div id="chart-days-${s.replace('/', '')}"></div>
-            </div>
-            `;
+                    class="w3-col s6 m3 l2 _w3-margin w3-padding"
+                    style="color:${color};cursor:pointer;font-size:20px;border:${symbol === s ? '2px solid #00ffff' : '2px solid grey'};${should_sell && has_position >= 0 ? '_color:red;' : (should_buy ? '_color:#1dcf93;' : '')}"
+                    onclick="test4('${s}', false)">
+                    ${get_indicator(current.o >= current.lb ? 1 : -1, true, current.o >= current.lb ? 'lime' : 'white')} ${s.split('/')[0]}<!-- | ${status.slope} | ${round(status.score.pct / status.score.score)}-->
+                    ${has_position >= 0 ? `<div class="w3-right" style="margin-top:2px;background-color:${should_sell ? 'red' : 'aquamarine'};border-radius:15px;width:15px;height:15px;">&nbsp;</div>` : ''}
+                    <br/>
+                    ${true ?
+                                `<span style="color:${icon_color};font-size:20px;"><span style="color:${icon_color};font-size:20px;">${should_buy ? icon : ''}</span> 
+                            ${status.position
+                                    ? '$' + round(status.position.gain)
+                                    : round(last_trade)}</span>`
+                                : `-`}            
+                    ${status ? `<br/><div class="" style="color:white;background: linear-gradient(to right, ${g > 0 ? 'green' : 'red'} ${g / max * 100}%, #4d4d4d80 ${g / max * 100}%);_background-color:${status ? status_color : ''};">` + round1(g) + '%</div>' : ''}
+                    <div id="chart-days-${s.replace('/', '')}"></div>
+                    </div>
+                `;
 
+                //# SYMBOL TABLE ROWS
                 const template = `<tr>
-                            <td style="{c}">{0}</td>
+                            <td style="{c}">{10} {0}</td>
                             <td style="{c}"><b>{1}</b></td>
+                            <td style="background: linear-gradient(to right, green {5}%, #4d4d4d80 {5}%);">{3}</td>
                             <td style="background: linear-gradient(to right, green {4}%, #4d4d4d80 {4}%);">{2}</td>
-                            <td>{3}</td>
-                        </tr>`;
-                html_table += template
-                    // .replace('{c}', v.gain >= 0 ? 'lime' : 'red')
+                            <!--<td>{3}</td>-->
+                        </tr>`
                     .replace('{c}', `${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}`)
                     .replace('{c}', `${last_trade >= 0 ? 'color:#1dcf93;' : 'color:red;'}`)
                     .replace('{0}', s.split('/')[0])
@@ -900,11 +902,23 @@ async function test4(symbol = 'OKLO', interval = true, letter = false) {
                     .replace('{2}', `${round1(g)}%`)
                     .replace('{4}', `${round(g / max * 100)}`)
                     .replace('{4}', `${round(g / max * 100)}`)
+                    .replace('{3}', `${round1(last_trade_pct)}%`)
+                    .replace('{5}', `${round(last_trade / 1000 * 100)}`)
+                    .replace('{5}', `${round(last_trade / 1000 * 100)}`)
+                    .replace('{10}', `${get_indicator(status.bars[status.bars.length - 1].c - status.bars[status.bars.length - 1].lb, true)}`);
+                if (i <= 14) {
+                    html_table += template;
+                } else {
+                    html_table_2 += template;
+                }
+                // .replace('{c}', v.gain >= 0 ? 'lime' : 'red')
+
                 // .replace('{3}', v.spend.toLocaleString());
             });
             document.getElementById(id).innerHTML = html + '<br/>';
             if (index === 2) {
-                document.getElementById('symbol-table').innerHTML = html_table + '<br/>';
+                document.getElementById('symbol-table').innerHTML = html_table;
+                document.getElementById('symbol-table-2').innerHTML = html_table_2;
             }
 
             symbols.forEach((s) => {
