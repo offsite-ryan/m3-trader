@@ -56,8 +56,8 @@ function table(...args) {
         console.table(...args);
     }
 }
-function get_indicator(v, outline = false, color = '') { 
-    const char =  v > 0 ? (outline ? '△' : '▲') : (v < 0 ? (outline ? '▽' : '▼') : '');
+function get_indicator(v, outline = false, color = '') {
+    const char = v > 0 ? (outline ? '△' : '▲') : (v < 0 ? (outline ? '▽' : '▼') : '');
     return `<span style="color:${color}">${char}</span>`;
 };
 function reduceArray(arr, defaultValue = 0) {
@@ -98,10 +98,12 @@ async function download(filename, obj) {
 // =================================================
 // ITERATE DAYS
 // =================================================
-async function iterate_days(start = getDateString(START_OF_YEAR).s, sleep_time = 3000, callback_day = async (d) => { }, callback_done = async () => { }) {
+async function iterate_days(start = getDateString(START_OF_YEAR).s, end = getYMD(new Date()), sleep_time = 3000, callback_day = async (d) => { }, callback_done = async () => { }) {
+
+    const persist = auto_refresh;
     auto_refresh = false;
-    days_total = 0;
-    days = 1;
+    // days_total = 0;
+    const days = 1;
     let t = getYMD(start);
 
     while (true) {
@@ -110,12 +112,12 @@ async function iterate_days(start = getDateString(START_OF_YEAR).s, sleep_time =
         await sleep(sleep_time);
 
         t = new Date(new Date(t).getTime() + (days * 24 * 60 * 60 * 1000)).toISOString().substring(0, 10);
-        if (new Date(getDateString(t).s).getTime() >= new Date(getDateString(getTodayLocal()).e).getTime()) {
+        if (new Date(getDateString(t).s).getTime() >= new Date(end).getTime()) {
             break;
         }
     }
     callback_done();
-    auto_refresh = true;
+    auto_refresh = persist;
     console.log('iterate_days: DONE');
 }
 
@@ -205,7 +207,49 @@ function getTodayLocal() {
     // return '2025-06-04'
     return [year, month, day].join('-');
 }
-console.log('today local:', getTodayLocal());
+// console.log('today local:', getTodayLocal());
+
+function countDistinctStrings(arr) {
+    return arr.reduce((counts, str) => {
+        // If the string is already a key in the 'counts' object, increment its value.
+        // Otherwise, initialize its value to 1.
+        counts[str] = (counts[str] || 0) + 1;
+        return counts;
+    }, {}); // Start with an empty object as the initial accumulator.
+}
+
+// =================================================
+// GET LAST FRIDAY OF THE MONTH
+// =================================================
+function getLastFridayOfMonth(year, month) {
+    // Create a Date object for the first day of the *next* month.
+    // Setting the day to 0 will result in the last day of the *current* month.
+    let lastDayOfMonth = new Date(year, month + 1, 0);
+
+    // Get the day of the week for the last day of the month (0 for Sunday, 6 for Saturday).
+    let dayOfWeek = lastDayOfMonth.getDay();
+
+    // Calculate how many days to subtract to reach the last Friday.
+    // Friday is represented by 5.
+    let daysToSubtract;
+    if (dayOfWeek >= 5) { // If the last day is Friday or Saturday
+        daysToSubtract = dayOfWeek - 5;
+    } else { // If the last day is Sunday, Monday, Tuesday, Wednesday, or Thursday
+        daysToSubtract = dayOfWeek + 2; // (7 - 5) + dayOfWeek
+    }
+
+    // Subtract the calculated days from the last day of the month to get the last Friday.
+    lastDayOfMonth.setDate(lastDayOfMonth.getDate() - daysToSubtract);
+
+    return lastDayOfMonth;
+}
+
+function test_tops() {
+    Array.from(Object.entries(countDistinctStrings(Object.values(TOPS).reverse().reduce((p, c) => [...p, ...c]))), ([key, value]) =>({
+        property: key,
+        data: value
+    })).sort((a, b) => b.data - a.data)
+}
 
 // =================================================
 // GET DATE STRING
@@ -262,9 +306,15 @@ function dayHour(date) {
 // =================================================
 // IS MARKET HOORS
 // =================================================
-function isMarketHours(date) {
-    const hmm = dayHour();
-    return hmm > 930 && hmm < 1600;
+function isMarketOpen(date = new Date()) {
+    const day = market_calendar.find((v) => v.date === getYMD(date));
+    // let is_open = day ? (+(day.open.replace(':', ''))) : 930;
+    // let is_close = day ? (+(day.close.replace(':', ''))) : 1600;
+    const hmm = dayHour(date);
+    let is_open = day ? (hmm >= +(day.open.replace(':', '')) && hmm <= +(day.close.replace(':', ''))) : false;
+    return is_open;
+
+    // return hmm > 930 && hmm < 1600;
 }
 
 const round = (v) => { return Math.round(v * 1) / 1; }
@@ -327,7 +377,7 @@ function getQuarterName(d) {
  */
 console.chart = function (data, group = '-') {
     // const cols = data.map((v, i)=>i+1)
-    // console.log(data);
+    console.log(data);
     cumulativeSumArray(data);
 
     const max = Math.max(...data);
@@ -335,14 +385,14 @@ console.chart = function (data, group = '-') {
     // data = data.map((v) => v / max * 100 / 10);
     data = data.map((v) => round(v / (max + Math.abs(min)) * 100 / 10));
     let msg = '%c';
-    msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
         .filter((v) => v <= Math.max(...data) + 3)
         .map((v, i) => data.map((v2, i2) => v2 >= (i + 1) ? ' █' : '  ')
             .join(''))
         .reverse()
         .join('\n');
     msg += '%c\n' + '─'.repeat(data.length * 2) + '\n%c';
-    msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    msg += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
         .filter((v) => (v) <= Math.abs(Math.min(...data) - 3))
         .map((v, i) => data.map((v2, i2) => v2 < 0 && Math.abs(v2) >= (i + 1) ? ' █' : '  ')
             .join(''))
@@ -380,7 +430,7 @@ function reduceObjectValues(obj, defaultValue = 0) {
     }
     return values.reduce((p, c) => p + c, 0);
 }
-function cumulativeSumArray(arr = [1, 3, 5, 7, 9, 11]) {
+function cumulativeSumArray(arr = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21]) {
     const cumulativeSumArray = arr.reduce((accumulator, currentValue) => {
         const lastSum = accumulator.length > 0 ? accumulator[accumulator.length - 1] : 0;
         accumulator.push(lastSum + currentValue);

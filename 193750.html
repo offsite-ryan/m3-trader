@@ -371,6 +371,8 @@
                 value="table" onclick="toggle_groups(this.value)">&nbsp;TABLE</label>
         <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
                 value="info" onclick="toggle_groups(this.value)" checked>&nbsp;INFO</label>
+        <label style="margin-right:30px;display:inline-flex;"><input class="w3-radio" type="radio" name="gender"
+                value="symbols" onclick="toggle_groups(this.value)">&nbsp;SYMBOLS</label>
     </p>
 
     <!-- Bollinger -->
@@ -496,6 +498,11 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+        <div id="symbol-buttons-bollinger-symbols" class="_w3-col s12 w3-padding w3-center"
+            style="width:100%;display: flex;flex-direction: row;flex-wrap: wrap;justify-content:center;overflow-y:scroll;max-height:400px;scrollbar-color: #000000 #373737;">
+            <div id="symbols_for_letter"></div>
+            <div id="letters"></div>
         </div>
         <!--# INFO PANELS  -->
         <div id="symbol-buttons-bollinger-info" class="_w3-col s12 w3-padding w3-center"
@@ -787,8 +794,8 @@
     // TOGGLE GROUPS
     // =================================================
     function toggle_groups(name) {
-        ['stocks', 'favs', 'rd', 'crypto', 'account', 'table', 'info'].forEach((k) => {
-            document.getElementById(`chart-bars`).style.display = (['account', 'table', 'info'].includes(name) ? 'none' : '');
+        ['stocks', 'favs', 'rd', 'crypto', 'account', 'table', 'info', 'symbols'].forEach((k) => {
+            document.getElementById(`chart-bars`).style.display = (['account', 'table', 'info', /*'symbols'*/].includes(name) ? 'none' : '');
             const elem = document.getElementById(`symbol-buttons-bollinger-${k}`);
             elem.style.display = name === k ? 'block' : 'none';
             elem.checked = name === k ? true : false;
@@ -881,6 +888,72 @@
         // if (!isCrypto) {
         //     toggleCryptoStocks(null, false);
         // }
+
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((letter) => {
+            let btn = document.createElement('button');
+            btn.className = 'w3-button _w3-black w3-margin-bottom w3-margin-top w3-margin-right w3-round-large';
+            btn.style.minWidth = '40px';
+            btn.style.fontSize = isMobile() ? '18px' : '24px';
+            btn.innerText = letter;
+            btn.onclick = () => {
+                // document.getElementById('letters').querySelectorAll('button').forEach((b) => {
+                //     b.style.backgroundColor = '#000';
+                // });
+                // btn.style.backgroundColor = '#00b90a';
+                // btn.style.color = 'yellow';
+                const container = document.getElementById('symbol-buttons-bollinger-symbols');
+                container.querySelectorAll('button').forEach((b) => {
+                    if (b.innerText.startsWith(letter)) {
+                        b.style.color = 'yellow';
+                        b.style.fontWeight = '900';
+                    } else {
+                        b.style.color = '';
+                        b.style.fontWeight = '';
+                    }
+                });
+                document.getElementById('symbols_for_letter').innerHTML = '';
+                const stock_symbols_for_letter = stock_symbols_detail
+                    .filter((v) => v.symbol.startsWith(letter))
+                    .filter((v) => v.tradable === true)
+                    .filter((v) => v.fractionable === true)
+                    // .map((v) => v.symbol)
+                    .sort((a,b) => a.symbol.localeCompare(b.symbol))
+                    .forEach((v) => {
+                        let btn = document.createElement('button');
+                        btn.className = 'w3-button _w3-black w3-margin-bottom w3-margin-top w3-margin-right w3-round-large';
+                        btn.style.minWidth = '40px';
+                        btn.style.fontSize = isMobile() ? '18px' : '24px';
+                        btn.style.borderBottom = '1px solid #ffffff8a';
+                        // btn.innerText = `${v.symbol}`;
+                        btn.innerHTML = `<span class="w3-tooltip">${v.symbol} <span style="background-color:black;color:yellow;position:fixed;left:20px;bottom:18px" class="w3-text w3-tag">${v.name}</span></span>`;
+                        btn.onclick = () => {
+                            test4(v.symbol, true, true)
+                        };
+                        document.getElementById('symbols_for_letter').appendChild(btn);
+                    });
+                console.log('FILTER LETTER', letter, stock_symbols_for_letter);
+            };
+            document.getElementById('letters').appendChild(btn);
+        });
+    }
+    function clickLetter(elem) {
+        console.log('CLICK LETTER', elem);
+        elem.style.color = 'yellow';
+        // document.getElementById('letters').querySelectorAll('button').forEach((b) => {
+        //     b.style.backgroundColor = '#000';
+        // });
+        // const btn = Array.from(document.getElementById('letters').querySelectorAll('button')).find((b) => b.innerText === letter);
+        // if (btn) {
+        //     btn.style.backgroundColor = '#00b90a';
+        // }
+        // const container = document.getElementById('symbol-buttons-bollinger-symbols');
+        // container.querySelectorAll('button').forEach((b) => {
+        //     if (b.innerText.startsWith(letter)) {
+        //         b.style.display = 'inline-block';
+        //     } else {
+        //         b.style.display = 'none';
+        //     }
+        // });
     }
 
     // =================================================
