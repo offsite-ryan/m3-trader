@@ -849,7 +849,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                 // const should_sell = current.c <= (current.lb * 1.0);
                 // --------------------------------------------------
                 const should_buy = current.o >= current.lb; // && current.c >= current.lb;
-                const should_sell = current.c <= current.lb * 1.0;
+                const should_sell = current.c <= current.lb * 0.9;
                 // --------------------------------------------------
                 // const should_buy = true;
                 // const should_sell = current.c <= current.lb * 0.9;
@@ -896,7 +896,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                             <!--<td>{3}</td>-->
                         </tr>`
                     .replace('{c}', `${should_sell && has_position >= 0 ? 'color:red;' : (should_buy ? 'color:#1dcf93;' : '')}`)
-                    .replace('{c}', `${last_trade >= 0 ? 'color:#1dcf93;' : 'color:red;'}`)
+                    .replace('{c}', `${last_trade >= 0 ? 'color:lime;' : 'color:red;'}`)
                     .replace('{0}', s.split('/')[0])
                     .replace('{1}', `${get_indicator(last_trade, false)} ${status.position ? round(Math.abs(status.position.gain)).toLocaleString() : round(Math.abs(last_trade))}`)
                     .replace('{2}', `${round1(g)}%`)
@@ -1032,9 +1032,9 @@ async function test4(symbol = 'OKLO', interval = true) {
         document.getElementById('order-transactions').innerHTML = html;
 
         // console.log(open_positions, all_orders, buy_sell_pairs, transaction_days, obj);
-        console.log('DAY GAINS', obj);
-        console.log('DAY GAINS', obj.filter((v) => v.ymd >= filter_before));
-        console.log('DAY GAINS TOTAL', filtered.map((v) => v.gain).reduce((p, c) => p + c));
+        // console.log('DAY GAINS', obj);
+        // console.log('DAY GAINS', obj.filter((v) => v.ymd >= filter_before));
+        // console.log('DAY GAINS TOTAL', filtered.map((v) => v.gain).reduce((p, c) => p + c));
     }
 
     let total_groups = 0;
@@ -1050,7 +1050,7 @@ async function test4(symbol = 'OKLO', interval = true) {
     // const end = new Date(`2025-06-01`);
     let index = 0;
 
-    console.group('%c----------------------------------------------------', 'color:orange;');
+    //! console.group('%c----------------------------------------------------', 'color:orange;');
     // all_symbols_names = letter ? symbol : [
     //     ...CONFIG.symbol_groups[0].symbols,
     //     ...CONFIG.symbol_groups[1].symbols,
@@ -1070,16 +1070,16 @@ async function test4(symbol = 'OKLO', interval = true) {
         ...CONFIG.symbol_groups[1].symbols,
         ...CONFIG.symbol_groups[2].symbols,
         ...CONFIG.symbol_groups[3].symbols,
-        // symbol
+        symbol
     ];
     all_symbols_names = [
         ...CONFIG.symbol_groups[0].symbols,
         ...CONFIG.symbol_groups[1].symbols,
         ...CONFIG.symbol_groups[2].symbols,
         ...CONFIG.symbol_groups[3].symbols,
-        // ...[symbol]
+        ...[symbol]
     ];
-    // console.log(`%cLOADING DATA FOR ${all_symbols_names.length} SYMBOLS...`, 'color:orange;');
+    //! console.log(`%cLOADING DATA FOR ${all_symbols_names.length} SYMBOLS...`, 'color:orange;');
 
     if (interval) {
         const promises = all_symbols_names.map((s, i) => {
@@ -1087,7 +1087,7 @@ async function test4(symbol = 'OKLO', interval = true) {
             return alpaca_data.bars(s, CONFIG[CONFIG.algo_name].timeframe ?? '1D', start.toISOString(), end.toISOString(), open_positions, all_orders/*, i > 13 ? true : false*/);
         });
         all_symbols = await Promise.all(promises);
-        console.log(all_symbols);
+        //# console.log(all_symbols);
     }
 
     // let data = await analyze_days('E', symbol, '1D', start.toISOString(), end.toISOString());
@@ -1125,9 +1125,9 @@ async function test4(symbol = 'OKLO', interval = true) {
                 // const group_name = index === 0 ? 'R&D' : (index === 1 ? 'STOCKS' : (index === 2 ? 'CRYPTO' : 'ALL'));
                 const group_name = a.name || `GROUP ${index + 1}`;
                 let message = `%c${group_name}`;
-                console.log(message, 'color:yellow;');
+                //! console.log(message, 'color:yellow;');
                 const t = all.map((v) => v.summary.total).reduce((p, c) => p + c);
-                console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 10)}K @ 10K`, 'color:orange;');
+                //! console.log(`%cTRADES TOTAL | $${round2(t / 1000).toLocaleString()}K | 1K SEED | ${round1(t / 1000 / all.length * 100)}% | ${all.length} SYMBOLS | $${round1(t / 1000 / all.length * 10)}K @ 10K`, 'color:orange;');
 
                 //! --------------------------------------------------------------------
                 const field_name = CONFIG.algo.summary_window || 'months';
@@ -1157,7 +1157,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                 const sum = round2(Object.values(data).reduce((p, c) => p + c))
                 const avg = round2(sum / num);
                 const pct = round(sum / (all.length * 1000) * 100);
-                console.log(sum, avg, pct, num, data);
+                //! console.log(sum, avg, pct, num, data);
                 //! console.chart(Object.values(data), `${group_name} | ${pct}%<br/>$${round(sum).toLocaleString()} | $${round(sum / Object.keys(data).length).toLocaleString()}`);
                 //! --------------------------------------------------------------------
                 // data['_TOTAL_'] = round2(Object.values(data).reduce((p, c) => p + c));
@@ -1167,11 +1167,11 @@ async function test4(symbol = 'OKLO', interval = true) {
             index++;
         }
     }
-    if (open_positions.length > 0) {
-        console.log(`%cOPEN POSITIONS | $${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()} | $${round2(open_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c)).toLocaleString()}`, 'color:yellow;');
-        // console.chart(open_positions.map((v) => v.unrealized_pl), `OPEN POSITIONS<br/>$${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()}`);
-    }
-    console.log('%cGROUPS', 'color:yellow;', groups)
+    // if (open_positions.length > 0) {
+    //     console.log(`%cOPEN POSITIONS | $${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()} | $${round2(open_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c)).toLocaleString()}`, 'color:yellow;');
+    //     // console.chart(open_positions.map((v) => v.unrealized_pl), `OPEN POSITIONS<br/>$${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()}`);
+    // }
+    //! console.log('%cGROUPS', 'color:yellow;', groups)
     //#endregion
 
     //#region GROUP MONTHS - NEW 2
@@ -1226,7 +1226,7 @@ async function test4(symbol = 'OKLO', interval = true) {
                 const sum = round2(Object.values(data).reduce((p, c) => p + c))
                 const avg = round2(sum / num);
                 const pct = round(sum / (all.length * 1000) * 100);
-                console.log(sum, avg, pct, num, data);
+                //! console.log(sum, avg, pct, num, data);
                 //! console.chart(Object.values(data), `${group_name} | ${pct}%<br/>$${round(sum).toLocaleString()} | $${round(sum / Object.keys(data).length).toLocaleString()}`);
                 //! --------------------------------------------------------------------
                 // data['_TOTAL_'] = round2(Object.values(data).reduce((p, c) => p + c));
@@ -1237,10 +1237,11 @@ async function test4(symbol = 'OKLO', interval = true) {
         }
     }
     if (open_positions.length > 0) {
-        console.log(`%cOPEN POSITIONS | $${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()} | $${round2(open_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c)).toLocaleString()}`, 'color:yellow;');
+        const t = open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c);
+        console.log(`%cOPEN POSITIONS | %c$${round2(t).toLocaleString()} | %c$${round2(open_positions.map((v) => +(v.cost_basis)).reduce((p, c) => p + c)).toLocaleString()}`, 'color:yellow;', `color:${t > 0 ? 'lime' : '#ff0047'};`, 'color:white;');
         // console.chart(open_positions.map((v) => v.unrealized_pl), `OPEN POSITIONS<br/>$${round2(open_positions.map((v) => +(v.unrealized_pl)).reduce((p, c) => p + c)).toLocaleString()}`);
     }
-    console.log('%cGROUPS', 'color:yellow;', groups)
+    //! console.log('%cGROUPS', 'color:yellow;', groups)
     //#endregion
 
     //#region CHART YTD DAYS
@@ -1777,10 +1778,11 @@ async function test4(symbol = 'OKLO', interval = true) {
 
             //# INFO PANELS
             let elem = document.getElementById(`group-name-${index + 1}`).innerHTML = `
-                ${group_name}
-                <br/>
+                <b class="w3-xlarge">${group_name}</b>
+                <b><span class="w3-large w3-text-grey"> (${num_symbols})</span></b>
+                <!--<br/>
                 <b><span class="w3-xxlarge" style="color:${last !== 0 ? (last > 0 ? 'lime' : 'red') : 'gray'};">${get_indicator(last)} $${round1(Math.abs(last / 1000))}K</span></b><span class="w3-medium w3-text-grey"> (${num_symbols})</span>
-                `;
+                -->`;
             elem = document.getElementById(`group-current-trades-${index + 1}`);
             elem.innerHTML = `${get_indicator(last_trades)}  $${round(Math.abs(last_trades)).toLocaleString()}`;
             elem.style.color = last_trades > 0 ? 'lime' : 'red';
